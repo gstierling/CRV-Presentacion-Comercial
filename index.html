@@ -143,6 +143,48 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
   .full{right:20%}
   main{max-width:none;padding-left:28px;padding-right:28px}
 }
+
+/* Compacto en pantallas anchas */
+@media(min-width:900px){
+  body{font-size:15px}
+  main{padding-top:12px}
+  .stepname{font-size:21px;margin:6px 0}
+  .lbl{margin:14px 0 6px;font-size:13px}
+  .hint{font-size:14px;margin-bottom:10px;max-width:760px}
+  .field,.sel,.seg,.total{max-width:480px}
+  .field{padding:10px 14px;font-size:16px}
+  .sel{padding:10px 14px;font-size:16px}
+  textarea.field{max-width:760px;min-height:90px}
+  .imgz{max-width:340px;padding:10px}
+  .imgz .btns button{padding:9px;font-size:14px;min-width:90px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+  .chip{min-height:70px;padding:10px 12px;border-radius:12px}
+  .chip b{font-size:15px}.chip small{font-size:12px}
+  .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-bottom:8px}
+  .rows>*{margin:0!important}
+  .rows.acts{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}
+  .rows.opts{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .row{padding:8px 12px;border-radius:12px;gap:10px}
+  .row .tx b{font-size:14px}.row .tx small{font-size:12px}
+  .chk{width:24px;height:24px;border-radius:7px;font-size:13px}
+  .el{padding:6px 10px;border-radius:12px}
+  .el .tx b{font-size:14px}.el .tx small{font-size:12px}
+  .stp button{width:36px;height:36px;font-size:20px;border-radius:10px}
+  .stp .q{min-width:44px;height:36px;font-size:17px;border-radius:10px}
+  .kpi{padding:6px 10px;border-radius:12px}
+  .kpi .num{height:38px;min-width:90px;font-size:17px}
+  .opt{padding:10px 12px;font-size:15px;border-radius:12px}
+  .opt small{font-size:12px}
+  .act{border-radius:14px}.act img{width:110px}
+  .act .in{padding:10px 12px}.act .in b{font-size:16px}.act .in small{font-size:12px}.act .money{font-size:16px}
+  .addbtn{max-width:480px;padding:12px;font-size:16px}
+  .total{padding:10px 14px;font-size:16px}.total span{font-size:19px}
+  .b-big{max-width:480px;padding:14px;font-size:17px}
+  nav.bot{justify-content:flex-end}
+  nav.bot button{flex:0 0 auto;min-width:150px;padding:12px 18px;font-size:15px}
+  .thumbs{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .cols2{display:grid;grid-template-columns:minmax(0,480px) minmax(0,340px);gap:32px;align-items:start}
+}
 </style>
 </head>
 <body>
@@ -713,44 +755,46 @@ const STEPS=[
 ];
 function stepProspecto(){const v=vendedor();return `
   <p class="hint">Datos de la portada. La foto de portada es estándar; puedes reemplazarla pegando otra.</p>
+  <div class="cols2"><div>
   <div class="lbl">Nombre del prospecto</div>
   <input class="field" value="${esc(S.prospecto)}" placeholder="Ej: Powerade" oninput="S.prospecto=this.value;save()">
-  <div class="lbl">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
   <div class="lbl">Vendedor/a</div>
   <button class="sel" onclick="A.pickVendedor()"><span>${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)}</small></span></button>
   <div class="lbl">Fecha de la propuesta</div>
   <input class="field" type="date" value="${S.fecha}" onchange="S.fecha=this.value;save()">
   <div class="lbl">Estilo de color</div>
   <div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>
+  </div><div>
+  <div class="lbl">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
   <div class="lbl">Foto de portada</div>
   <div class="seg"><button class="${!S.portada?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada?"on":""}" onclick="A.portadaPropia()">Propia</button></div>
-  ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}`}
+  ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}</div></div>`}
 function stepObjetivos(){return `
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en la propuesta.</p>
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
 function stepActivaciones(){return `
   <p class="hint">Agrega de 1 a 4 activaciones. Toca una para editar sus elementos, dinámica, foto y números.</p>
-  ${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">+ IVA por domingo</span></div></div></div>`).join("")}
+  <div class="rows acts">${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">+ IVA por domingo</span></div></div></div>`).join("")}</div>
   <button class="addbtn" ${S.activaciones.length>=4?"disabled":""} onclick="A.nuevaAct()">＋ Agregar activación</button>`}
 function stepTarifas(){
   const ps=periodosSel();return `
   <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
-  ${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}
+  <div class="rows">${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}</div>
   ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`}
 function stepComunicacion(){return `
   <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
-  ${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}
+  <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
   <div class="lbl">Nota adicional (opcional)</div>
   <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>
   <div class="lbl">RRSS de CicloRecreoVía</div>
   <div class="row ${S.incluir.rrss?"on":""}" onclick="S.incluir.rrss=!S.incluir.rrss;save();render()"><div class="chk"></div><div class="tx"><b>Incluir lámina de RRSS</b><small>${CAT.rrss.map(r=>r.red+" "+fmt(r.n)).join(" · ")}</small></div></div>`}
 function stepCondiciones(){return `
   <div class="lbl" style="margin-top:0">Condiciones</div>
-  ${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}
+  <div class="rows">${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}</div>
   <div class="lbl">Condición especial (opcional)</div>
   <textarea class="field" style="min-height:80px" placeholder="Ej: Exclusividad de categoría bebidas isotónicas" oninput="S.condExtra=this.value;save()">${esc(S.condExtra)}</textarea>
   <div class="lbl">Enlaces a fotos y videos</div>
-  ${CAT.enlaces.map(l=>`<div class="row ${S.enlaces.includes(l.id)?"on":""}" onclick="A.toggle('enlaces','${l.id}')"><div class="chk"></div><div class="tx"><b>${esc(l.t)}</b><small>${esc(l.url)}</small></div></div>`).join("")}`}
+  <div class="rows">${CAT.enlaces.map(l=>`<div class="row ${S.enlaces.includes(l.id)?"on":""}" onclick="A.toggle('enlaces','${l.id}')"><div class="chk"></div><div class="tx"><b>${esc(l.t)}</b><small>${esc(l.url)}</small></div></div>`).join("")}</div>`}
 function stepLibres(){return `
   <p class="hint">Para ese contenido que no calza con lo estándar: agrega láminas con título, texto y foto, y elige dónde van.</p>
   ${S.libres.map((l,i)=>`<div style="background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px">
@@ -771,7 +815,7 @@ function stepRevisar(){
   <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>
   <div class="lbl">Incluir / quitar láminas</div>
-  ${tg("crv","Qué es CicloRecreoVía")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}`}
+  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
 
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
   el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
@@ -792,15 +836,15 @@ function editorAct(a){
   <div class="lbl">Objetivos que cubre</div>
   ${objOpts.length?`<div class="grid">${objOpts.map(id=>{const o=byId(CAT.objetivos,id);return `<button class="chip ${a.objetivos.includes(id)?"on":""}" style="min-height:60px" onclick="A.toggleObjAct('${a.uid}','${id}')"><b>${esc(o.t)}</b></button>`}).join("")}</div>`:`<div class="warn">Primero elige objetivos en el paso 2.</div>`}
   <div class="lbl">Dinámica</div>
-  ${dins.filter(d=>t.din.includes(d.id)).concat(dins.filter(d=>!t.din.includes(d.id))).map(d=>`<button class="opt ${a.din===d.id?"on":""}" onclick="A.setA('${a.uid}','din','${d.id}',1)">${t.din.includes(d.id)?"★ ":""}${esc(d.t)}<small>${esc(d.tx)}</small></button>`).join("")}
-  <button class="opt ${a.din==="otra"?"on":""}" onclick="A.setA('${a.uid}','din','otra',1)">✎ Otra (escribir)<small>Describe una dinámica a medida</small></button>
+  <div class="rows opts">${dins.filter(d=>t.din.includes(d.id)).concat(dins.filter(d=>!t.din.includes(d.id))).map(d=>`<button class="opt ${a.din===d.id?"on":""}" onclick="A.setA('${a.uid}','din','${d.id}',1)">${t.din.includes(d.id)?"★ ":""}${esc(d.t)}<small>${esc(d.tx)}</small></button>`).join("")}
+  <button class="opt ${a.din==="otra"?"on":""}" onclick="A.setA('${a.uid}','din','otra',1)">✎ Otra (escribir)<small>Describe una dinámica a medida</small></button></div>
   ${a.din==="otra"?`<textarea class="field" placeholder="Describe cómo interactúan las personas con la activación…" oninput="A.setA('${a.uid}','dinTexto',this.value)">${esc(a.dinTexto||"")}</textarea>`:""}
   <div class="lbl">Elementos (valor por domingo)</div>
-  ${CAT.elementos.map(e=>{const q=a.elementos[e.id]||0;return `<div class="el ${q?"on":""}"><div class="tx"><b>${esc(e.t)}</b><small>${money(e.p)} c/u${q?" · "+money(e.p*q):""}</small></div><div class="stp"><button onclick="A.qty('${a.uid}','${e.id}',-1)">−</button><div class="q" onclick="A.qtyKp('${a.uid}','${e.id}')">${q}</div><button onclick="A.qty('${a.uid}','${e.id}',1)">＋</button></div></div>`}).join("")}
+  <div class="rows">${CAT.elementos.map(e=>{const q=a.elementos[e.id]||0;return `<div class="el ${q?"on":""}"><div class="tx"><b>${esc(e.t)}</b><small>${money(e.p)} c/u${q?" · "+money(e.p*q):""}</small></div><div class="stp"><button onclick="A.qty('${a.uid}','${e.id}',-1)">−</button><div class="q" onclick="A.qtyKp('${a.uid}','${e.id}')">${q}</div><button onclick="A.qty('${a.uid}','${e.id}',1)">＋</button></div></div>`}).join("")}</div>
   <div class="total"><b>Total por domingo</b><span>${money(subDomingo(a))} <small style="font-size:14px">+ IVA</small></span></div>
   <div class="lbl">Números por domingo</div>
   <p class="hint">Se calculan solos según los elementos y objetivos. Toca un número para fijarlo a mano.</p>
-  ${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}
+  <div class="rows">${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}</div>
   <div class="lbl">Foto</div>
   <div class="seg"><button class="${!a.foto?"on":""}" onclick="A.setImg('act_${a.uid}',null)">Estándar</button><button class="${a.foto||a._propia?"on":""}" onclick="A.setA('${a.uid}','_propia',true,1)">Propia</button></div>
   ${a.foto||a._propia?imgZone("act_"+a.uid,a.foto,false,"Pega aquí la foto de la activación"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoAct(a).data}');background-size:cover"></div></div>`}
