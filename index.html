@@ -211,7 +211,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 const CAT = {
   crv:{
     descripcion:"CicloRecreoVía abre las calles de Santiago cada domingo para que miles de personas caminen, pedaleen, patinen y compartan en familia. Es el espacio público recreativo más masivo de la ciudad: un punto de encuentro con alto tiempo de permanencia y un público activo, diverso y receptivo a las marcas que aportan a su experiencia.",
-    stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"40 km",l:"de calles abiertas",ic:"route"},{n:"8",l:"comunas",ic:"mappin"},{n:"+15",l:"años de trayectoria",ic:"award"}]
+    stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"40 km",l:"de calles abiertas",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"+15",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
     {id:"branding",t:"Branding",d:"Presencia visible de la marca en los puntos de mayor flujo del circuito.",kpi:"visualizaciones",ic:"flag"},
@@ -284,14 +284,14 @@ const CAT = {
   ],
   circuitos:{
     stgo:{t:"Circuito CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de varias comunas de Santiago para caminar, pedalear, patinar y compartir, conectando parques, plazas y barrios.",
-      datos:[{ic:"route",n:"40 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"+30.000",l:"personas por domingo"}]},
+      datos:[{ic:"route",n:"26 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"35.000",l:"asistentes por domingo"}]},
     vina:{t:"Circuito CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al borde costero, con un público familiar, deportivo y turístico.",
-      datos:[{ic:"route",n:"10 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"+8.000",l:"personas por domingo"}]}
+      datos:[{ic:"route",n:"3 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 13 h",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
   },
   perfiles:{
-    stgo:{t:"Perfil de asistentes · Santiago",kpis:[{ic:"users",n:"+30.000",l:"asistentes por domingo"},{ic:"heart",n:"62%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3,5 h",l:"de permanencia promedio"}],
+    stgo:{t:"Perfil de asistentes · Santiago",kpis:[{ic:"users",n:"35.000",l:"asistentes por domingo"},{ic:"heart",n:"62%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3,5 h",l:"de permanencia promedio"}],
       grupos:[{t:"Edad",items:[["Menos de 18",22],["18 a 29",24],["30 a 44",31],["45 a 59",15],["60 o más",8]]},{t:"Cómo recorren",items:[["Bicicleta",58],["A pie / trote",24],["Patines / scooter",12],["Otro",6]]}],genero:[["Mujeres",48],["Hombres",52]]},
-    vina:{t:"Perfil de asistentes · Viña del Mar",kpis:[{ic:"users",n:"+8.000",l:"asistentes por domingo"},{ic:"heart",n:"58%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3 h",l:"de permanencia promedio"}],
+    vina:{t:"Perfil de asistentes · Viña del Mar",kpis:[{ic:"users",n:"4.000",l:"asistentes por domingo"},{ic:"heart",n:"58%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3 h",l:"de permanencia promedio"}],
       grupos:[{t:"Edad",items:[["Menos de 18",20],["18 a 29",27],["30 a 44",29],["45 a 59",16],["60 o más",8]]},{t:"Cómo recorren",items:[["Bicicleta",52],["A pie / trote",30],["Patines / scooter",13],["Otro",5]]}],genero:[["Mujeres",50],["Hombres",50]]}
   },
   rrss:[
@@ -402,7 +402,7 @@ let asideT,asideBusy=false,asideAgain=false;
 function asideLater(){clearTimeout(asideT);asideT=setTimeout(updateAside,350)}
 function pasoActual(list){
   if(editAct)return list.map((p,i)=>p.k==="act"&&p.a.uid===editAct?i:-1).filter(i=>i>=0);
-  const want=[["portada"],["crv","circ","perf"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],[]][cur]||[];
+  const want=[["portada"],["crv","circ","perf","rrss"],["objetivos"],["act"],["tarifas"],["comunicacion"],["condiciones","enlaces"],["libre"],[]][cur]||[];
   return list.map((p,i)=>want.includes(p.k)?i:-1).filter(i=>i>=0);
 }
 async function updateAside(){
@@ -454,7 +454,7 @@ function plan(){
   if(I.tarifas&&S.activaciones.length&&periodosSel().length)P.push({k:"tarifas",name:"Tarifas"});
   lib("tar");
   if(I.comunicacion&&S.comunicacion.length)P.push({k:"comunicacion",name:"Plan comunicacional"});
-  if(I.rrss)P.push({k:"rrss",name:"RRSS de CicloRecreoVía"});
+  if(I.rrss)P.push({k:"rrss",name:"Nuestra comunidad digital"});
   if(I.condiciones&&(S.condiciones.length||S.condExtra))P.push({k:"condiciones",name:"Condiciones"});
   if(I.enlaces&&S.enlaces.length)P.push({k:"enlaces",name:"Fotos y videos"});
   lib("fin");
@@ -569,6 +569,11 @@ async function bandaFina(R,items){const t=T(),h=0.82,y=H-h;R.rect(0,y,W,h,{fill:
     R.text(it.l,x+0.38,y+0.12,iw-0.5,0.25,{size:8.5,bold:true,color:t.mu});
     R.text(it.v,x+0.38,y+0.37,iw-0.5,0.32,{size:fitSize(it.v,11.5,[[24,10.5],[30,9.5]]),bold:true,valign:"middle"});
     x+=iw;}}
+async function tarjetaDato(R,st,x,y,w,h,hi){const t=T();
+  R.rect(x,y,w,h,{fill:hi?t.acc:t.p1,radius:0.08});
+  await icono(R,st.ic||"sparkles",x+0.22,y+0.22,0.56,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+  R.text(st.n,x+0.92,y+0.12,w-1.05,0.76,{size:fitSize(st.n,32,[[7,27],[9,23]]),head:true,valign:"middle"});
+  R.text(st.l,x+0.22,y+0.92,w-0.4,h-1.0,{size:st.l.length>26?12:13.5,bold:true,color:hi?COL.wh:t.mu,valign:"top"});}
 async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.1});await R.image(img,x+0.15,y+0.12,w-0.3,h-0.24,{fit:"contain"})}
 
 async function dibujar(R,sp,n,tot){
@@ -581,7 +586,6 @@ async function dibujar(R,sp,n,tot){
     if(S.logo){R.text("+",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
     R.text([{text:P,o:{color:t.acc,br:true}},{text:"en CicloRecreoVía",o:{}}],0.7,2.15,7.4,2.1,{size:fitSize(P,44,[[12,40],[18,34],[26,28]]),head:true,valign:"middle"});
     R.text("Propuesta de auspicio para activar tu marca en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.4,7.0,0.9,{size:14,color:t.mu});
-    boton(R,"PROPUESTA DE AUSPICIO",0.7,5.45,{w:2.5});
     await bandaFina(R,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha),w:1.32},{ic:"handshake",l:"Ejecutivo/a",v:v.n,w:1.05},{ic:"badge",l:"Cargo",v:v.c,w:1.05},{ic:"mail",l:"Correo",v:v.m,w:1.45},{ic:"smartphone",l:"Celular",v:v.t,w:0.95}]);
     break;}
   case "crv":{
@@ -589,22 +593,13 @@ async function dibujar(R,sp,n,tot){
     await R.image(S.imgs.crv||stdPhoto("crv","CicloRecreoVía","#0b69b2"),7.55,0,W-7.55,H);
     titulo(R,"Qué es CicloRecreoVía",0.6,0.6,6.7);
     R.text(CAT.crv.descripcion,0.6,1.7,6.6,2.0,{size:fitSize(CAT.crv.descripcion,13,[[460,12],[620,11]]),color:t.mu});
-    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=0.6+(i%2)*3.4,y=3.85+Math.floor(i/2)*1.7;const hi=i===0;
-      R.rect(x,y,3.2,1.5,{fill:hi?t.acc:t.p1,radius:0.08});
-      await icono(R,st.ic||"sparkles",x+0.25,y+0.28,0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
-      R.text(st.n,x+0.95,y+0.2,2.1,0.6,{size:24,head:true,valign:"middle"});
-      R.text(st.l,x+0.95,y+0.8,2.1,0.5,{size:11.5,bold:true,color:hi?COL.wh:t.mu});}
+    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++)await tarjetaDato(R,CAT.crv.stats[i],0.6+(i%2)*3.4,3.65+Math.floor(i/2)*1.8,3.2,1.62,i===0);
     break;}
   case "circ":{
     const c=CAT.circuitos[sp.city];R.slide(t.bg);cabecera(R,n,tot);
-    boton(R,"CIRCUITO",0.6,0.62,{w:1.4});
-    titulo(R,c.t,0.6,1.05,6.1,fitSize(c.t,28,[[33,22]]));
-    R.text(c.d,0.6,2.2,5.9,1.15,{size:12.5,color:t.mu});
-    for(let i=0;i<Math.min(4,c.datos.length);i++){const d=c.datos[i];const x=0.6+(i%2)*3.0,y=3.55+Math.floor(i/2)*1.65;const hi=i===0;
-      R.rect(x,y,2.85,1.45,{fill:hi?t.acc:t.p1,radius:0.08});
-      await icono(R,d.ic||"sparkles",x+0.22,y+0.25,0.5,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
-      R.text(d.n,x+0.85,y+0.18,1.9,0.6,{size:fitSize(d.n,22,[[7,18]]),head:true,valign:"middle"});
-      R.text(d.l,x+0.85,y+0.78,1.9,0.5,{size:11,bold:true,color:hi?COL.wh:t.mu});}
+    R.text(c.t,0.6,0.6,6.1,1.45,{size:fitSize(c.t,32,[[33,28]]),head:true,valign:"middle"});
+    R.text(c.d,0.6,2.15,6.0,1.1,{size:14,bold:true,color:t.mu});
+    for(let i=0;i<Math.min(4,c.datos.length);i++)await tarjetaDato(R,c.datos[i],0.6+(i%2)*3.07,3.4+Math.floor(i/2)*1.8,2.95,1.62,i===0);
     const m=S.imgs["mapa_"+sp.city];
     R.rect(6.95,0.62,5.78,6.26,{fill:t.p1,radius:0.08});
     if(m)await R.image(m,7.1,0.77,5.48,5.96,{fit:"contain"});else await R.image(stdPhoto("mapa_"+sp.city,"Mapa del circuito",sp.city==="stgo"?"#179741":"#0b69b2"),6.95,0.62,5.78,6.26);
@@ -651,20 +646,26 @@ async function dibujar(R,sp,n,tot){
     break;}
   case "act":{
     const a=sp.a;R.slide(t.bg);cabecera(R,n,tot);
-    boton(R,"ACTIVACIÓN "+(sp.i+1),0.6,0.62,{w:1.7});
-    titulo(R,a.nombre||"",0.6,1.1,7.9,fitSize(a.nombre,32,[[20,28],[30,23]]));
-    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.6,2.2,7.9,0.3,{size:10.5,bold:true,color:t.acc,cs:1});
-    const dt=dinTexto(a);R.text(dt,0.6,2.5,7.9,1.0,{size:fitSize(dt,12.5,[[260,11],[380,10]]),color:t.mu});
     const els=Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e);
-    const sub=subDomingo(a)||1,max=Math.max(...els.map(z=>z.e.p*z.q),1);
-    const rh=els.length>6?0.27:els.length>4?0.34:0.4,y0=3.65,bw=2.6;
-    els.slice(0,8).forEach((z,i)=>{const y=y0+i*rh,v=z.e.p*z.q;
-      R.text(z.q+" × "+z.e.t,0.6,y,3.0,rh,{size:rh<0.3?9.5:11,bold:true,valign:"middle"});
-      R.rect(3.7,y+rh/2-0.06,bw,0.12,{fill:t.p1,radius:0.06});R.rect(3.7,y+rh/2-0.06,Math.max(0.12,bw*v/max),0.12,{fill:t.acc,radius:0.06});
-      R.text(moneyIva(v),6.45,y,2.05,rh,{size:rh<0.3?9.5:11,color:t.mu,align:"right",valign:"middle"});});
-    await R.image(fotoAct(a),9.0,0.62,3.73,3.9);
-    R.rect(9.0,4.52,3.73,0.95,{fill:t.acc});
-    R.text([{text:"Total por domingo",o:{bold:true,size:10.5,br:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:17}}],9.2,4.52,3.4,0.95,{size:12,valign:"middle"});
+    const many=els.length>12,LW=many?9.25:7.9;
+    boton(R,"ACTIVACIÓN "+(sp.i+1),0.6,0.62,{w:1.7});
+    titulo(R,a.nombre||"",0.6,1.1,LW,fitSize(a.nombre,32,[[20,28],[30,23]]));
+    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.6,2.2,LW,0.3,{size:10.5,bold:true,color:t.acc,cs:1});
+    const dt=dinTexto(a);R.text(dt,0.6,2.5,LW,many?0.6:0.85,{size:fitSize(dt,12.5,[[260,11],[360,10]]),color:t.mu});
+    const hy=many?3.12:3.42;
+    R.text("ELEMENTOS · VALOR POR DOMINGO",0.6,hy,LW,0.28,{size:10.5,bold:true,color:t.acc,cs:1});
+    {const n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.15,cw=(LW-gx*(cols-1))/cols,top=hy+0.33,avail=5.55-top,rh=Math.min(0.36,avail/Math.max(rows,1));
+     const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=cols===3?0.42:0.5,vw=cols===3?1.2:1.5;
+     els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,x=0.6+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
+       if(r%2===0)R.rect(x,y,cw,rh,{fill:t.p1});
+       R.rect(x+0.06,y+rh*0.15,qw,rh*0.7,{fill:t.acc,radius:0.05});
+       R.text(String(z.q),x+0.06,y+rh*0.15,qw,rh*0.7,{size:fs,bold:true,align:"center",valign:"middle"});
+       R.text(z.e.t,x+qw+0.14,y,cw-qw-0.24-vw,rh,{size:fs,bold:true,valign:"middle"});
+       R.text(moneyIva(v),x+cw-vw-0.06,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});});}
+    const px=many?10.1:9.0,pw=W-0.6-px,ph=many?3.25:3.9;
+    await R.image(fotoAct(a),px,0.62,pw,ph);
+    R.rect(px,0.62+ph,pw,0.95,{fill:t.acc});
+    R.text([{text:"Total por domingo",o:{bold:true,size:10.5,br:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:many?14:17}}],px+0.2,0.62+ph,pw-0.3,0.95,{size:12,valign:"middle"});
     const ks=kpisAct(a).slice(0,3).map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,l:k.t+" / domingo",v:fmt(k.v)}));
     if(ks.length)await banda(R,5.75,1.75,ks);
     break;}
@@ -854,6 +855,7 @@ function stepCRV(){
   ${card(tog("circ_vina","Circuito CicloRecreoVía Viña del Mar",resumen(CAT.circuitos.vina.datos))+(I.circ_vina?`<div class="lbl">Mapa del circuito</div>`+foto("mapa_vina",stdPhoto("mapa_vina","Mapa del circuito","#0b69b2"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa"):""))}
   ${card(tog("perf_stgo","Perfil asistentes CicloRecreoVía Santiago",resumen(CAT.perfiles.stgo.kpis)))}
   ${card(tog("perf_vina","Perfil asistentes CicloRecreoVía Viña del Mar",resumen(CAT.perfiles.vina.kpis)))}
+  ${card(tog("rrss","Nuestra comunidad digital (RRSS)",CAT.rrss.map(r=>r.red+" "+fmt(r.n)).join(" · ")))}
   </div>`}
 function stepObjetivos(){return `
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en la propuesta.</p>
@@ -872,8 +874,7 @@ function stepComunicacion(){return `
   <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
   <div class="lbl">Nota adicional (opcional)</div>
   <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>
-  <div class="lbl">RRSS de CicloRecreoVía</div>
-  <div class="row ${S.incluir.rrss?"on":""}" onclick="S.incluir.rrss=!S.incluir.rrss;save();render()"><div class="chk"></div><div class="tx"><b>Incluir lámina de RRSS</b><small>${CAT.rrss.map(r=>r.red+" "+fmt(r.n)).join(" · ")}</small></div></div>`}
+`}
 function stepCondiciones(){return `
   <div class="lbl" style="margin-top:0">Condiciones</div>
   <div class="rows">${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}</div>
@@ -901,7 +902,7 @@ function stepRevisar(){
   <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>
   <div class="lbl">Incluir / quitar láminas</div>
-  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("circ_stgo","Circuito Santiago")}${tg("circ_vina","Circuito Viña del Mar")}${tg("perf_stgo","Perfil asistentes Santiago")}${tg("perf_vina","Perfil asistentes Viña del Mar")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
+  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("circ_stgo","Circuito Santiago")}${tg("circ_vina","Circuito Viña del Mar")}${tg("perf_stgo","Perfil asistentes Santiago")}${tg("perf_vina","Perfil asistentes Viña del Mar")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","Nuestra comunidad digital (RRSS)")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
 
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
   el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
@@ -994,7 +995,7 @@ const A={
   async preview(start,onlyAct){
     const all=plan();const hs=await renderHtmlSlides(all);
     const idx=onlyAct?[all.findIndex(p=>p.k==="act"&&p.a.uid===onlyAct)]:all.map((_,i)=>i);
-    if(start===-1){const want=[["portada"],["crv","circ","perf"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],["portada"]][cur]||["portada"];
+    if(start===-1){const want=[["portada"],["crv","circ","perf","rrss"],["objetivos"],["act"],["tarifas"],["comunicacion"],["condiciones","enlaces"],["libre"],["portada"]][cur]||["portada"];
       start=Math.max(0,all.findIndex(p=>want.includes(p.k)))}
     let pos=Math.max(0,Math.min(idx.length-1,start>0?start:0));
     layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa</span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
