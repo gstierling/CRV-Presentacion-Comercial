@@ -360,11 +360,13 @@ function plan(){
    DIBUJO DE LÁMINAS — un solo diseño, dos salidas (HTML y PowerPoint)
    Medidas en pulgadas, lámina 13,333 x 7,5
    ===================================================================== */
-const COL={dark:"0D1117",or:"E87115",bl:"0B69B2",gr:"179741",tx:"111827",mu:"6B7280",card:"F3F4F6",wh:"FFFFFF",line:"E5E7EB",soft:"374151"};
-const ROT=[COL.bl,COL.or,COL.gr];
-/* Tipografía: títulos y cifras redondeadas (como el logo), texto en Century Gothic. Ambas vienen con Office en Windows y Mac */
-const FH="Arial Rounded MT Bold",FB="Century Gothic";
-const CSS_H="'Arial Rounded MT Bold','Nunito',Arial,sans-serif",CSS_B="'Century Gothic','Nunito',Arial,sans-serif";
+const COL={dark:"111827",navy:"0A3D6B",or:"E87115",bl:"0B69B2",gr:"179741",tx:"111827",mu:"6B7280",card:"F3F4F6",wh:"FFFFFF",line:"E5E7EB",soft:"374151",
+  tbl:"EAF2FA",tor:"FDF0E6",tgr:"E8F5EC"};
+const ROT=[COL.bl,COL.or,COL.gr];const TINT={[COL.bl]:COL.tbl,[COL.or]:COL.tor,[COL.gr]:COL.tgr};
+/* Tipografía: títulos y cifras en Arial Black (gruesa, tipo Helvetica Heavy); texto en Arial. Ambas vienen en Windows, Mac y Google Slides */
+const FH="Arial Black",FB="Arial";
+const CSS_H="'Arial Black','Nunito',Arial,sans-serif",CSS_B="Arial,'Nunito',sans-serif";
+const moneyIva=n=>money(n)+" + IVA";
 function runsOf(t){return typeof t==="string"?[{text:t,o:{}}]:t}
 
 /* Ícono → PNG del color pedido (sirve igual para vista previa y PowerPoint) */
@@ -382,15 +384,16 @@ function HtmlR(){
   const px=v=>(v*100).toFixed(1)+"px",pt=v=>(v*100/72).toFixed(1)+"px";
   return {
     out,
-    slide(bg){html=`<div class="s" style="background:#${bg}">`;},
+    slide(bg){html=`<div class="s" style="background:#${bg};overflow:hidden">`;},
     end(){out.push(html+"</div>")},
-    rect(x,y,w,h,o){html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${o.ellipse?"50%":o.radius?px(o.radius):0};${o.line?`border:2px solid #${o.line};`:""}"></div>`},
+    rect(x,y,w,h,o){const rad=o.ellipse?"50%":o.pill?px(Math.min(w,h)/2):o.radius?px(o.radius):0;
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${rad};${o.rot?`transform:rotate(${o.rot}deg);`:""}${o.line?`border:2px solid #${o.line};`:""}"></div>`},
     text(t,x,y,w,h,o){
       const r=runsOf(t).map(r=>{const ro=r.o||{};let s=esc(r.text).replace(/\n/g,"<br>");
-        s=`<span style="${ro.color?`color:#${ro.color};`:""}${ro.size?`font-size:${pt(ro.size)};`:""}${ro.head?`font-family:${CSS_H};font-weight:800;`:""}${ro.link?"text-decoration:underline;":""}">${s}</span>`;
+        s=`<span style="${ro.color?`color:#${ro.color};`:""}${ro.size?`font-size:${pt(ro.size)};`:""}${ro.head?`font-family:${CSS_H};font-weight:900;`:ro.body?`font-family:${CSS_B};font-weight:${ro.bold?700:400};`:ro.bold?"font-weight:700;":""}${ro.link?"text-decoration:underline;":""}">${s}</span>`;
         return s+(ro.br?"<br>":"")}).join("");
       const jv={top:"flex-start",middle:"center",bottom:"flex-end"}[o.valign||"top"];
-      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||COL.tx};font-weight:${o.head?800:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:1.18;overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||COL.tx};font-weight:${o.head?900:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:${o.head?1.05:1.2};overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
     },
     async image(img,x,y,w,h,o){
       html+=`<img src="${img.data}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
@@ -398,7 +401,7 @@ function HtmlR(){
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
-      rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:1px solid #${COL.line};padding:0 ${px(.1)};background:#${c.fill||"FFFFFF"};color:#${c.color||COL.tx};${c.head?`font-family:${CSS_H};font-weight:800;`:`font-weight:${c.bold?700:400};`}text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${esc(c.t).replace(/\n/g,"<br>")}</td>`).join("")+"</tr>").join("")+"</table>";
+      rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:${o.noBorder?"none":`1px solid #${o.border||COL.line}`};border-bottom:1px solid #${o.border||COL.line};padding:0 ${px(.12)};background:#${c.fill||"FFFFFF"};color:#${c.color||COL.tx};${c.head?`font-family:${CSS_H};font-weight:900;`:`font-weight:${c.bold?700:400};`}text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${esc(c.t).replace(/\n/g,"<br>")}</td>`).join("")+"</tr>").join("")+"</table>";
     }
   };
 }
@@ -407,12 +410,14 @@ function PptxR(pptx){
   return {
     slide(bg){s=pptx.addSlide();s.background={color:bg}},
     end(){},
-    rect(x,y,w,h,o){s.addShape(o.ellipse?"ellipse":o.radius?"roundRect":"rect",{x,y,w,h,fill:{color:o.fill,transparency:o.transp||0},line:o.line?{color:o.line,width:1.5}:{type:"none"},rectRadius:o.radius||undefined})},
+    rect(x,y,w,h,o){const shape=o.ellipse?"ellipse":(o.radius||o.pill)?"roundRect":"rect";
+      s.addShape(shape,{x,y,w,h,fill:{color:o.fill,transparency:o.transp||0},line:o.line?{color:o.line,width:1.5}:{type:"none"},rectRadius:o.pill?Math.min(w,h)/2:(o.radius||undefined),rotate:o.rot||undefined})},
     text(t,x,y,w,h,o){
       const runs=runsOf(t).map(r=>{const ro=r.o||{},op={};
-        if(ro.color)op.color=ro.color;if(ro.size)op.fontSize=ro.size;if(ro.br)op.breakLine=true;if(ro.link)op.hyperlink={url:ro.link};if(ro.head){op.fontFace=FH;op.bold=false}
+        if(ro.color)op.color=ro.color;if(ro.size)op.fontSize=ro.size;if(ro.br)op.breakLine=true;if(ro.link)op.hyperlink={url:ro.link};
+        if(ro.head){op.fontFace=FH;op.bold=false}else if(ro.body){op.fontFace=FB;op.bold=!!ro.bold}else if(ro.bold!=null)op.bold=ro.bold;
         return {text:r.text,options:op}});
-      s.addText(runs,{x,y,w,h,margin:0,isTextBox:true,fontFace:o.head?FH:FB,fontSize:o.size||14,color:o.color||COL.tx,bold:o.head?false:!!o.bold,italic:!!o.italic,align:o.align||"left",valign:o.valign||"top",charSpacing:o.cs||undefined,lineSpacingMultiple:1.0,fit:"shrink"});
+      s.addText(runs,{x,y,w,h,margin:0,isTextBox:true,fontFace:o.head?FH:FB,fontSize:o.size||14,color:o.color||COL.tx,bold:o.head?false:!!o.bold,italic:!!o.italic,align:o.align||"left",valign:o.valign||"top",charSpacing:o.cs||undefined,lineSpacingMultiple:o.head?0.95:1.05,fit:"shrink"});
     },
     async image(img,x,y,w,h,o){
       if(o&&o.fit==="contain"){const r=Math.min(w/(img.w||1),h/(img.h||1));const iw=(img.w||1)*r,ih=(img.h||1)*r;
@@ -421,156 +426,190 @@ function PptxR(pptx){
     },
     table(rows,x,y,w,colW,o){
       s.addTable(rows.map(r=>r.map(c=>({text:c.t,options:{fill:{color:c.fill||"FFFFFF"},color:c.color||COL.tx,bold:c.head?false:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:c.head?FH:FB}}))),
-        {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:0.75,color:COL.line},fontFace:FB,fontSize:o.size||12});
+        {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:0.75,color:o.border||COL.line},fontFace:FB,fontSize:o.size||12,margin:[0,0.12,0,0.12]});
     }
   };
 }
 const W=13.333,H=7.5;
 function fitSize(txt,base,steps){const n=(txt||"").length;let s=base;for(const [len,size] of steps) if(n>len) s=size;return s}
-function titulo(R,t){R.text(t,0.6,0.45,12.1,0.9,{size:fitSize(t,32,[[42,27],[58,23]]),head:true,color:COL.tx,valign:"middle"})}
-/* Ícono en círculo de color */
-async function burbuja(R,ic,x,y,d,fill,iconColor){R.rect(x,y,d,d,{fill,ellipse:true});const p=d*0.27;await R.image(await iconPng(ic,iconColor||COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
-async function pie(R,n,tot){await R.image(LOGO_CRV,0.6,6.93,0.62,0.38,{fit:"contain"});R.text("Propuesta para "+(S.prospecto||"—"),1.35,6.98,8,0.3,{size:10,color:COL.mu});R.text(n+" / "+tot,11.7,6.98,1.03,0.3,{size:10,color:COL.mu,align:"right"})}
-async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.18});await R.image(img,x+0.2,y+0.18,w-0.4,h-0.36,{fit:"contain"})}
+/* Motivo gráfico: "píldoras" diagonales como la de FUNDACIÓN del logo */
+function pildoras(R,x,y,s,cols){const c=cols||[COL.or,COL.gr,COL.bl];s=s||1;
+  R.rect(x,y,4.2*s,1.0*s,{fill:c[0],pill:true,rot:-32});
+  R.rect(x+1.1*s,y+1.05*s,3.0*s,0.72*s,{fill:c[1],pill:true,rot:-32});
+  R.rect(x-0.15*s,y+1.6*s,1.7*s,0.5*s,{fill:c[2],pill:true,rot:-32});}
+function etiqueta(R,t,x,y,fill,color){const w=Math.max(1.6,0.12*t.length+0.6);R.rect(x,y,w,0.42,{fill,pill:true});R.text(t,x,y,w,0.42,{size:11,head:true,color:color||COL.wh,align:"center",valign:"middle",cs:1.5});return w}
+function titulo(R,t,o){o=o||{};R.text(t,o.x||0.6,o.y||0.5,o.w||9.6,1.0,{size:fitSize(t,30,[[30,26],[42,22],[58,19]]),head:true,color:o.color||COL.tx,valign:"middle"})}
+async function burbuja(R,ic,x,y,d,fill,iconColor){R.rect(x,y,d,d,{fill,ellipse:true});const p=d*0.25;await R.image(await iconPng(ic,iconColor||COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
+async function pie(R,n,tot,dark){
+  if(dark){R.rect(0.6,6.9,0.86,0.46,{fill:COL.wh,radius:0.08});await R.image(LOGO_CRV,0.66,6.93,0.74,0.4,{fit:"contain"})}
+  else await R.image(LOGO_CRV,0.6,6.92,0.7,0.43,{fit:"contain"});
+  const c=dark==="color"?COL.wh:dark?"9CA3AF":COL.mu;
+  R.text("Propuesta para "+(S.prospecto||"—"),1.6,6.98,7,0.3,{size:10,color:c});R.text(n+" / "+tot,11.7,6.98,1.03,0.3,{size:10,color:c,align:"right",bold:true})}
+async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.2});await R.image(img,x+0.2,y+0.18,w-0.4,h-0.36,{fit:"contain"})}
 
 async function dibujar(R,sp,n,tot){
   const P=S.prospecto||"Prospecto";
   switch(sp.k){
   case "portada":{
     R.slide(COL.dark);
-    await R.image(fotoPortada(),7.2,0,W-7.2,H);
-    await tarjetaLogo(R,LOGO_CRV,0.7,0.7,2.7,1.65);
-    if(S.logo){R.text("×",3.5,0.7,0.6,1.65,{size:34,head:true,color:COL.or,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,4.2,0.7,2.7,1.65)}
-    R.text("PROPUESTA DE AUSPICIO",0.7,3.05,6.2,0.4,{size:14,head:true,color:COL.or,cs:3});
-    R.text([{text:"para ",o:{color:COL.wh,size:28}},{text:P,o:{color:COL.or}}],0.7,3.55,6.3,1.9,{size:fitSize(P,46,[[14,38],[22,30],[32,24]]),head:true});
+    await R.image(fotoPortada(),6.6,0,W-6.6,H);
+    pildoras(R,5.4,5.3,1.25);
+    await tarjetaLogo(R,LOGO_CRV,0.7,0.65,2.7,1.65);
+    if(S.logo){R.text("×",3.45,0.65,0.7,1.65,{size:36,head:true,color:COL.or,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,4.2,0.65,2.7,1.65)}
+    etiqueta(R,"PROPUESTA DE AUSPICIO",0.7,2.95,COL.or);
+    R.text("para",0.7,3.6,5.6,0.55,{size:24,head:true,color:COL.wh});
+    R.text(P,0.7,4.1,5.8,1.6,{size:fitSize(P,50,[[10,42],[16,34],[24,27],[34,22]]),head:true,color:COL.or});
     const v=vendedor();
-    R.text([{text:fechaLarga(S.fecha),o:{br:true}},{text:v.n+" · "+v.c,o:{color:"9CA3AF"}}],0.7,6.2,6.2,0.7,{size:14,color:COL.wh});
+    R.text([{text:fechaLarga(S.fecha),o:{bold:true,br:true}},{text:v.n+" · "+v.c,o:{color:"9CA3AF"}}],0.7,6.35,5.0,0.7,{size:13,color:COL.wh});
     break;}
   case "crv":{
-    R.slide(COL.wh);titulo(R,"Qué es CicloRecreoVía");
-    R.text(CAT.crv.descripcion,0.6,1.7,5.5,4.8,{size:fitSize(CAT.crv.descripcion,17,[[420,15],[600,13]]),color:COL.soft});
-    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=6.65+(i%2)*3.1,y=1.65+Math.floor(i/2)*2.6;const c=ROT[i%3];
-      R.rect(x,y,2.95,2.4,{fill:COL.card,radius:0.18});
-      await burbuja(R,st.ic||"sparkles",x+0.25,y+0.25,0.7,c);
-      R.text(st.n,x+0.25,y+1.0,2.5,0.75,{size:32,head:true,color:c,valign:"middle"});
-      R.text(st.l,x+0.25,y+1.75,2.5,0.55,{size:13,color:COL.soft});}
-    await pie(R,n,tot);break;}
+    R.slide(COL.wh);
+    R.rect(0,0,5.4,H,{fill:COL.bl});
+    pildoras(R,2.9,6.5,0.75,[COL.or,COL.gr,COL.wh]);
+    etiqueta(R,"QUIÉNES SOMOS",0.6,0.7,COL.or);
+    R.text("Qué es CicloRecreoVía",0.6,1.25,4.5,1.6,{size:30,head:true,color:COL.wh});
+    R.text(CAT.crv.descripcion,0.6,3.0,4.4,3.0,{size:fitSize(CAT.crv.descripcion,14,[[440,12.5],[600,11]]),color:"E6F0FA"});
+    const tc=[COL.or,COL.gr,COL.navy,COL.dark];
+    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=5.95+(i%2)*3.55,y=0.7+Math.floor(i/2)*3.0;const c=tc[i];
+      R.rect(x,y,3.35,2.8,{fill:c,radius:0.25});
+      await burbuja(R,st.ic||"sparkles",x+0.3,y+0.3,0.75,COL.wh,c);
+      R.text(st.n,x+0.3,y+1.15,2.9,0.85,{size:fitSize(st.n,36,[[6,32]]),head:true,color:COL.wh,valign:"middle"});
+      R.text(st.l,x+0.3,y+2.0,2.9,0.6,{size:14,bold:true,color:COL.wh});}
+    await pie(R,n,tot,"color");break;}
   case "objetivos":{
-    R.slide(COL.wh);titulo(R,"Objetivos de "+P);
+    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
+    etiqueta(R,"LO QUE BUSCA "+P.toUpperCase().slice(0,22),0.6,0.45,COL.or);titulo(R,"Objetivos de "+P,{y:0.9});
     const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
-    const cols=c<=3?c:c===4?2:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),gap=0.3;
-    const cw=(W-1.2-gap*(cols-1))/cols,ch=Math.min(2.6,(5.3-gap*(rows-1))/rows);
-    const big=cols<=3,d=big?0.75:0.62;
-    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=1.65+Math.floor(i/cols)*(ch+gap);
-      R.rect(x,y,cw,ch,{fill:COL.card,radius:0.18});
-      await burbuja(R,o.ic||"target",x+0.25,y+0.25,d,ROT[i%3]);
-      R.text(o.t,x+0.25,y+d+0.4,cw-0.5,0.5,{size:big?19:cols>=5?14:16,head:true,color:COL.tx});
-      R.text(o.d,x+0.25,y+d+0.9,cw-0.5,ch-d-1.0,{size:big?14:cols>=5?10.5:12,color:"4B5563"});}
+    const cols=c<=3?c:c===4?2:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),gap=0.25;
+    const cw=(W-1.2-gap*(cols-1))/cols,ch=Math.min(2.55,(4.85-gap*(rows-1))/rows);
+    const big=cols<=3,d=big?0.8:0.62;
+    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=2.0+Math.floor(i/cols)*(ch+gap);const col=ROT[i%3];
+      R.rect(x,y,cw,ch,{fill:col,radius:0.25});
+      await burbuja(R,o.ic||"target",x+0.25,y+0.25,d,COL.wh,col);
+      R.text(o.t,x+0.25,y+d+0.4,cw-0.5,0.55,{size:big?20:cols>=5?13:15,head:true,color:COL.wh});
+      R.text(o.d,x+0.25,y+d+0.95,cw-0.5,ch-d-1.05,{size:big?14:cols>=5?10.5:12,color:COL.wh});}
     await pie(R,n,tot);break;}
   case "act":{
-    const a=sp.a,t="Activación "+(sp.i+1)+": "+(a.nombre||"");
-    R.slide(COL.wh);titulo(R,t);
-    await R.image(fotoAct(a),0.6,1.55,5.5,5.25);
+    const a=sp.a,col=ROT[sp.i%3];
+    R.slide(COL.wh);
+    await R.image(fotoAct(a),0,0,6.1,H);
+    etiqueta(R,"ACTIVACIÓN "+(sp.i+1),0.5,0.5,col);
     const ks=kpisAct(a).slice(0,3);
-    if(ks.length){R.rect(0.6,5.3,5.5,1.5,{fill:COL.dark,transp:12});
-      const kw=5.5/ks.length;for(let i=0;i<ks.length;i++){const k=ks[i],kx=0.6+i*kw;const ki=byId(CAT.kpis,k.id)||{};
-        await R.image(await iconPng(ki.ic||"sparkles",COL.or),kx+kw/2-0.17,5.4,0.34,0.34,{fit:"contain"});
-        R.text(fmt(k.v),kx+0.1,5.75,kw-0.2,0.5,{size:ks.length>2?21:25,head:true,color:COL.wh,align:"center",valign:"middle"});
-        R.text(k.t+" por domingo",kx+0.1,6.25,kw-0.2,0.5,{size:10,color:"D1D5DB",align:"center"})}}
-    const x=6.5,w=W-0.6-x;
-    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),x,1.55,w,0.35,{size:12,head:true,color:COL.or,cs:1});
-    const dt=dinTexto(a);R.text(dt,x,1.95,w,1.75,{size:fitSize(dt,14,[[240,12.5],[360,11]]),color:COL.soft});
-    R.text("ELEMENTOS Y VALOR POR DOMINGO",x,3.85,w,0.35,{size:12,head:true,color:COL.or,cs:1});
+    if(ks.length){const kw=(6.1-0.5*2-0.2*(ks.length-1))/ks.length;
+      for(let i=0;i<ks.length;i++){const k=ks[i],kx=0.5+i*(kw+0.2);const ki=byId(CAT.kpis,k.id)||{};const kc=ROT[(sp.i+i)%3];
+        R.rect(kx,4.85,kw,1.75,{fill:kc,radius:0.22});
+        await R.image(await iconPng(ki.ic||"sparkles",COL.wh),kx+0.2,5.02,0.38,0.38,{fit:"contain"});
+        R.text(fmt(k.v),kx+0.2,5.45,kw-0.4,0.55,{size:ks.length>2?20:24,head:true,color:COL.wh,valign:"middle"});
+        R.text(k.t+" por domingo",kx+0.2,6.02,kw-0.4,0.5,{size:9.5,bold:true,color:COL.wh})}}
+    const x=6.65,w=W-0.55-x;
+    pildoras(R,11.7,-0.75,0.6);
+    R.text(a.nombre||"",x,0.45,w-1.4,1.0,{size:fitSize(a.nombre,28,[[22,24],[32,20]]),head:true,color:COL.tx,valign:"middle"});
+    R.rect(x,1.6,w,1.95,{fill:TINT[col],radius:0.2});
+    await burbuja(R,"sparkles",x+0.25,1.8,0.55,col);
+    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),x+0.95,1.8,w-1.2,0.55,{size:11.5,head:true,color:col,valign:"middle"});
+    const dt=dinTexto(a);R.text(dt,x+0.3,2.45,w-0.6,1.05,{size:fitSize(dt,13,[[230,11.5],[330,10]]),color:COL.soft});
+    R.text("ELEMENTOS Y VALOR POR DOMINGO",x,3.75,w,0.35,{size:11.5,head:true,color:COL.tx});
     const els=Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e);
-    const many=els.length>7,rowH=many?0.235:0.28,fs=many?9.5:11;
-    const rows=els.map(z=>[{t:String(z.q),align:"center",head:true,color:COL.bl},{t:z.e.t},{t:money(z.e.p*z.q),align:"right"}]);
-    if(rows.length)R.table(rows,x,4.25,w,[0.8,w-2.7,1.9],{rowH,size:fs});
-    R.rect(x,6.3,w,0.5,{fill:COL.or,radius:0.08});
-    R.text([{text:"Total por domingo   ",o:{}},{text:money(subDomingo(a)),o:{head:true,size:16}}],x+0.2,6.3,w-0.4,0.5,{size:14,color:COL.wh,valign:"middle",align:"right"});
-    await pie(R,n,tot);break;}
+    const many=els.length>6,rowH=many?0.24:0.29,fs=many?9.5:11;
+    const rows=els.map(z=>[{t:String(z.q),align:"center",head:true,color:col},{t:z.e.t},{t:moneyIva(z.e.p*z.q),align:"right"}]);
+    if(rows.length)R.table(rows,x,4.15,w,[0.65,w-2.75,2.1],{rowH,size:fs});
+    R.rect(x,6.25,w,0.6,{fill:COL.or,pill:true});
+    R.text([{text:"Total por domingo  ",o:{bold:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],x+0.3,6.25,w-0.6,0.6,{size:13,color:COL.wh,valign:"middle",align:"right"});
+    await pie(R,n,tot,"color");break;}
   case "numeros":{
-    R.slide(COL.wh);titulo(R,"Lo que lograremos cada domingo");
-    const ks=kpisTotales();const c=ks.length,cols=c<=4?c:Math.ceil(c/2),rows=c<=4?1:2,gap=0.3;
-    const cw=(W-1.2-gap*(cols-1))/cols,ch=rows===1?3.7:2.45;const y0=rows===1?1.9:1.65;
+    R.slide(COL.dark);pildoras(R,10.6,-0.55,0.95);
+    etiqueta(R,"IMPACTO ESTIMADO",0.6,0.45,COL.gr);titulo(R,"Lo que lograremos cada domingo",{y:0.9,color:COL.wh});
+    const ks=kpisTotales();const c=ks.length,cols=c<=4?c:Math.ceil(c/2),rows=c<=4?1:2,gap=0.25;
+    const cw=(W-1.2-gap*(cols-1))/cols,ch=rows===1?4.0:2.25;const y0=2.15;
     const pl=periodosSel().slice(-1)[0];
-    for(let i=0;i<c;i++){const k=ks[i];const x=0.6+(i%cols)*(cw+gap),y=y0+Math.floor(i/cols)*(ch+gap);const col=ROT[i%3];const d=rows===1?0.9:0.62;
-      R.rect(x,y,cw,ch,{fill:COL.card,radius:0.18});
-      await burbuja(R,(byId(CAT.kpis,k.id)||{}).ic||"sparkles",x+cw/2-d/2,y+0.25,d,col);
-      R.text(fmt(k.v),x+0.2,y+d+0.35,cw-0.4,rows===1?0.9:0.6,{size:rows===1?(cols>=4?34:40):28,head:true,color:col,align:"center",valign:"middle"});
-      R.text(k.t,x+0.2,y+d+(rows===1?1.3:0.95),cw-0.4,0.5,{size:rows===1?15:13,bold:true,color:COL.tx,align:"center"});
-      if(pl&&pl.dom>1)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.2,y+ch-0.5,cw-0.4,0.35,{size:11.5,color:COL.mu,align:"center"});}
-    R.text("Estimaciones por jornada según los elementos de cada activación.",0.6,6.5,12,0.35,{size:11,italic:true,color:COL.mu});
-    await pie(R,n,tot);break;}
+    for(let i=0;i<c;i++){const k=ks[i];const x=0.6+(i%cols)*(cw+gap),y=y0+Math.floor(i/cols)*(ch+gap);const col=ROT[i%3];const d=rows===1?0.95:0.6;
+      R.rect(x,y,cw,ch,{fill:col,radius:0.25});
+      await burbuja(R,(byId(CAT.kpis,k.id)||{}).ic||"sparkles",x+0.3,y+0.3,d,COL.wh,col);
+      const big=rows===1?(cols>=4?34:42):26;
+      R.text(fmt(k.v),x+0.3,y+d+(rows===1?0.5:0.3),cw-0.6,rows===1?1.0:0.6,{size:big,head:true,color:COL.wh,valign:"middle"});
+      R.text(k.t,x+0.3,y+d+(rows===1?1.55:0.95),cw-0.6,0.5,{size:rows===1?15:12,bold:true,color:COL.wh});
+      if(pl&&pl.dom>1)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.3,y+ch-(rows===1?0.6:0.4),cw-0.6,0.35,{size:rows===1?12:10,color:COL.wh});}
+    await pie(R,n,tot,true);break;}
   case "tarifas":{
-    R.slide(COL.wh);titulo(R,"Inversión");
+    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
+    etiqueta(R,"INVERSIÓN",0.6,0.45,COL.bl);titulo(R,"Valores por período",{y:0.9});
     const ps=periodosSel(),acts=S.activaciones;
-    const head=[{t:"Activación",fill:COL.dark,color:COL.wh,head:true}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · "+p.desc+"% dcto.":""),fill:COL.dark,color:COL.wh,head:true,align:"center",size:11})));
-    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true}].concat(ps.map(p=>({t:money(precioPeriodo(a,p)),align:"center",size:14}))));
-    const totRow=[{t:"Total",fill:COL.or,color:COL.wh,head:true}].concat(ps.map(p=>({t:money(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:COL.or,color:COL.wh,head:true,align:"center",size:15})));
-    const first=3.4,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.62:0.72;
-    R.table([head,...body,totRow],0.6,1.7,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13});
-    await R.image(await iconPng("banknote",COL.mu),0.6,6.47,0.3,0.3,{fit:"contain"});
-    R.text("Valores en pesos chilenos, netos (no incluyen IVA). Los descuentos por período ya están aplicados.",1.0,6.5,11.7,0.35,{size:11,italic:true,color:COL.mu});
+    const head=[{t:"Activación",fill:COL.bl,color:COL.wh,head:true,size:12}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · "+p.desc+"% dcto.":""),fill:COL.bl,color:COL.wh,head:true,align:"center",size:10.5})));
+    const many=ps.length>=5;
+    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?COL.wh:COL.tbl}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?12:13.5,fill:i%2?COL.wh:COL.tbl}))));
+    const totRow=[{t:"TOTAL",fill:COL.or,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:COL.or,color:COL.wh,head:true,align:"center",size:many?11.5:13})));
+    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.78;
+    R.table([head,...body,totRow],0.6,2.15,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:COL.wh});
     await pie(R,n,tot);break;}
   case "comunicacion":{
-    R.slide(COL.wh);titulo(R,"Plan comunicacional");
-    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const two=it.length>4;const rh=it.length>8?0.95:1.08;
-    for(let i=0;i<it.length;i++){const c=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*6.2,y=1.6+row*rh;
-      await burbuja(R,c.ic||"megaphone",x,y+0.04,0.72,ROT[i%3]);
-      R.text(c.t,x+0.95,y+0.02,5.1,0.42,{size:16,head:true,color:COL.tx});
-      R.text(c.d,x+0.95,y+0.44,5.1,0.42,{size:12,color:COL.mu});}
-    if(S.comNota)R.text(S.comNota,0.6,6.3,12.1,0.6,{size:13,italic:true,color:COL.soft});
-    await pie(R,n,tot);break;}
+    R.slide(COL.wh);
+    R.rect(0,0,4.6,H,{fill:COL.gr});pildoras(R,2.9,6.75,0.65,[COL.or,COL.bl,COL.wh]);
+    etiqueta(R,"DIFUSIÓN",0.6,0.7,COL.or);
+    R.text("Plan comunicacional",0.6,1.25,3.7,1.7,{size:30,head:true,color:COL.wh});
+    R.text("Así amplificamos la presencia de "+P+" antes, durante y después de cada domingo.",0.6,3.1,3.6,1.6,{size:14,color:"E8F5EC"});
+    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const two=it.length>4;const rh=two?(it.length>8?1.15:1.35):1.4;
+    const cw=two?4.05:8.0;
+    for(let i=0;i<it.length;i++){const c=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=5.1+col*(cw+0.2),y=0.75+row*rh;const cc=ROT[i%3];
+      R.rect(x,y,cw,rh-0.2,{fill:TINT[cc],radius:0.2});
+      await burbuja(R,c.ic||"megaphone",x+0.2,y+(rh-0.2)/2-0.35,0.7,cc);
+      R.text(c.t,x+1.1,y+0.15,cw-1.25,0.5,{size:13.5,head:true,color:COL.tx,valign:"middle"});
+      R.text(c.d,x+1.1,y+0.62,cw-1.25,rh-0.9,{size:11,color:COL.soft});}
+    if(S.comNota)R.text(S.comNota,0.6,5.0,3.6,1.2,{size:12,italic:true,color:COL.wh});
+    await pie(R,n,tot,"color");break;}
   case "rrss":{
-    R.slide(COL.dark);
-    R.text("Nuestra comunidad digital",0.6,0.45,12.1,0.9,{size:32,head:true,color:COL.wh,valign:"middle"});
-    const r=CAT.rrss,c=r.length,gap=0.3,cw=(W-1.2-gap*(c-1))/c;
-    for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const col=ROT[i%3];
-      R.rect(x,1.85,cw,3.95,{fill:"1F2630",radius:0.2});
-      await burbuja(R,x0.ic||"globe",x+0.3,2.15,0.8,col);
-      R.text(x0.red,x+0.3,3.1,cw-0.6,0.45,{size:18,head:true,color:COL.wh});
-      R.text(x0.user,x+0.3,3.55,cw-0.6,0.4,{size:12,color:"9CA3AF"});
-      R.text(fmt(x0.n),x+0.3,4.05,cw-0.6,0.9,{size:c>4?30:36,head:true,color:COL.wh,valign:"middle"});
-      R.text(x0.u||"seguidores",x+0.3,4.95,cw-0.6,0.45,{size:14,color:COL.or,bold:true});}
-    R.text("Cifras de referencia, actualizadas mensualmente.",0.6,6.4,12,0.4,{size:11,italic:true,color:"9CA3AF"});
-    break;}
+    R.slide(COL.bl);pildoras(R,10.6,-0.55,0.95,[COL.or,COL.gr,COL.wh]);
+    etiqueta(R,"COMUNIDAD DIGITAL",0.6,0.45,COL.or);titulo(R,"Nuestra comunidad en redes",{y:0.9,color:COL.wh});
+    const r=CAT.rrss,c=r.length,gap=0.25,cw=(W-1.2-gap*(c-1))/c;
+    for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const col=ROT[(i+1)%3];
+      R.rect(x,2.25,cw,4.2,{fill:COL.wh,radius:0.25});
+      await burbuja(R,x0.ic||"globe",x+0.3,2.55,0.9,col);
+      R.text(x0.red,x+0.3,3.65,cw-0.6,0.45,{size:17,head:true,color:COL.tx});
+      R.text(x0.user,x+0.3,4.1,cw-0.6,0.4,{size:12,color:COL.mu});
+      R.text(fmt(x0.n),x+0.3,4.6,cw-0.6,0.9,{size:c>4?28:34,head:true,color:col,valign:"middle"});
+      R.text(x0.u||"seguidores",x+0.3,5.55,cw-0.6,0.45,{size:13,bold:true,color:COL.soft});}
+    await pie(R,n,tot,true);break;}
   case "condiciones":{
-    R.slide(COL.wh);titulo(R,"Condiciones del auspicio");
+    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
+    etiqueta(R,"LETRA CHICA, EN GRANDE",0.6,0.45,COL.gr);titulo(R,"Condiciones del auspicio",{y:0.9});
     const it=S.condiciones.map(id=>byId(CAT.condiciones,id)).filter(Boolean).map(c=>({t:c.t,ic:c.ic}));if(S.condExtra)it.push({t:S.condExtra,ic:"sparkles"});
-    const two=it.length>5,rh=two?1.2:0.98;
-    for(let i=0;i<it.length;i++){const z=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*6.2,y=1.65+row*rh,w=two?5.1:11.1;
-      await burbuja(R,z.ic||"badge",x,y,0.62,ROT[i%3]);
-      const sh=z.t.length<=(two?55:110);R.text(z.t,x+0.85,sh?y:y+0.02,w,sh?0.62:rh-0.15,{size:z.t.length>110?12:14,color:COL.soft,valign:sh?"middle":"top"});}
+    const two=it.length>4,gap=0.25,cw=two?(W-1.2-gap)/2:W-1.2,rows=two?Math.ceil(it.length/2):it.length,rh=Math.min(1.25,(4.75-gap*(rows-1))/rows);
+    for(let i=0;i<it.length;i++){const z=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*(cw+gap),y=2.05+row*(rh+gap);const cc=ROT[i%3];
+      R.rect(x,y,cw,rh,{fill:TINT[cc],radius:0.2});
+      await burbuja(R,z.ic||"badge",x+0.2,y+rh/2-0.33,0.66,cc);
+      R.text(z.t,x+1.05,y+0.1,cw-1.25,rh-0.2,{size:z.t.length>110?11.5:13,bold:true,color:COL.tx,valign:"middle"});}
     await pie(R,n,tot);break;}
   case "enlaces":{
-    R.slide(COL.wh);titulo(R,"Fotos y videos");
-    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const cols=it.length<=2?it.length:2,gap=0.3,cw=(W-1.2-gap*(cols-1))/cols;
-    for(let i=0;i<it.length;i++){const l=it[i];const x=0.6+(i%cols)*(cw+gap),y=1.7+Math.floor(i/cols)*2.2;
-      R.rect(x,y,cw,1.9,{fill:COL.card,radius:0.18});
-      await burbuja(R,l.ic||"link",x+0.3,y+0.5,0.9,ROT[i%3]);
-      R.text(l.t,x+1.45,y+0.45,cw-1.7,0.5,{size:19,head:true,color:COL.tx});
-      R.text([{text:l.url,o:{link:l.url,color:COL.bl}}],x+1.45,y+0.98,cw-1.7,0.45,{size:13});}
-    await pie(R,n,tot);break;}
+    R.slide(COL.dark);pildoras(R,10.6,-0.55,0.95);
+    etiqueta(R,"MIRA CÓMO SE VIVE",0.6,0.45,COL.or);titulo(R,"Fotos y videos",{y:0.9,color:COL.wh});
+    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const cols=it.length<=2?it.length:2,gap=0.25,cw=(W-1.2-gap*(cols-1))/cols;
+    for(let i=0;i<it.length;i++){const l=it[i];const x=0.6+(i%cols)*(cw+gap),y=2.15+Math.floor(i/cols)*2.2;const cc=ROT[i%3];
+      R.rect(x,y,cw,1.95,{fill:cc,radius:0.25});
+      await burbuja(R,l.ic||"link",x+0.3,y+0.5,0.95,COL.wh,cc);
+      R.text(l.t,x+1.5,y+0.45,cw-1.8,0.55,{size:18,head:true,color:COL.wh,valign:"middle"});
+      R.text([{text:l.url,o:{link:l.url,color:COL.wh}}],x+1.5,y+1.05,cw-1.8,0.45,{size:13});}
+    await pie(R,n,tot,true);break;}
   case "libre":{
-    const l=sp.l;R.slide(COL.wh);titulo(R,l.titulo||"");
+    const l=sp.l;R.slide(COL.wh);
     const tx=l.texto||"";
-    if(l.foto){R.text(tx,0.6,1.65,5.9,5.1,{size:fitSize(tx,17,[[350,15],[600,13],[900,11.5]]),color:COL.soft});await R.image(l.foto,6.9,1.65,5.83,5.1)}
-    else R.text(tx,0.6,1.65,12.1,5.1,{size:fitSize(tx,19,[[500,17],[900,15],[1400,13]]),color:COL.soft});
+    if(l.foto){await R.image(l.foto,7.2,0,W-7.2,H);pildoras(R,6.0,5.6,1.0);
+      titulo(R,l.titulo||"",{w:6.3});R.text(tx,0.6,1.8,6.2,4.8,{size:fitSize(tx,16,[[350,14],[600,12.5],[900,11]]),color:COL.soft})}
+    else{pildoras(R,10.6,-0.55,0.95);titulo(R,l.titulo||"");R.text(tx,0.6,1.8,12.1,4.8,{size:fitSize(tx,18,[[500,16],[900,14],[1400,12.5]]),color:COL.soft})}
     await pie(R,n,tot);break;}
   case "cierre":{
     R.slide(COL.dark);const v=vendedor();
-    await R.image(fotoCierre(),7.6,0,W-7.6,H);
+    await R.image(fotoCierre(),7.4,0,W-7.4,H);
+    pildoras(R,6.2,5.4,1.25,[COL.gr,COL.or,COL.bl]);
     await tarjetaLogo(R,LOGO_CRV,0.7,0.6,2.4,1.47);
-    R.text("¡Gracias!",0.7,2.3,6.6,0.95,{size:50,head:true,color:COL.wh});
-    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",0.7,3.25,6.4,0.9,{size:18,head:true,color:COL.or});
-    R.rect(0.7,4.35,6.4,2.15,{fill:"1F2630",radius:0.2});
-    R.text(v.n,1.0,4.55,5.8,0.5,{size:21,head:true,color:COL.wh});
-    R.text(v.c,1.0,5.02,5.8,0.4,{size:13,color:"9CA3AF"});
-    await R.image(await iconPng("mail",COL.or),1.0,5.55,0.3,0.3,{fit:"contain"});
-    R.text(v.m,1.42,5.52,5.4,0.36,{size:15,color:COL.wh,valign:"middle"});
-    await R.image(await iconPng("smartphone",COL.or),1.0,5.98,0.3,0.3,{fit:"contain"});
-    R.text(v.t,1.42,5.95,5.4,0.36,{size:15,color:COL.wh,valign:"middle"});
-    R.text("ciclorecreovia.cl",0.7,6.75,6,0.4,{size:14,head:true,color:COL.or});
+    R.text("¡Gracias!",0.7,2.25,6.4,1.1,{size:56,head:true,color:COL.wh,valign:"middle"});
+    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",0.7,3.35,6.0,0.9,{size:17,head:true,color:COL.or});
+    R.rect(0.7,4.45,5.9,2.05,{fill:COL.bl,radius:0.25});
+    R.text(v.n,1.0,4.65,5.4,0.5,{size:19,head:true,color:COL.wh});
+    R.text(v.c,1.0,5.12,5.4,0.4,{size:13,color:"D6E6F5"});
+    await R.image(await iconPng("mail",COL.wh),1.0,5.62,0.3,0.3,{fit:"contain"});
+    R.text(v.m,1.42,5.59,5.0,0.36,{size:14,bold:true,color:COL.wh,valign:"middle"});
+    await R.image(await iconPng("smartphone",COL.wh),1.0,6.03,0.3,0.3,{fit:"contain"});
+    R.text(v.t,1.42,6.0,5.0,0.36,{size:14,bold:true,color:COL.wh,valign:"middle"});
+    R.text("ciclorecreovia.cl",0.7,6.8,6,0.4,{size:14,head:true,color:COL.or});
     break;}
   }
   R.end();
@@ -652,13 +691,13 @@ function stepObjetivos(){return `
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
 function stepActivaciones(){return `
   <p class="hint">Agrega de 1 a 4 activaciones. Toca una para editar sus elementos, dinámica, foto y números.</p>
-  ${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">por domingo</span></div></div></div>`).join("")}
+  ${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">+ IVA por domingo</span></div></div></div>`).join("")}
   <button class="addbtn" ${S.activaciones.length>=4?"disabled":""} onclick="A.nuevaAct()">＋ Agregar activación</button>`}
 function stepTarifas(){
   const ps=periodosSel();return `
   <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
   ${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}
-  ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))}</span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`}
+  ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`}
 function stepComunicacion(){return `
   <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
   ${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}
@@ -717,7 +756,7 @@ function editorAct(a){
   ${a.din==="otra"?`<textarea class="field" placeholder="Describe cómo interactúan las personas con la activación…" oninput="A.setA('${a.uid}','dinTexto',this.value)">${esc(a.dinTexto||"")}</textarea>`:""}
   <div class="lbl">Elementos (valor por domingo)</div>
   ${CAT.elementos.map(e=>{const q=a.elementos[e.id]||0;return `<div class="el ${q?"on":""}"><div class="tx"><b>${esc(e.t)}</b><small>${money(e.p)} c/u${q?" · "+money(e.p*q):""}</small></div><div class="stp"><button onclick="A.qty('${a.uid}','${e.id}',-1)">−</button><div class="q" onclick="A.qtyKp('${a.uid}','${e.id}')">${q}</div><button onclick="A.qty('${a.uid}','${e.id}',1)">＋</button></div></div>`}).join("")}
-  <div class="total"><b>Total por domingo</b><span>${money(subDomingo(a))}</span></div>
+  <div class="total"><b>Total por domingo</b><span>${money(subDomingo(a))} <small style="font-size:14px">+ IVA</small></span></div>
   <div class="lbl">Números por domingo</div>
   <p class="hint">Se calculan solos según los elementos y objetivos. Toca un número para fijarlo a mano.</p>
   ${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}
