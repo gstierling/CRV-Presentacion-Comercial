@@ -283,9 +283,9 @@ const CAT = {
     {id:"c8",t:"Reporte de resultados",d:"Informe con fotos y cifras al cierre",ic:"chart"}
   ],
   circuitos:{
-    stgo:{t:"Circuito CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de varias comunas de Santiago para caminar, pedalear, patinar y compartir, conectando parques, plazas y barrios.",
+    stgo:{t:"CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de varias comunas de Santiago para caminar, pedalear, patinar y compartir, conectando parques, plazas y barrios.",
       datos:[{ic:"route",n:"26 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"35.000",l:"asistentes por domingo"}]},
-    vina:{t:"Circuito CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al borde costero, con un público familiar, deportivo y turístico.",
+    vina:{t:"CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al borde costero, con un público familiar, deportivo y turístico.",
       datos:[{ic:"route",n:"3 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 13 h",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
   },
   perfiles:{
@@ -478,6 +478,7 @@ const COL={wh:"FFFFFF",dark:"111827"};
 const FH="Arial Black",FB="Arial";
 const CSS_H="'Arial Black','Nunito',Arial,sans-serif",CSS_B="Arial,'Nunito',sans-serif";
 const moneyIva=n=>money(n)+" + IVA";
+const DONA=["E87115","2FB45A","3B9BE6","F2C94C","C084FC","F472B6"];
 function runsOf(t){return typeof t==="string"?[{text:t,o:{}}]:t}
 
 const ICP={};
@@ -508,6 +509,15 @@ function HtmlR(){
     async image(img,x,y,w,h,o){
       html+=`<img src="${objUrl(img.data)}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
     },
+    donut(items,x,y,w,h,cols){const tot=items.reduce((s,z)=>s+z[1],0)||1;let acc=0;
+      const grad=items.map((z,i)=>{const a0=acc/tot*360;acc+=z[1];return `#${cols[i%cols.length]} ${a0}deg ${acc/tot*360}deg`}).join(",");
+      const d=Math.min(h,w*0.48);
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y+(h-d)/2)};width:${px(d)};height:${px(d)};border-radius:50%;background:conic-gradient(${grad});-webkit-mask:radial-gradient(circle,transparent 52%,#000 53%);mask:radial-gradient(circle,transparent 52%,#000 53%)"></div>`;
+      const lx=x+d+0.25,lw=w-d-0.3,rh=Math.min(0.42,h/items.length);
+      items.forEach((z,i)=>{const yy=y+(h-rh*items.length)/2+i*rh;
+        html+=`<div style="position:absolute;left:${px(lx)};top:${px(yy+rh/2-0.07)};width:${px(.14)};height:${px(.14)};border-radius:3px;background:#${cols[i%cols.length]}"></div>`;
+        this.text(z[0],lx+0.22,yy,lw-0.8,rh,{size:10.5,bold:true,valign:"middle"});
+        this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.6,yy,0.6,rh,{size:11,head:true,align:"right",valign:"middle"});});},
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
@@ -534,6 +544,11 @@ function PptxR(pptx){
         s.addImage({data:img.data,x:x+(w-iw)/2,y:y+(h-ih)/2,w:iw,h:ih});}
       else s.addImage({data:await cropCover(img,w,h),x,y,w,h});
     },
+    donut(items,x,y,w,h,cols){const t=T();
+      s.addChart(pptx.ChartType.doughnut,[{name:"Distribución",labels:items.map(z=>z[0]),values:items.map(z=>z[1])}],
+        {x,y,w,h,holeSize:52,chartColors:cols.slice(0,items.length),showLegend:true,legendPos:"r",legendFontFace:FB,legendFontSize:10.5,legendColor:t.tx,
+         showPercent:true,showValue:false,showLabel:false,showTitle:false,dataLabelColor:"FFFFFF",dataLabelFontSize:10,dataLabelFontFace:FB,dataLabelFontBold:true,
+         dataBorder:{pt:1.5,color:t.p1}});},
     table(rows,x,y,w,colW,o){
       s.addTable(rows.map(r=>r.map(c=>({text:c.t,options:{fill:{color:c.fill},color:c.color||T().tx,bold:c.head?false:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:c.head?FH:FB}}))),
         {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:2,color:o.border},fontFace:FB,fontSize:o.size||12,margin:[0,0.14,0,0.14]});
@@ -597,8 +612,9 @@ async function dibujar(R,sp,n,tot){
     break;}
   case "circ":{
     const c=CAT.circuitos[sp.city];R.slide(t.bg);cabecera(R,n,tot);
-    R.text(c.t,0.6,0.6,6.1,1.45,{size:fitSize(c.t,32,[[33,28]]),head:true,valign:"middle"});
-    R.text(c.d,0.6,2.15,6.0,1.1,{size:14,bold:true,color:t.mu});
+    boton(R,"CIRCUITO",0.6,0.62,{w:1.4});
+    R.text(c.t,0.6,1.05,6.1,1.1,{size:fitSize(c.t,32,[[26,28]]),head:true,valign:"middle"});
+    R.text(c.d,0.6,2.2,6.0,1.1,{size:14,bold:true,color:t.mu});
     for(let i=0;i<Math.min(4,c.datos.length);i++)await tarjetaDato(R,c.datos[i],0.6+(i%2)*3.07,3.4+Math.floor(i/2)*1.8,2.95,1.62,i===0);
     const m=S.imgs["mapa_"+sp.city];
     R.rect(6.95,0.62,5.78,6.26,{fill:t.p1,radius:0.08});
@@ -617,11 +633,7 @@ async function dibujar(R,sp,n,tot){
     pf.grupos.slice(0,2).forEach((g,gi)=>{const x=gx+gi*(gw+0.22),y=2.2;
       R.rect(x,y,gw,3.55,{fill:t.p1,radius:0.08});
       R.text(g.t,x+0.3,y+0.22,gw-0.6,0.4,{size:14,head:true});
-      const mx=Math.max(...g.items.map(z=>z[1]),1),rh=Math.min(0.55,2.65/g.items.length);
-      g.items.forEach((z,i)=>{const yy=y+0.8+i*rh;
-        R.text(z[0],x+0.3,yy,1.55,rh,{size:10.5,bold:true,valign:"middle"});
-        const bx=x+1.9,bw=gw-1.9-0.95;R.rect(bx,yy+rh/2-0.08,bw,0.16,{fill:t.p2,radius:0.08});R.rect(bx,yy+rh/2-0.08,Math.max(0.16,bw*z[1]/mx),0.16,{fill:t.acc,radius:0.08});
-        R.text(z[1]+"%",x+gw-0.85,yy,0.6,rh,{size:11,head:true,align:"right",valign:"middle"});});});
+      R.donut(g.items,x+0.15,y+0.7,gw-0.3,2.75,DONA);});
     const y=5.95,gwT=W-0.6-gx;R.rect(gx,y,gwT,0.9,{fill:t.p1,radius:0.08});
     R.text("Género",gx+0.3,y,1.2,0.9,{size:13,head:true,valign:"middle"});
     const g0=pf.genero[0],g1=pf.genero[1],bx=gx+1.6,bw=gwT-1.9,w0=bw*g0[1]/(g0[1]+g1[1]);
