@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>Generador de Propuestas · CicloRecreoVía</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1f2630;--line:#2d3640;--txt:#e6edf3;--mut:#8b949e;--or:#f97316;--te:#00d4aa;--red:#f85149}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Nunito,system-ui,sans-serif;font-size:17px}
+body{min-height:100dvh;display:flex;flex-direction:column}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit;font-size:17px}
+/* Header */
+header{position:sticky;top:0;z-index:20;background:var(--bg);padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.brand b{font-weight:900;font-size:15px;color:var(--mut);letter-spacing:.5px}
+.brand b span{color:var(--or)}
+.hbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:7px 11px;font-size:14px;font-weight:700}
+.stepname{font-size:24px;font-weight:900;margin:8px 0 8px}
+.prog{display:flex;gap:5px}
+.prog i{flex:1;height:6px;border-radius:3px;background:var(--line);cursor:pointer}
+.prog i.on{background:var(--or)}.prog i.done{background:var(--te)}
+/* Main */
+main{flex:1;padding:16px 16px 120px;max-width:900px;width:100%;margin:0 auto}
+.hint{color:var(--mut);font-size:15px;margin:0 0 14px;line-height:1.4}
+.lbl{font-weight:800;font-size:15px;color:var(--mut);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.6px}
+.field{width:100%;background:var(--panel);border:2px solid var(--line);color:var(--txt);border-radius:14px;padding:14px 16px;font-size:18px;outline:none}
+.field:focus{border-color:var(--or)}
+textarea.field{min-height:120px;resize:vertical;line-height:1.4}
+.sel{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:2px solid var(--line);color:var(--txt);border-radius:14px;padding:14px 16px;font-size:18px;font-weight:700;text-align:left}
+.sel small{display:block;color:var(--mut);font-weight:600;font-size:14px}
+.sel:after{content:"▾";color:var(--or);font-size:20px;margin-left:10px}
+/* Chips / cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.chip{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px;text-align:left;color:var(--txt);min-height:92px;display:flex;flex-direction:column;gap:6px;position:relative}
+.chip b{font-size:17px;font-weight:800;line-height:1.2}
+.chip small{color:var(--mut);font-size:13px;line-height:1.3}
+.chip.on{border-color:var(--or);background:#2a1a0e}
+.chip.on:after{content:"✓";position:absolute;top:8px;right:10px;background:var(--or);color:#000;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px}
+.row{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.row.on{border-color:var(--or)}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-size:16px}
+.row .tx small{color:var(--mut);font-size:13px}
+.chk{width:30px;height:30px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-weight:900;color:#000}
+.row.on .chk{background:var(--or);border-color:var(--or)}
+.chk:after{content:"✓";opacity:0}.row.on .chk:after{opacity:1}
+/* Activation cards */
+.act{background:var(--panel);border:2px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:12px;display:flex;cursor:pointer}
+.act img{width:120px;object-fit:cover;flex:none}
+.act .in{padding:12px 14px;flex:1;min-width:0}
+.act .in b{font-size:18px;display:block}
+.act .in small{color:var(--mut);display:block;margin-top:2px}
+.act .money{color:var(--or);font-weight:900;font-size:18px;margin-top:6px}
+.addbtn{width:100%;padding:18px;border-radius:16px;border:2px dashed var(--or);background:transparent;color:var(--or);font-size:18px;font-weight:900}
+.addbtn:disabled{opacity:.35}
+/* Steppers */
+.el{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.el.on{border-color:var(--te)}
+.el .tx{flex:1;min-width:0}.el .tx b{display:block;font-size:16px}.el .tx small{color:var(--mut);font-size:13px}
+.stp{display:flex;align-items:center;gap:6px}
+.stp button{width:44px;height:44px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);font-size:24px;font-weight:900}
+.stp .q{min-width:52px;height:44px;border-radius:12px;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;font-size:20px;font-weight:900}
+.el.on .q{border-color:var(--te);color:var(--te)}
+.total{display:flex;justify-content:space-between;align-items:center;background:#2a1a0e;border:2px solid var(--or);border-radius:14px;padding:14px 16px;font-weight:900;font-size:18px;margin-top:6px}
+.total span{color:var(--or);font-size:22px}
+.kpi{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.kpi .tx{flex:1}.kpi .tx b{display:block}.kpi .tx small{color:var(--mut);font-size:13px}
+.kpi .num{min-width:110px;height:48px;border-radius:12px;background:var(--bg);border:2px solid var(--te);color:var(--te);font-size:20px;font-weight:900;padding:0 10px}
+.kpi .num.man{border-color:var(--or);color:var(--or)}
+.mini{background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;padding:4px}
+/* Image zone */
+.imgz{border:2px dashed var(--line);border-radius:16px;padding:12px;background:var(--panel);outline:none}
+.imgz.act2{border-color:var(--te)}
+.imgz .prev{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000 center/contain no-repeat;margin-bottom:10px;display:grid;place-items:center;color:var(--mut);font-size:14px;text-align:center}
+.imgz .btns{display:flex;gap:8px;flex-wrap:wrap}
+.imgz .btns button{flex:1;min-width:110px;padding:12px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);font-weight:800;font-size:15px}
+.imgz .btns button.pri{background:var(--te);color:#000}
+.seg{display:flex;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{flex:1;padding:12px 6px;border:none;border-radius:10px;background:transparent;color:var(--mut);font-weight:800;font-size:15px}
+.seg button.on{background:var(--or);color:#000}
+/* Bottom nav */
+nav.bot{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(13,17,23,.96);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
+nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:16px;font-weight:900;white-space:nowrap}
+.b-sec{background:var(--panel2);color:var(--txt)}
+.b-pri{background:var(--or);color:#000}
+.b-te{background:var(--te);color:#000}
+.b-big{width:100%;padding:20px;border-radius:16px;border:none;font-size:20px;font-weight:900;margin-top:10px}
+/* Sheets */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--panel);width:100%;max-width:640px;border-radius:22px 22px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88dvh;overflow:auto}
+.sheet h3{margin:4px 0 12px;font-size:20px;font-weight:900}
+.opt{width:100%;text-align:left;background:var(--panel2);border:2px solid transparent;color:var(--txt);border-radius:14px;padding:14px 16px;margin-bottom:8px;font-size:17px;font-weight:800}
+.opt small{display:block;color:var(--mut);font-weight:600;font-size:14px;margin-top:3px;line-height:1.35}
+.opt.on{border-color:var(--or)}
+/* Keypad */
+.kp-disp{background:var(--bg);border:2px solid var(--te);border-radius:14px;padding:14px 18px;font-size:38px;font-weight:900;text-align:right;color:var(--te);min-height:70px;margin-bottom:12px;word-break:break-all}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kp button{height:64px;border-radius:14px;border:none;background:var(--panel2);color:var(--txt);font-size:28px;font-weight:900}
+.kp .ok{grid-column:span 3;background:var(--te);color:#000;font-size:22px}
+.kp .del{color:var(--or)}
+/* Full editor */
+.full{position:fixed;inset:0;background:var(--bg);z-index:40;overflow:auto;padding-bottom:110px}
+.full header{display:flex;align-items:center;gap:10px}
+.full header .stepname{flex:1;margin:0;font-size:21px}
+/* Preview */
+.pv{position:fixed;inset:0;background:#000;z-index:60;display:flex;flex-direction:column}
+.pv-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;color:#fff;font-weight:800}
+.pv-car{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;align-items:center}
+.pv-car>div{flex:0 0 100%;scroll-snap-align:center;padding:0 10px}
+.sw{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#fff;border-radius:6px}
+.sw>.s{position:absolute;left:0;top:0;width:1333.33px;height:750px;transform-origin:0 0;font-family:Arial,Helvetica,sans-serif}
+.pv-cap{color:#8b949e;text-align:center;font-size:14px;margin-top:8px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.thumbs .sw{border-radius:8px;cursor:pointer;border:2px solid var(--line)}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--te);color:#000;font-weight:900;padding:12px 18px;border-radius:12px;z-index:90}
+.warn{background:#2d1d0b;border:1px solid var(--or);color:#ffd0a8;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+@media(min-width:700px){.act img{width:180px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>Cicl<span>●</span>RecreoVía · PROPUESTAS</b>
+    <div style="display:flex;gap:6px"><button class="hbtn" onclick="A.menu()">☰ Menú</button></div></div>
+  <div class="stepname" id="stepname"></div>
+  <div class="prog" id="prog"></div>
+</header>
+<main id="main"></main>
+<nav class="bot" id="nav"></nav>
+<div id="layer"></div>
+
+<script>
+/* =====================================================================
+   CATÁLOGO (DATOS DE EJEMPLO) — en la versión final se lee desde Google Sheets
+   ===================================================================== */
+const CAT = {
+  crv:{
+    descripcion:"CicloRecreoVía abre las calles de Santiago cada domingo para que miles de personas caminen, pedaleen, patinen y compartan en familia. Es el espacio público recreativo más masivo de la ciudad: un punto de encuentro con alto tiempo de permanencia y un público activo, diverso y receptivo a las marcas que aportan a su experiencia.",
+    stats:[{n:"+30.000",l:"personas cada domingo"},{n:"40 km",l:"de calles abiertas"},{n:"8",l:"comunas"},{n:"+15",l:"años de trayectoria"}]
+  },
+  objetivos:[
+    {id:"branding",t:"Branding",d:"Presencia visible de la marca en los puntos de mayor flujo del circuito.",kpi:"visualizaciones"},
+    {id:"bbdd",t:"Generar BBDD",d:"Captura de datos de contacto con consentimiento, en terreno.",kpi:"bbdd"},
+    {id:"sampling",t:"Entregar sampling",d:"Prueba de producto en un momento de alta receptividad.",kpi:"sampling"},
+    {id:"merch",t:"Entregar merchandising",d:"Artículos de marca que acompañan a las personas en su recorrido.",kpi:"merch"},
+    {id:"experiencia",t:"Generar una experiencia",d:"Una dinámica memorable que conecta la marca con el disfrute.",kpi:"participantes"},
+    {id:"seguidores",t:"Aumentar seguidores",d:"Crecimiento de comunidad en RRSS a partir de la interacción presencial.",kpi:"seguidores"},
+    {id:"awareness",t:"Awareness",d:"Mayor conocimiento de la marca en un público masivo y familiar.",kpi:"visualizaciones"},
+    {id:"flujo",t:"Flujo a locales",d:"Más visitas a los locales cercanos mediante cupones o incentivos.",kpi:"flujo"},
+    {id:"lanzamiento",t:"Lanzamiento de producto",d:"Dar a conocer una novedad con alto impacto y contacto directo.",kpi:"participantes"},
+    {id:"comunidad",t:"Vínculo con la comunidad",d:"Asociar la marca a la vida sana, el deporte y la ciudad.",kpi:"participantes"}
+  ],
+  kpis:[
+    {id:"visualizaciones",t:"Visualizaciones"},
+    {id:"sampling",t:"Samplings entregados"},
+    {id:"bbdd",t:"Registros en BBDD"},
+    {id:"seguidores",t:"Nuevos seguidores"},
+    {id:"merch",t:"Merchandising entregado"},
+    {id:"participantes",t:"Personas participando"},
+    {id:"flujo",t:"Cupones / visitas a locales"}
+  ],
+  // p = precio por domingo (CLP neto). k = aporte a cada KPI por unidad y jornada
+  elementos:[
+    {id:"promotor",t:"Promotor/a",p:60000,k:{sampling:350,bbdd:60,seguidores:50,merch:150,participantes:200,flujo:40}},
+    {id:"animador",t:"Animador/a",p:90000,k:{participantes:300,seguidores:40}},
+    {id:"supervisor",t:"Supervisor/a",p:80000,k:{}},
+    {id:"bandera",t:"Bandera",p:45000,k:{visualizaciones:8000}},
+    {id:"pendon",t:"Pendón",p:35000,k:{visualizaciones:5000}},
+    {id:"quitasol",t:"Quitasol",p:30000,k:{visualizaciones:3000}},
+    {id:"carpa",t:"Carpa 3x3",p:120000,k:{visualizaciones:10000}},
+    {id:"lienzo",t:"Lienzo en ruta",p:90000,k:{visualizaciones:15000}},
+    {id:"mesa",t:"Mesa con mantel",p:25000,k:{}},
+    {id:"juego",t:"Juego / desafío interactivo",p:150000,k:{participantes:400,bbdd:120,seguidores:80}},
+    {id:"tablet",t:"Tablet de registro",p:40000,k:{bbdd:80}},
+    {id:"altavoz",t:"Mención por altavoz",p:20000,k:{visualizaciones:5000}}
+  ],
+  tipos:[
+    {id:"stand",t:"Stand de sampling",d:"Punto fijo de prueba de producto",el:{carpa:1,promotor:2,mesa:1,bandera:2},din:["d1","d2"],color:"#f97316"},
+    {id:"ruta",t:"Branding en ruta",d:"Presencia de marca a lo largo del circuito",el:{bandera:6,pendon:4,lienzo:1},din:["d3"],color:"#2563eb"},
+    {id:"registro",t:"Punto de registro",d:"Captura de BBDD con incentivo",el:{carpa:1,promotor:2,tablet:2,quitasol:1},din:["d4","d2"],color:"#7c3aed"},
+    {id:"juego",t:"Juego / desafío",d:"Dinámica lúdica con premio",el:{carpa:1,juego:1,animador:1,promotor:1,bandera:2},din:["d5","d6"],color:"#0891b2"},
+    {id:"experiencia",t:"Experiencia de marca",d:"Espacio inmersivo de la marca",el:{carpa:2,animador:1,promotor:2,bandera:4,pendon:2},din:["d7","d6"],color:"#db2777"}
+  ],
+  dinamicas:[
+    {id:"d1",t:"Prueba y lleva",tx:"Las personas se acercan al stand, prueban el producto y reciben información sobre sus beneficios. El equipo de promotores invita activamente a quienes pasan por el circuito."},
+    {id:"d2",t:"Sigue y gana",tx:"Para recibir el sampling o un premio, la persona sigue la cuenta de la marca en Instagram y muestra la pantalla al promotor. Se registra cada nuevo seguidor."},
+    {id:"d3",t:"Presencia en recorrido",tx:"Banderas, pendones y lienzos se ubican en los puntos de mayor flujo y en los accesos al circuito, acompañando a las personas durante todo su recorrido."},
+    {id:"d4",t:"Registro con incentivo",tx:"La persona completa un breve registro en una tablet (nombre, correo y teléfono, con consentimiento) y recibe de inmediato un incentivo de la marca."},
+    {id:"d5",t:"Desafío con premio",tx:"La persona participa en un desafío de habilidad o conocimiento de corta duración. Quienes lo superan ganan un premio de la marca; todos se llevan un sampling."},
+    {id:"d6",t:"Ruleta de premios",tx:"Tras registrarse o seguir a la marca, la persona gira una ruleta con premios de la marca. La dinámica genera fila, conversación y contenido para RRSS."},
+    {id:"d7",t:"Experiencia inmersiva",tx:"Un espacio ambientado con la identidad de la marca donde las personas viven una actividad, se toman fotos y comparten la experiencia en sus RRSS."}
+  ],
+  periodos:[
+    {id:"p1",t:"1 domingo",dom:1,desc:0},
+    {id:"p4",t:"1 mes",dom:4,desc:5},
+    {id:"p13",t:"3 meses",dom:13,desc:10},
+    {id:"p26",t:"6 meses",dom:26,desc:15},
+    {id:"p52",t:"12 meses",dom:52,desc:20}
+  ],
+  comunicacion:[
+    {id:"c1",t:"Posteo colaborativo en Instagram",d:"Publicación conjunta en el feed de ambas cuentas"},
+    {id:"c2",t:"Historias en Instagram",d:"Historias durante la jornada de activación"},
+    {id:"c3",t:"Reel de la activación",d:"Video editado con lo mejor de la jornada"},
+    {id:"c4",t:"Menciones por altavoz",d:"Menciones de la marca durante el evento"},
+    {id:"c5",t:"Logo en sitio web",d:"Presencia en la sección de auspiciadores"},
+    {id:"c6",t:"Newsletter",d:"Mención en el boletín a la comunidad"},
+    {id:"c7",t:"TikTok",d:"Contenido en la cuenta de TikTok de CicloRecreoVía"},
+    {id:"c8",t:"Reporte de resultados",d:"Informe con fotos y cifras al cierre"}
+  ],
+  rrss:[
+    {red:"Instagram",user:"@ciclorecreovia",n:85000},
+    {red:"Facebook",user:"CicloRecreoVía",n:40000},
+    {red:"TikTok",user:"@ciclorecreovia",n:12000},
+    {red:"Sitio web",user:"ciclorecreovia.cl",n:20000,u:"visitas al mes"}
+  ],
+  condiciones:[
+    {id:"k1",t:"Valores en pesos chilenos, netos (no incluyen IVA)."},
+    {id:"k2",t:"Pago del 50% al confirmar y 50% contra informe de resultados."},
+    {id:"k3",t:"Los productos de sampling y merchandising los aporta la marca."},
+    {id:"k4",t:"La activación está sujeta a condiciones climáticas y a la autorización municipal de cada jornada."},
+    {id:"k5",t:"Toda pieza gráfica debe ser aprobada por CicloRecreoVía antes de su producción."},
+    {id:"k6",t:"Propuesta válida por 30 días desde su emisión."}
+  ],
+  enlaces:[
+    {id:"l1",t:"Galería de fotos",url:"https://ciclorecreovia.cl/fotos"},
+    {id:"l2",t:"Videos de activaciones",url:"https://youtube.com/@ciclorecreovia"},
+    {id:"l3",t:"Sitio web",url:"https://ciclorecreovia.cl"},
+    {id:"l4",t:"Instagram",url:"https://instagram.com/ciclorecreovia"}
+  ],
+  vendedores:[
+    {id:"v1",n:"Gonzalo Stierling",c:"Desarrollo comercial",m:"gstierling@ciclorecreovia.cl",t:"+56 9 0000 0000"},
+    {id:"v2",n:"Vendedor/a ejemplo",c:"Ejecutivo/a comercial",m:"ventas@ciclorecreovia.cl",t:"+56 9 1111 1111"}
+  ]
+};
+
+/* =====================================================================
+   UTILIDADES
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Math.round(n||0).toLocaleString("es-CL");
+const money=n=>"$"+fmt(n);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const byId=(arr,id)=>arr.find(x=>x.id===id);
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+function fechaLarga(f){try{return new Date(f+"T12:00:00").toLocaleDateString("es-CL",{day:"numeric",month:"long",year:"numeric"})}catch(e){return f}}
+
+/* Foto estándar provisoria (se reemplaza por fotos reales en el catálogo) */
+const STD={};
+function stdPhoto(key,label,color){
+  if(STD[key]) return STD[key];
+  const W=1600,H=1000,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,color);gr.addColorStop(1,"#0d1117");g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.globalAlpha=.10;g.fillStyle="#fff";for(let i=-H;i<W;i+=90){g.beginPath();g.moveTo(i,0);g.lineTo(i+45,0);g.lineTo(i+45+H,H);g.lineTo(i+H,H);g.fill()}
+  g.globalAlpha=.22;g.strokeStyle="#fff";g.lineWidth=26;
+  [[560,640],[1040,640]].forEach(([x,y])=>{g.beginPath();g.arc(x,y,170,0,Math.PI*2);g.stroke()});
+  g.beginPath();g.moveTo(560,640);g.lineTo(760,420);g.lineTo(1040,640);g.moveTo(760,420);g.lineTo(700,640);g.lineTo(560,640);g.moveTo(760,420);g.lineTo(960,420);g.lineTo(1040,640);g.stroke();
+  g.globalAlpha=1;g.textAlign="center";g.fillStyle="rgba(0,0,0,.35)";g.fillRect(W/2-430,120,860,150);
+  g.fillStyle="#fff";g.font="900 54px Nunito, Arial";g.fillText(label,W/2,195);
+  g.font="700 28px Nunito, Arial";g.fillStyle="rgba(255,255,255,.75)";g.fillText("FOTO DE EJEMPLO",W/2,245);
+  return STD[key]={data:c.toDataURL("image/jpeg",.85),w:W,h:H};
+}
+function fotoPortada(){return S.portada&&S.portada.data?S.portada:stdPhoto("portada","CicloRecreoVía","#f97316")}
+function fotoCierre(){return stdPhoto("cierre","¡Nos vemos el domingo!","#00b894")}
+function fotoAct(a){if(a.foto&&a.foto.data) return a.foto;const t=byId(CAT.tipos,a.tipo)||CAT.tipos[0];return stdPhoto("tipo_"+t.id,t.t,t.color)}
+
+/* Imagen → comprime y devuelve {data,w,h} */
+function loadImg(src){return new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=src})}
+async function procesarImagen(blob,isLogo){
+  const url=URL.createObjectURL(blob);const im=await loadImg(url);URL.revokeObjectURL(url);
+  const max=isLogo?900:1600;let w=im.naturalWidth,h=im.naturalHeight;const r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);
+  const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  if(!isLogo){g.fillStyle="#fff";g.fillRect(0,0,w,h)}
+  g.drawImage(im,0,0,w,h);
+  return {data:isLogo?c.toDataURL("image/png"):c.toDataURL("image/jpeg",.85),w,h};
+}
+/* Recorte "cover" para el PowerPoint */
+const CROP={};
+async function cropCover(img,bw,bh){
+  const key=img.data.length+":"+img.data.slice(-40)+":"+(bw/bh).toFixed(3);
+  if(CROP[key]) return CROP[key];
+  const im=await loadImg(img.data);const ir=im.naturalWidth/im.naturalHeight,br=bw/bh;
+  let sw=im.naturalWidth,sh=im.naturalHeight,sx=0,sy=0;
+  if(ir>br){sw=sh*br;sx=(im.naturalWidth-sw)/2}else{sh=sw/br;sy=(im.naturalHeight-sh)/2}
+  const ow=Math.min(1600,Math.round(sw)),oh=Math.round(ow/br);
+  const c=document.createElement("canvas");c.width=ow;c.height=oh;c.getContext("2d").drawImage(im,sx,sy,sw,sh,0,0,ow,oh);
+  return CROP[key]=c.toDataURL("image/jpeg",.88);
+}
+
+/* =====================================================================
+   ESTADO
+   ===================================================================== */
+function nuevo(){return {
+  prospecto:"",logo:null,fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
+  portada:null,objetivos:[],activaciones:[],periodos:["p1","p13","p52"],
+  comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
+  enlaces:["l1","l2","l3"],libres:[],
+  incluir:{crv:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
+}}
+let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("crvPropuesta",JSON.stringify(S))}catch(e){}},300)}
+let cur=0,editAct=null;
+
+/* Cálculos */
+function subDomingo(a){return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
+function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100))}
+function kpisAct(a){
+  const ids=[...new Set((a.objetivos||[]).map(o=>(byId(CAT.objetivos,o)||{}).kpi).filter(Boolean))];
+  return ids.map(id=>{
+    const auto=Object.entries(a.elementos||{}).reduce((s,[eid,q])=>{const e=byId(CAT.elementos,eid);return s+((e&&e.k[id])||0)*q},0);
+    const man=a.kpiMan&&a.kpiMan[id]!=null?a.kpiMan[id]:null;
+    return {id,t:byId(CAT.kpis,id).t,auto,man,v:man!=null?man:auto};
+  }).filter(k=>k.v>0||k.man!=null);
+}
+function kpisTotales(){const m={};S.activaciones.forEach(a=>kpisAct(a).forEach(k=>{m[k.id]=(m[k.id]||0)+k.v}));
+  return CAT.kpis.filter(k=>m[k.id]>0).map(k=>({id:k.id,t:k.t,v:m[k.id]}))}
+function periodosSel(){return CAT.periodos.filter(p=>S.periodos.includes(p.id))}
+function vendedor(){return byId(CAT.vendedores,S.vendedor)||CAT.vendedores[0]}
+function dinTexto(a){if(a.din==="otra") return a.dinTexto||"";const d=byId(CAT.dinamicas,a.din);return d?d.tx:""}
+function dinNombre(a){if(a.din==="otra") return "Dinámica a medida";const d=byId(CAT.dinamicas,a.din);return d?d.t:""}
+
+/* =====================================================================
+   PLAN DE LÁMINAS (misma lista para vista previa y PowerPoint)
+   ===================================================================== */
+const POS=[{id:"obj",t:"Después de los objetivos"},{id:"act",t:"Después de las activaciones"},{id:"tar",t:"Después de las tarifas"},{id:"fin",t:"Antes de la despedida"}];
+function plan(){
+  const P=[],I=S.incluir,lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({k:"libre",l,name:"Lámina libre: "+(l.titulo||"sin título")}));
+  P.push({k:"portada",name:"Portada"});
+  if(I.crv)P.push({k:"crv",name:"Qué es CicloRecreoVía"});
+  if(I.objetivos&&S.objetivos.length)P.push({k:"objetivos",name:"Objetivos"});
+  lib("obj");
+  S.activaciones.forEach((a,i)=>P.push({k:"act",a,i,name:"Activación "+(i+1)}));
+  lib("act");
+  if(I.numeros&&kpisTotales().length)P.push({k:"numeros",name:"Números proyectados"});
+  if(I.tarifas&&S.activaciones.length&&periodosSel().length)P.push({k:"tarifas",name:"Tarifas"});
+  lib("tar");
+  if(I.comunicacion&&S.comunicacion.length)P.push({k:"comunicacion",name:"Plan comunicacional"});
+  if(I.rrss)P.push({k:"rrss",name:"RRSS de CicloRecreoVía"});
+  if(I.condiciones&&(S.condiciones.length||S.condExtra))P.push({k:"condiciones",name:"Condiciones"});
+  if(I.enlaces&&S.enlaces.length)P.push({k:"enlaces",name:"Fotos y videos"});
+  lib("fin");
+  P.push({k:"cierre",name:"Despedida"});
+  return P;
+}
+
+/* =====================================================================
+   DIBUJO DE LÁMINAS — un solo diseño, dos salidas (HTML y PowerPoint)
+   Medidas en pulgadas, lámina 13,333 x 7,5
+   ===================================================================== */
+const COL={dark:"0D1117",or:"F97316",te:"00D4AA",teD:"00997A",tx:"111827",mu:"6B7280",card:"F3F4F6",wh:"FFFFFF",line:"E5E7EB"};
+const FONT="Arial";
+function runsOf(t){return typeof t==="string"?[{text:t,o:{}}]:t}
+
+function HtmlR(){
+  const out=[];let html="";
+  const px=v=>(v*100).toFixed(1)+"px",pt=v=>(v*100/72).toFixed(1)+"px";
+  return {
+    out,
+    slide(bg){html=`<div class="s" style="background:#${bg}">`;},
+    end(){out.push(html+"</div>")},
+    rect(x,y,w,h,o){html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${o.ellipse?"50%":o.radius?px(o.radius):0};${o.line?`border:2px solid #${o.line};`:""}"></div>`},
+    text(t,x,y,w,h,o){
+      const r=runsOf(t).map(r=>{const ro=r.o||{};let s=esc(r.text).replace(/\n/g,"<br>");
+        s=`<span style="${ro.bold!=null?`font-weight:${ro.bold?700:400};`:""}${ro.color?`color:#${ro.color};`:""}${ro.size?`font-size:${pt(ro.size)};`:""}${ro.link?"text-decoration:underline;":""}">${s}</span>`;
+        return s+(ro.br?"<br>":"")}).join("");
+      const jv={top:"flex-start",middle:"center",bottom:"flex-end"}[o.valign||"top"];
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-size:${pt(o.size||14)};color:#${o.color||COL.tx};font-weight:${o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:1.18;overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
+    },
+    async image(img,x,y,w,h,o){
+      html+=`<img src="${img.data}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
+    },
+    table(rows,x,y,w,colW,o){
+      html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-size:${pt(o.size||12)};table-layout:fixed">`+
+      `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
+      rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:1px solid #${COL.line};padding:0 ${px(.1)};background:#${c.fill||"FFFFFF"};color:#${c.color||COL.tx};font-weight:${c.bold?700:400};text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${esc(c.t).replace(/\n/g,"<br>")}</td>`).join("")+"</tr>").join("")+"</table>";
+    }
+  };
+}
+function PptxR(pptx){
+  let s;
+  return {
+    slide(bg){s=pptx.addSlide();s.background={color:bg}},
+    end(){},
+    rect(x,y,w,h,o){s.addShape(o.ellipse?"ellipse":o.radius?"roundRect":"rect",{x,y,w,h,fill:{color:o.fill,transparency:o.transp||0},line:o.line?{color:o.line,width:1.5}:{type:"none"},rectRadius:o.radius||undefined})},
+    text(t,x,y,w,h,o){
+      const runs=runsOf(t).map(r=>{const ro=r.o||{},op={};
+        if(ro.bold!=null)op.bold=ro.bold;if(ro.color)op.color=ro.color;if(ro.size)op.fontSize=ro.size;if(ro.br)op.breakLine=true;if(ro.link)op.hyperlink={url:ro.link};
+        return {text:r.text,options:op}});
+      s.addText(runs,{x,y,w,h,margin:0,isTextBox:true,fontFace:FONT,fontSize:o.size||14,color:o.color||COL.tx,bold:!!o.bold,italic:!!o.italic,align:o.align||"left",valign:o.valign||"top",charSpacing:o.cs||undefined,lineSpacingMultiple:1.0,fit:"shrink"});
+    },
+    async image(img,x,y,w,h,o){
+      if(o&&o.fit==="contain"){const r=Math.min(w/(img.w||1),h/(img.h||1));const iw=(img.w||1)*r,ih=(img.h||1)*r;
+        s.addImage({data:img.data,x:x+(w-iw)/2,y:y+(h-ih)/2,w:iw,h:ih});}
+      else s.addImage({data:await cropCover(img,w,h),x,y,w,h});
+    },
+    table(rows,x,y,w,colW,o){
+      s.addTable(rows.map(r=>r.map(c=>({text:c.t,options:{fill:{color:c.fill||"FFFFFF"},color:c.color||COL.tx,bold:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:FONT}}))),
+        {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:0.75,color:COL.line},fontFace:FONT,fontSize:o.size||12});
+    }
+  };
+}
+const W=13.333,H=7.5;
+function fitSize(txt,base,steps){const n=(txt||"").length;let s=base;for(const [len,size] of steps) if(n>len) s=size;return s}
+function titulo(R,t){R.text(t,0.6,0.45,12.1,0.9,{size:fitSize(t,32,[[45,28],[60,24]]),bold:true,color:COL.tx,valign:"middle"})}
+function pie(R,n,tot){R.text("CicloRecreoVía · Propuesta para "+(S.prospecto||"—"),0.6,7.0,9,0.3,{size:10,color:COL.mu});R.text(n+" / "+tot,11.7,7.0,1.03,0.3,{size:10,color:COL.mu,align:"right"})}
+
+async function dibujar(R,sp,n,tot){
+  const P=S.prospecto||"Prospecto";
+  switch(sp.k){
+  case "portada":{
+    R.slide(COL.dark);
+    await R.image(fotoPortada(),6.9,0,W-6.9,H);
+    R.text("PROPUESTA DE AUSPICIO",0.7,1.2,6,0.4,{size:14,bold:true,color:COL.or,cs:3});
+    R.text("CicloRecreoVía",0.7,1.75,6,0.8,{size:40,bold:true,color:COL.wh});
+    R.text("× "+P,0.7,2.6,5.9,1.7,{size:fitSize(P,40,[[16,32],[26,26]]),bold:true,color:COL.or});
+    if(S.logo){R.rect(0.7,4.55,2.6,1.4,{fill:COL.wh,radius:0.15});await R.image(S.logo,0.85,4.7,2.3,1.1,{fit:"contain"})}
+    const v=vendedor();
+    R.text([{text:fechaLarga(S.fecha),o:{br:true}},{text:v.n+" · "+v.c,o:{color:"9CA3AF"}}],0.7,6.25,5.9,0.7,{size:14,color:COL.wh});
+    break;}
+  case "crv":{
+    R.slide(COL.wh);titulo(R,"Qué es CicloRecreoVía");
+    R.text(CAT.crv.descripcion,0.6,1.65,5.6,4.8,{size:fitSize(CAT.crv.descripcion,18,[[420,16],[600,14]]),color:"374151"});
+    CAT.crv.stats.slice(0,4).forEach((st,i)=>{const x=6.75+(i%2)*3.05,y=1.65+Math.floor(i/2)*2.5;
+      R.rect(x,y,2.9,2.3,{fill:COL.card,radius:0.18});
+      R.text(st.n,x+0.25,y+0.35,2.4,0.9,{size:36,bold:true,color:COL.or});
+      R.text(st.l,x+0.25,y+1.3,2.4,0.8,{size:15,color:"374151"});});
+    pie(R,n,tot);break;}
+  case "objetivos":{
+    R.slide(COL.wh);titulo(R,"Objetivos de "+P);
+    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const cols=c<=3?c:c===4?2:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),gap=0.3;
+    const cw=(W-1.2-gap*(cols-1))/cols,ch=Math.min(2.6,(5.3-gap*(rows-1))/rows);
+    const big=cols<=3;
+    ob.forEach((o,i)=>{const x=0.6+(i%cols)*(cw+gap),y=1.65+Math.floor(i/cols)*(ch+gap);
+      R.rect(x,y,cw,ch,{fill:COL.card,radius:0.18});
+      R.rect(x+0.25,y+0.25,0.55,0.55,{fill:COL.or,ellipse:true});
+      R.text(String(i+1),x+0.25,y+0.25,0.55,0.55,{size:16,bold:true,color:COL.wh,align:"center",valign:"middle"});
+      R.text(o.t,x+0.25,y+0.95,cw-0.5,0.6,{size:big?20:cols>=5?15:17,bold:true,color:COL.tx});
+      R.text(o.d,x+0.25,y+(big?1.5:1.45),cw-0.5,ch-(big?1.65:1.55),{size:big?15:cols>=5?11:12.5,color:"4B5563"});});
+    pie(R,n,tot);break;}
+  case "act":{
+    const a=sp.a,t="Activación "+(sp.i+1)+": "+(a.nombre||"");
+    R.slide(COL.wh);titulo(R,t);
+    await R.image(fotoAct(a),0.6,1.55,5.5,5.25);
+    const ks=kpisAct(a).slice(0,3);
+    if(ks.length){R.rect(0.6,5.55,5.5,1.25,{fill:COL.dark,transp:15});
+      const kw=5.5/ks.length;ks.forEach((k,i)=>{R.text(fmt(k.v),0.6+i*kw+0.15,5.62,kw-0.3,0.6,{size:ks.length>2?22:26,bold:true,color:COL.or,align:"center",valign:"middle"});
+        R.text(k.t+" por domingo",0.6+i*kw+0.15,6.2,kw-0.3,0.5,{size:10.5,color:COL.wh,align:"center"})});}
+    const x=6.5,w=W-0.6-x;
+    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),x,1.55,w,0.35,{size:12,bold:true,color:COL.or,cs:1});
+    const dt=dinTexto(a);R.text(dt,x,1.95,w,1.75,{size:fitSize(dt,15,[[260,13],[380,11.5]]),color:"374151"});
+    R.text("ELEMENTOS Y VALOR POR DOMINGO",x,3.85,w,0.35,{size:12,bold:true,color:COL.or,cs:1});
+    const els=Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e);
+    const many=els.length>7,rowH=many?0.235:0.28,fs=many?10:11.5;
+    const rows=els.map(z=>[{t:String(z.q),align:"center",bold:true},{t:z.e.t},{t:money(z.e.p*z.q),align:"right"}]);
+    if(rows.length)R.table(rows,x,4.25,w,[0.8,w-2.7,1.9],{rowH,size:fs});
+    R.rect(x,6.3,w,0.5,{fill:COL.or,radius:0.08});
+    R.text([{text:"Total por domingo   ",o:{bold:false}},{text:money(subDomingo(a)),o:{bold:true}}],x+0.2,6.3,w-0.4,0.5,{size:15,color:COL.wh,valign:"middle",align:"right"});
+    pie(R,n,tot);break;}
+  case "numeros":{
+    R.slide(COL.wh);titulo(R,"Lo que lograremos cada domingo");
+    const ks=kpisTotales();const c=ks.length,cols=c<=4?c:Math.ceil(c/2),rows=c<=4?1:2,gap=0.3;
+    const cw=(W-1.2-gap*(cols-1))/cols,ch=rows===1?3.2:2.45;const y0=rows===1?2.2:1.65;
+    const pl=periodosSel().slice(-1)[0];
+    ks.forEach((k,i)=>{const x=0.6+(i%cols)*(cw+gap),y=y0+Math.floor(i/cols)*(ch+gap);
+      R.rect(x,y,cw,ch,{fill:COL.card,radius:0.18});
+      R.text(fmt(k.v),x+0.2,y+0.3,cw-0.4,1.0,{size:cols>=4?32:40,bold:true,color:COL.or,align:"center",valign:"middle"});
+      R.text(k.t,x+0.2,y+1.3,cw-0.4,0.6,{size:15,bold:true,color:COL.tx,align:"center"});
+      if(pl&&pl.dom>1)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.2,y+ch-0.6,cw-0.4,0.4,{size:12,color:COL.mu,align:"center"});});
+    R.text("Estimaciones por jornada según los elementos de cada activación.",0.6,6.55,12,0.35,{size:11,italic:true,color:COL.mu});
+    pie(R,n,tot);break;}
+  case "tarifas":{
+    R.slide(COL.wh);titulo(R,"Inversión");
+    const ps=periodosSel(),acts=S.activaciones;
+    const head=[{t:"Activación",fill:COL.dark,color:COL.wh,bold:true}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · "+p.desc+"% dcto.":""),fill:COL.dark,color:COL.wh,bold:true,align:"center",size:11})));
+    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true}].concat(ps.map(p=>({t:money(precioPeriodo(a,p)),align:"center",size:14}))));
+    const totRow=[{t:"Total",fill:COL.or,color:COL.wh,bold:true}].concat(ps.map(p=>({t:money(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:COL.or,color:COL.wh,bold:true,align:"center",size:15})));
+    const first=3.4,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.62:0.72;
+    R.table([head,...body,totRow],0.6,1.7,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13});
+    R.text("Valores en pesos chilenos, netos (no incluyen IVA). Los descuentos por período ya están aplicados.",0.6,6.5,12.1,0.35,{size:11,italic:true,color:COL.mu});
+    pie(R,n,tot);break;}
+  case "comunicacion":{
+    R.slide(COL.wh);titulo(R,"Plan comunicacional");
+    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const two=it.length>4;const rh=it.length>8?0.95:1.05;
+    it.forEach((c,i)=>{const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*6.2,y=1.6+row*rh;
+      R.rect(x,y+0.08,0.6,0.6,{fill:COL.te,ellipse:true});
+      R.text("✓",x,y+0.08,0.6,0.6,{size:18,bold:true,color:COL.dark,align:"center",valign:"middle"});
+      R.text(c.t,x+0.85,y,5.2,0.42,{size:16,bold:true,color:COL.tx});
+      R.text(c.d,x+0.85,y+0.42,5.2,0.42,{size:12.5,color:COL.mu});});
+    if(S.comNota)R.text(S.comNota,0.6,6.3,12.1,0.6,{size:13,italic:true,color:"374151"});
+    pie(R,n,tot);break;}
+  case "rrss":{
+    R.slide(COL.dark);
+    R.text("Nuestra comunidad digital",0.6,0.45,12.1,0.9,{size:32,bold:true,color:COL.wh,valign:"middle"});
+    const r=CAT.rrss,c=r.length,gap=0.3,cw=(W-1.2-gap*(c-1))/c;
+    r.forEach((x0,i)=>{const x=0.6+i*(cw+gap);
+      R.rect(x,2.0,cw,3.6,{fill:"1F2630",radius:0.2});
+      R.text(x0.red,x+0.25,2.3,cw-0.5,0.5,{size:18,bold:true,color:COL.te});
+      R.text(x0.user,x+0.25,2.8,cw-0.5,0.4,{size:12,color:"9CA3AF"});
+      R.text(fmt(x0.n),x+0.25,3.5,cw-0.5,1.0,{size:c>4?32:38,bold:true,color:COL.wh,valign:"middle"});
+      R.text(x0.u||"seguidores",x+0.25,4.55,cw-0.5,0.5,{size:14,color:COL.or,bold:true});});
+    R.text("Cifras de referencia, actualizadas mensualmente.",0.6,6.4,12,0.4,{size:11,italic:true,color:"9CA3AF"});
+    break;}
+  case "condiciones":{
+    R.slide(COL.wh);titulo(R,"Condiciones del auspicio");
+    const it=S.condiciones.map(id=>(byId(CAT.condiciones,id)||{}).t).filter(Boolean);if(S.condExtra)it.push(S.condExtra);
+    const two=it.length>5,rh=two?1.15:0.95;
+    it.forEach((t,i)=>{const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*6.2,y=1.65+row*rh,w=two?5.2:11.2;
+      R.rect(x,y,0.5,0.5,{fill:COL.or,ellipse:true});
+      R.text(String(i+1),x,y,0.5,0.5,{size:14,bold:true,color:COL.wh,align:"center",valign:"middle"});
+      R.text(t,x+0.75,y,w,rh-0.15,{size:t.length>110?12.5:14.5,color:"374151",valign:"top"});});
+    pie(R,n,tot);break;}
+  case "enlaces":{
+    R.slide(COL.wh);titulo(R,"Fotos y videos");
+    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const cols=it.length<=2?it.length:2,gap=0.3,cw=(W-1.2-gap*(cols-1))/cols;
+    it.forEach((l,i)=>{const x=0.6+(i%cols)*(cw+gap),y=1.7+Math.floor(i/cols)*2.2;
+      R.rect(x,y,cw,1.9,{fill:COL.card,radius:0.18});
+      R.rect(x+0.3,y+0.55,0.8,0.8,{fill:COL.or,ellipse:true});
+      R.text("↗",x+0.3,y+0.55,0.8,0.8,{size:22,bold:true,color:COL.wh,align:"center",valign:"middle"});
+      R.text(l.t,x+1.35,y+0.45,cw-1.6,0.5,{size:19,bold:true,color:COL.tx});
+      R.text([{text:l.url,o:{link:l.url,color:"0369A1"}}],x+1.35,y+0.98,cw-1.6,0.45,{size:13});});
+    pie(R,n,tot);break;}
+  case "libre":{
+    const l=sp.l;R.slide(COL.wh);titulo(R,l.titulo||"");
+    const tx=l.texto||"";
+    if(l.foto){R.text(tx,0.6,1.65,5.9,5.1,{size:fitSize(tx,18,[[350,16],[600,14],[900,12]]),color:"374151"});await R.image(l.foto,6.9,1.65,5.83,5.1)}
+    else R.text(tx,0.6,1.65,12.1,5.1,{size:fitSize(tx,20,[[500,18],[900,16],[1400,14]]),color:"374151"});
+    pie(R,n,tot);break;}
+  case "cierre":{
+    R.slide(COL.dark);const v=vendedor();
+    await R.image(fotoCierre(),7.6,0,W-7.6,H);
+    R.text("¡Gracias!",0.7,1.3,6.6,1.1,{size:54,bold:true,color:COL.wh});
+    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",0.7,2.45,6.4,1.0,{size:20,color:COL.or,bold:true});
+    R.rect(0.7,3.9,6.4,2.4,{fill:"1F2630",radius:0.2});
+    R.text(v.n,1.0,4.1,5.8,0.5,{size:22,bold:true,color:COL.wh});
+    R.text(v.c,1.0,4.6,5.8,0.4,{size:14,color:"9CA3AF"});
+    R.text([{text:v.m,o:{br:true,color:COL.te}},{text:v.t,o:{color:COL.wh}}],1.0,5.15,5.8,0.9,{size:16});
+    R.text("ciclorecreovia.cl",0.7,6.6,6,0.4,{size:14,bold:true,color:COL.or});
+    break;}
+  }
+  R.end();
+}
+async function renderHtmlSlides(list){const R=HtmlR();const tot=list.length;for(let i=0;i<list.length;i++) await dibujar(R,list[i],i+1,tot);return R.out}
+
+async function generarPPTX(){
+  if(!window.PptxGenJS){alert("No se pudo cargar el generador de PowerPoint. Revisa tu conexión a internet.");return}
+  const faltas=validar();if(faltas.length&&!confirm("Falta:\n• "+faltas.join("\n• ")+"\n\n¿Generar de todas formas?"))return;
+  toast("Generando PowerPoint…");
+  const pptx=new PptxGenJS();pptx.layout="LAYOUT_WIDE";pptx.author=vendedor().n;pptx.company="CicloRecreoVía";pptx.title="Propuesta CicloRecreoVía - "+(S.prospecto||"");
+  const R=PptxR(pptx);const list=plan();
+  for(let i=0;i<list.length;i++) await dibujar(R,list[i],i+1,list.length);
+  const nombre=("Propuesta CicloRecreoVía - "+(S.prospecto||"Prospecto")).replace(/[\\/:*?"<>|]/g,"");
+  await pptx.writeFile({fileName:nombre+".pptx"});
+}
+function validar(){const f=[];if(!S.prospecto.trim())f.push("Nombre del prospecto");if(!S.objetivos.length)f.push("Al menos un objetivo");if(!S.activaciones.length)f.push("Al menos una activación");
+  S.activaciones.forEach((a,i)=>{if(!subDomingo(a))f.push("Elementos de la activación "+(i+1));if(a.din==="otra"&&!a.dinTexto)f.push("Texto de la dinámica de la activación "+(i+1))});
+  if(!S.periodos.length)f.push("Al menos un período de tarifa");return f}
+
+/* =====================================================================
+   COMPONENTES DE INTERFAZ
+   ===================================================================== */
+const layer=$("#layer");
+function closeLayer(){layer.innerHTML="";activeImg=null}
+function picker(title,opts,val,onPick){
+  layer.innerHTML=`<div class="ov" onclick="if(event.target===this)closeLayer()"><div class="sheet"><h3>${esc(title)}</h3>${opts.map((o,i)=>`<button class="opt ${o.v===val?"on":""}" data-i="${i}">${esc(o.t)}${o.sub?`<small>${esc(o.sub)}</small>`:""}</button>`).join("")}<button class="b-big b-sec" onclick="closeLayer()">Cancelar</button></div></div>`;
+  layer.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{closeLayer();onPick(opts[+b.dataset.i].v)});
+}
+function keypad(title,val,onOk,dec){
+  let v=val!=null&&val!==""?String(val).replace(".",","):"";
+  const draw=()=>{$("#kpd").textContent=v===""?"0":(()=>{const [a,b]=v.split(",");return fmt(+a||0)+(b!=null?","+b:"")})()};
+  layer.innerHTML=`<div class="ov" onclick="if(event.target===this)closeLayer()"><div class="sheet"><h3>${esc(title)}</h3><div class="kp-disp" id="kpd"></div><div class="kp">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}<button data-k="," ${dec?"":"disabled style=opacity:.25"}>,</button><button data-k="0">0</button><button class="del" data-k="del">⌫</button><button class="ok" data-k="ok">Listo</button></div></div></div>`;
+  layer.querySelectorAll(".kp button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+    if(k==="ok"){closeLayer();onOk(v===""?0:parseFloat(v.replace(",",".")));return}
+    if(k==="del")v=v.slice(0,-1);else if(k===","){if(!v.includes(","))v=(v||"0")+","}else if(v.length<12)v=(v==="0"?"":v)+k;draw()});
+  draw();
+}
+/* Zona de imagen: pegar (Ctrl+V o botón) o elegir archivo */
+let activeImg=null;const IMG={};
+function imgZone(key,img,isLogo,placeholder){
+  IMG[key]={isLogo};
+  return `<div class="imgz" tabindex="0" id="iz_${key}" onfocus="activeImg='${key}';this.classList.add('act2')" onblur="this.classList.remove('act2')">
+    <div class="prev" style="${img?`background-image:url('${img.data}')`:""}">${img?"":esc(placeholder||"Pega aquí una imagen (Ctrl+V) o usa los botones")}</div>
+    <div class="btns"><button class="pri" onclick="A.pegar('${key}')">📋 Pegar</button><button onclick="A.archivo('${key}')">📁 Elegir</button>${img?`<button onclick="A.setImg('${key}',null)">✕ Quitar</button>`:""}</div></div>`;
+}
+document.addEventListener("paste",async e=>{
+  if(!activeImg)return;const items=[...(e.clipboardData||{}).items||[]];const it=items.find(i=>i.type.startsWith("image/"));
+  if(it){e.preventDefault();const k=activeImg;A.setImg(k,await procesarImagen(it.getAsFile(),IMG[k]&&IMG[k].isLogo))}
+});
+
+/* =====================================================================
+   PASOS
+   ===================================================================== */
+const STEPS=[
+ {t:"1 · Prospecto",r:stepProspecto},
+ {t:"2 · Objetivos",r:stepObjetivos},
+ {t:"3 · Activaciones",r:stepActivaciones},
+ {t:"4 · Tarifas",r:stepTarifas},
+ {t:"5 · Comunicación",r:stepComunicacion},
+ {t:"6 · Condiciones y enlaces",r:stepCondiciones},
+ {t:"7 · Láminas libres",r:stepLibres},
+ {t:"8 · Revisar y generar",r:stepRevisar}
+];
+function stepProspecto(){const v=vendedor();return `
+  <p class="hint">Datos de la portada. La foto de portada es estándar; puedes reemplazarla pegando otra.</p>
+  <div class="lbl">Nombre del prospecto</div>
+  <input class="field" value="${esc(S.prospecto)}" placeholder="Ej: Powerade" oninput="S.prospecto=this.value;save()">
+  <div class="lbl">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
+  <div class="lbl">Vendedor/a</div>
+  <button class="sel" onclick="A.pickVendedor()"><span>${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)}</small></span></button>
+  <div class="lbl">Fecha de la propuesta</div>
+  <input class="field" type="date" value="${S.fecha}" onchange="S.fecha=this.value;save()">
+  <div class="lbl">Foto de portada</div>
+  <div class="seg"><button class="${!S.portada?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada?"on":""}" onclick="A.portadaPropia()">Propia</button></div>
+  ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}`}
+function stepObjetivos(){return `
+  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en la propuesta.</p>
+  <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
+function stepActivaciones(){return `
+  <p class="hint">Agrega de 1 a 4 activaciones. Toca una para editar sus elementos, dinámica, foto y números.</p>
+  ${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">por domingo</span></div></div></div>`).join("")}
+  <button class="addbtn" ${S.activaciones.length>=4?"disabled":""} onclick="A.nuevaAct()">＋ Agregar activación</button>`}
+function stepTarifas(){
+  const ps=periodosSel();return `
+  <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
+  ${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}
+  ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))}</span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`}
+function stepComunicacion(){return `
+  <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
+  ${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}
+  <div class="lbl">Nota adicional (opcional)</div>
+  <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>
+  <div class="lbl">RRSS de CicloRecreoVía</div>
+  <div class="row ${S.incluir.rrss?"on":""}" onclick="S.incluir.rrss=!S.incluir.rrss;save();render()"><div class="chk"></div><div class="tx"><b>Incluir lámina de RRSS</b><small>${CAT.rrss.map(r=>r.red+" "+fmt(r.n)).join(" · ")}</small></div></div>`}
+function stepCondiciones(){return `
+  <div class="lbl" style="margin-top:0">Condiciones</div>
+  ${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}
+  <div class="lbl">Condición especial (opcional)</div>
+  <textarea class="field" style="min-height:80px" placeholder="Ej: Exclusividad de categoría bebidas isotónicas" oninput="S.condExtra=this.value;save()">${esc(S.condExtra)}</textarea>
+  <div class="lbl">Enlaces a fotos y videos</div>
+  ${CAT.enlaces.map(l=>`<div class="row ${S.enlaces.includes(l.id)?"on":""}" onclick="A.toggle('enlaces','${l.id}')"><div class="chk"></div><div class="tx"><b>${esc(l.t)}</b><small>${esc(l.url)}</small></div></div>`).join("")}`}
+function stepLibres(){return `
+  <p class="hint">Para ese contenido que no calza con lo estándar: agrega láminas con título, texto y foto, y elige dónde van.</p>
+  ${S.libres.map((l,i)=>`<div style="background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Lámina libre ${i+1}</b><button class="hbtn" onclick="A.borrarLibre('${l.uid}')">🗑 Quitar</button></div>
+    <div class="lbl">Título</div><input class="field" value="${esc(l.titulo)}" oninput="A.libre('${l.uid}','titulo',this.value)">
+    <div class="lbl">Texto</div><textarea class="field" oninput="A.libre('${l.uid}','texto',this.value)">${esc(l.texto)}</textarea>
+    <div class="lbl">Ubicación</div><button class="sel" onclick="A.posLibre('${l.uid}')"><span>${esc(byId(POS,l.pos).t)}</span></button>
+    <div class="lbl">Foto (opcional)</div>${imgZone("libre_"+l.uid,l.foto,false,"Pega aquí una foto")}</div>`).join("")}
+  <button class="addbtn" onclick="A.nuevaLibre()">＋ Agregar lámina libre</button>`}
+function stepRevisar(){
+  const f=validar(),I=S.incluir;
+  const tg=(k,t)=>`<div class="row ${I[k]?"on":""}" onclick="S.incluir.${k}=!S.incluir.${k};save();render()"><div class="chk"></div><div class="tx"><b>${t}</b></div></div>`;
+  setTimeout(drawThumbs,0);
+  return `${f.length?`<div class="warn">Falta completar: ${f.map(esc).join(" · ")}</div>`:""}
+  <button class="b-big b-pri" onclick="A.generar()">⬇ Descargar PowerPoint</button>
+  <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
+  <div class="thumbs" id="thumbs"></div>
+  <div class="lbl">Incluir / quitar láminas</div>
+  ${tg("crv","Qué es CicloRecreoVía")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}`}
+
+async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
+  el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
+function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
+window.addEventListener("resize",()=>document.querySelectorAll(".pv-car,#thumbs").forEach(scaleSlides));
+
+/* Editor de activación */
+function editorAct(a){
+  const t=byId(CAT.tipos,a.tipo);const dins=CAT.dinamicas;const ks=kpisAct(a);
+  const objOpts=S.objetivos.length?S.objetivos:[];
+  return `<div class="full" id="full"><header><button class="hbtn" onclick="A.cerrarEditor()">← Volver</button><div class="stepname">Activación ${S.activaciones.indexOf(a)+1}</div><button class="hbtn" style="color:var(--red)" onclick="A.borrarAct('${a.uid}')">🗑</button></header>
+  <main>
+  <div class="lbl" style="margin-top:0">Tipo de activación</div>
+  <button class="sel" onclick="A.pickTipo('${a.uid}')"><span>${esc(t.t)}<small>${esc(t.d)}</small></span></button>
+  <div class="lbl">Nombre que verá el prospecto</div>
+  <input class="field" value="${esc(a.nombre)}" oninput="A.setA('${a.uid}','nombre',this.value)">
+  <div class="lbl">Objetivos que cubre</div>
+  ${objOpts.length?`<div class="grid">${objOpts.map(id=>{const o=byId(CAT.objetivos,id);return `<button class="chip ${a.objetivos.includes(id)?"on":""}" style="min-height:60px" onclick="A.toggleObjAct('${a.uid}','${id}')"><b>${esc(o.t)}</b></button>`}).join("")}</div>`:`<div class="warn">Primero elige objetivos en el paso 2.</div>`}
+  <div class="lbl">Dinámica</div>
+  ${dins.filter(d=>t.din.includes(d.id)).concat(dins.filter(d=>!t.din.includes(d.id))).map(d=>`<button class="opt ${a.din===d.id?"on":""}" onclick="A.setA('${a.uid}','din','${d.id}',1)">${t.din.includes(d.id)?"★ ":""}${esc(d.t)}<small>${esc(d.tx)}</small></button>`).join("")}
+  <button class="opt ${a.din==="otra"?"on":""}" onclick="A.setA('${a.uid}','din','otra',1)">✎ Otra (escribir)<small>Describe una dinámica a medida</small></button>
+  ${a.din==="otra"?`<textarea class="field" placeholder="Describe cómo interactúan las personas con la activación…" oninput="A.setA('${a.uid}','dinTexto',this.value)">${esc(a.dinTexto||"")}</textarea>`:""}
+  <div class="lbl">Elementos (valor por domingo)</div>
+  ${CAT.elementos.map(e=>{const q=a.elementos[e.id]||0;return `<div class="el ${q?"on":""}"><div class="tx"><b>${esc(e.t)}</b><small>${money(e.p)} c/u${q?" · "+money(e.p*q):""}</small></div><div class="stp"><button onclick="A.qty('${a.uid}','${e.id}',-1)">−</button><div class="q" onclick="A.qtyKp('${a.uid}','${e.id}')">${q}</div><button onclick="A.qty('${a.uid}','${e.id}',1)">＋</button></div></div>`}).join("")}
+  <div class="total"><b>Total por domingo</b><span>${money(subDomingo(a))}</span></div>
+  <div class="lbl">Números por domingo</div>
+  <p class="hint">Se calculan solos según los elementos y objetivos. Toca un número para fijarlo a mano.</p>
+  ${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}
+  <div class="lbl">Foto</div>
+  <div class="seg"><button class="${!a.foto?"on":""}" onclick="A.setImg('act_${a.uid}',null)">Estándar</button><button class="${a.foto||a._propia?"on":""}" onclick="A.setA('${a.uid}','_propia',true,1)">Propia</button></div>
+  ${a.foto||a._propia?imgZone("act_"+a.uid,a.foto,false,"Pega aquí la foto de la activación"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoAct(a).data}');background-size:cover"></div></div>`}
+  </main>
+  <nav class="bot"><button class="b-sec" onclick="A.previewAct('${a.uid}')">👁 Ver lámina</button><button class="b-pri" onclick="A.cerrarEditor()">Listo ✓</button></nav></div>`;
+}
+
+/* =====================================================================
+   RENDER Y ACCIONES
+   ===================================================================== */
+function render(){
+  if(editAct){const a=S.activaciones.find(x=>x.uid===editAct);if(a){const sc=($("#full")||{}).scrollTop||0;
+    let ed=$("#editor");if(!ed){ed=document.createElement("div");ed.id="editor";document.body.appendChild(ed)}ed.innerHTML=editorAct(a);$("#full").scrollTop=sc;return}editAct=null}
+  const ed=$("#editor");if(ed)ed.remove();
+  $("#stepname").textContent=STEPS[cur].t;
+  $("#prog").innerHTML=STEPS.map((s,i)=>`<i class="${i===cur?"on":i<cur?"done":""}" onclick="A.ir(${i})"></i>`).join("");
+  $("#main").innerHTML=STEPS[cur].r();
+  $("#nav").innerHTML=`<button class="b-sec" ${cur===0?"disabled style=opacity:.35":""} onclick="A.ir(${cur-1})">← Atrás</button><button class="b-sec" onclick="A.preview(-1)">👁 Ver</button>`+
+    (cur<STEPS.length-1?`<button class="b-pri" onclick="A.ir(${cur+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
+}
+const A={
+  ir(i){if(i<0||i>=STEPS.length)return;cur=i;render();window.scrollTo(0,0)},
+  toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
+    if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
+    if(k==="objetivos"&&i>=0) S.activaciones.forEach(x=>x.objetivos=x.objetivos.filter(o=>o!==id));
+    save();const y=window.scrollY;render();window.scrollTo(0,y)},
+  pickVendedor(){picker("Vendedor/a",CAT.vendedores.map(v=>({v:v.id,t:v.n,sub:v.c+" · "+v.m})),S.vendedor,v=>{S.vendedor=v;save();render()})},
+  portadaPropia(){S._portadaPropia=true;save();render()},
+  async pegar(key){
+    try{const items=await navigator.clipboard.read();for(const it of items){const ty=it.types.find(t=>t.startsWith("image/"));if(ty){A.setImg(key,await procesarImagen(await it.getType(ty),IMG[key]&&IMG[key].isLogo));return}}
+      toast("No hay imagen copiada")}catch(e){activeImg=key;const z=document.getElementById("iz_"+key);if(z)z.focus();toast("Presiona Ctrl+V (o mantén presionado → Pegar)")}
+  },
+  archivo(key){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=async()=>{if(i.files[0])A.setImg(key,await procesarImagen(i.files[0],IMG[key]&&IMG[key].isLogo))};i.click()},
+  setImg(key,img){
+    if(key==="logo")S.logo=img;
+    else if(key==="portada"){S.portada=img;if(!img)S._portadaPropia=false}
+    else if(key.startsWith("act_")){const a=S.activaciones.find(x=>x.uid===key.slice(4));if(a){a.foto=img;if(!img)a._propia=false}}
+    else if(key.startsWith("libre_")){const l=S.libres.find(x=>x.uid===key.slice(6));if(l)l.foto=img}
+    save();const y=window.scrollY;render();window.scrollTo(0,y);
+  },
+  nuevaAct(){if(S.activaciones.length>=4)return;const t=CAT.tipos[0];
+    const a={uid:uid(),tipo:t.id,nombre:t.t,objetivos:[...S.objetivos],din:t.din[0],dinTexto:"",elementos:{...t.el},kpiMan:{},foto:null};
+    S.activaciones.push(a);save();A.editar(a.uid)},
+  editar(u){editAct=u;render();const f=$("#full");if(f)f.scrollTop=0},
+  cerrarEditor(){editAct=null;render()},
+  borrarAct(u){if(!confirm("¿Quitar esta activación?"))return;S.activaciones=S.activaciones.filter(a=>a.uid!==u);editAct=null;save();render()},
+  pickTipo(u){const a=S.activaciones.find(x=>x.uid===u);picker("Tipo de activación",CAT.tipos.map(t=>({v:t.id,t:t.t,sub:t.d})),a.tipo,v=>{const t=byId(CAT.tipos,v);
+    const old=byId(CAT.tipos,a.tipo);if(a.nombre===old.t||!a.nombre)a.nombre=t.t;a.tipo=v;a.elementos={...t.el};a.din=t.din[0];a.kpiMan={};save();render()})},
+  setA(u,k,v,re){const a=S.activaciones.find(x=>x.uid===u);a[k]=v;save();if(re)render()},
+  toggleObjAct(u,id){const a=S.activaciones.find(x=>x.uid===u);const i=a.objetivos.indexOf(id);i<0?a.objetivos.push(id):a.objetivos.splice(i,1);save();render()},
+  qty(u,id,d){const a=S.activaciones.find(x=>x.uid===u);const q=Math.max(0,(a.elementos[id]||0)+d);if(q)a.elementos[id]=q;else delete a.elementos[id];save();render()},
+  qtyKp(u,id){const a=S.activaciones.find(x=>x.uid===u);keypad("Cantidad · "+byId(CAT.elementos,id).t,a.elementos[id]||"",v=>{v=Math.round(v);if(v>0)a.elementos[id]=v;else delete a.elementos[id];save();render()})},
+  kpiKp(u,id){const a=S.activaciones.find(x=>x.uid===u);a.kpiMan=a.kpiMan||{};keypad(byId(CAT.kpis,id).t+" por domingo",a.kpiMan[id]!=null?a.kpiMan[id]:"",v=>{a.kpiMan[id]=Math.round(v);save();render()})},
+  kpiAuto(u,id){const a=S.activaciones.find(x=>x.uid===u);delete a.kpiMan[id];save();render()},
+  nuevaLibre(){S.libres.push({uid:uid(),titulo:"",texto:"",pos:"act",foto:null});save();render()},
+  borrarLibre(u){S.libres=S.libres.filter(l=>l.uid!==u);save();render()},
+  libre(u,k,v){const l=S.libres.find(x=>x.uid===u);l[k]=v;save()},
+  posLibre(u){const l=S.libres.find(x=>x.uid===u);picker("¿Dónde va esta lámina?",POS.map(p=>({v:p.id,t:p.t})),l.pos,v=>{l.pos=v;save();render()})},
+  async preview(start,onlyAct){
+    const list=onlyAct?plan().filter(p=>p.k==="act"&&p.a.uid===onlyAct):plan();const all=plan();
+    const hs=await renderHtmlSlides(all);const idx=onlyAct?[all.findIndex(p=>p.k==="act"&&p.a.uid===onlyAct)]:all.map((_,i)=>i);
+    layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa · desliza →</span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
+      <div class="pv-car" id="pvc">${idx.map(i=>`<div><div class="sw">${hs[i]}</div><div class="pv-cap">${i+1} / ${all.length} · ${esc(all[i].name)}</div></div>`).join("")}</div></div>`;
+    const c=$("#pvc");scaleSlides(c);if(start>0&&!onlyAct)c.scrollLeft=c.clientWidth*start;
+  },
+  previewAct(u){A.preview(0,u)},
+  generar(){generarPPTX().catch(e=>{console.error(e);alert("Error al generar: "+e.message)})},
+  menu(){picker("Menú",[{v:"nuevo",t:"🆕 Nueva propuesta",sub:"Borra la propuesta actual"},{v:"exp",t:"💾 Guardar propuesta (archivo)",sub:"Para retomarla o duplicarla después"},{v:"imp",t:"📂 Abrir propuesta guardada"}],null,v=>{
+    if(v==="nuevo"&&confirm("¿Borrar la propuesta actual y empezar una nueva?")){S=nuevo();cur=0;save();render()}
+    if(v==="exp"){const b=new Blob([JSON.stringify(S)],{type:"application/json"});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Propuesta "+(S.prospecto||"sin nombre")+".json";l.click()}
+    if(v==="imp"){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async()=>{try{S=Object.assign(nuevo(),JSON.parse(await i.files[0].text()));cur=0;save();render();toast("Propuesta abierta")}catch(e){alert("Archivo no válido")}};i.click()}
+  })}
+};
+render();
+</script>
+</body>
+</html>
