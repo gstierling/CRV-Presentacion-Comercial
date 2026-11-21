@@ -124,6 +124,9 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 .pv-cap{color:#8b949e;text-align:center;font-size:14px;margin-top:8px}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .thumbs .sw{border-radius:8px;cursor:pointer;border:2px solid var(--line)}
+.ccard{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
+.ccard>.row{border:none;box-shadow:none;padding:4px 4px 8px;margin:0}
+.ccard .lbl{margin-top:6px}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--te);color:#fff;font-weight:900;padding:12px 18px;border-radius:12px;z-index:90}
 .warn{background:#fff4e8;border:1px solid var(--or);color:#8a4300;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
 @media(min-width:700px){.act img{width:180px}}
@@ -183,6 +186,8 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
   nav.bot{justify-content:flex-end}
   nav.bot button{flex:0 0 auto;min-width:150px;padding:12px 18px;font-size:15px}
   .thumbs{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
+  .cgrid .ccard{margin:0}
   .cols2{display:grid;grid-template-columns:minmax(0,480px) minmax(0,340px);gap:32px;align-items:start}
 }
 </style>
@@ -277,6 +282,18 @@ const CAT = {
     {id:"c7",t:"TikTok",d:"Contenido en la cuenta de TikTok de CicloRecreoVía",ic:"tiktok"},
     {id:"c8",t:"Reporte de resultados",d:"Informe con fotos y cifras al cierre",ic:"chart"}
   ],
+  circuitos:{
+    stgo:{t:"Circuito CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de varias comunas de Santiago para caminar, pedalear, patinar y compartir, conectando parques, plazas y barrios.",
+      datos:[{ic:"route",n:"40 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"+30.000",l:"personas por domingo"}]},
+    vina:{t:"Circuito CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al borde costero, con un público familiar, deportivo y turístico.",
+      datos:[{ic:"route",n:"10 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"+8.000",l:"personas por domingo"}]}
+  },
+  perfiles:{
+    stgo:{t:"Perfil de asistentes · Santiago",kpis:[{ic:"users",n:"+30.000",l:"asistentes por domingo"},{ic:"heart",n:"62%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3,5 h",l:"de permanencia promedio"}],
+      grupos:[{t:"Edad",items:[["Menos de 18",22],["18 a 29",24],["30 a 44",31],["45 a 59",15],["60 o más",8]]},{t:"Cómo recorren",items:[["Bicicleta",58],["A pie / trote",24],["Patines / scooter",12],["Otro",6]]}],genero:[["Mujeres",48],["Hombres",52]]},
+    vina:{t:"Perfil de asistentes · Viña del Mar",kpis:[{ic:"users",n:"+8.000",l:"asistentes por domingo"},{ic:"heart",n:"58%",l:"asiste en familia o con amigos"},{ic:"clock",n:"3 h",l:"de permanencia promedio"}],
+      grupos:[{t:"Edad",items:[["Menos de 18",20],["18 a 29",27],["30 a 44",29],["45 a 59",16],["60 o más",8]]},{t:"Cómo recorren",items:[["Bicicleta",52],["A pie / trote",30],["Patines / scooter",13],["Otro",5]]}],genero:[["Mujeres",50],["Hombres",50]]}
+  },
   rrss:[
     {red:"Instagram",user:"@ciclorecreovia",n:85000,ic:"instagram"},
     {red:"Facebook",user:"CicloRecreoVía",n:40000,ic:"facebook"},
@@ -369,9 +386,11 @@ function nuevo(){return {
   portada:null,objetivos:[],activaciones:[],periodos:["p1","p13","p52"],
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
-  incluir:{crv:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
+  imgs:{},
+  incluir:{crv:true,circ_stgo:true,circ_vina:false,perf_stgo:true,perf_vina:false,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
+function normalizar(){const n=nuevo();S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul"}normalizar();
 let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("crvPropuesta",JSON.stringify(S))}catch(e){}},300);asideLater()}
 /* data URL → object URL (más liviano para miniaturas y vista previa) */
 const OBJ=new Map();
@@ -383,7 +402,7 @@ let asideT,asideBusy=false,asideAgain=false;
 function asideLater(){clearTimeout(asideT);asideT=setTimeout(updateAside,350)}
 function pasoActual(list){
   if(editAct)return list.map((p,i)=>p.k==="act"&&p.a.uid===editAct?i:-1).filter(i=>i>=0);
-  const want=[["portada"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],[]][cur]||[];
+  const want=[["portada"],["crv","circ","perf"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],[]][cur]||[];
   return list.map((p,i)=>want.includes(p.k)?i:-1).filter(i=>i>=0);
 }
 async function updateAside(){
@@ -423,6 +442,10 @@ function plan(){
   const P=[],I=S.incluir,lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({k:"libre",l,name:"Lámina libre: "+(l.titulo||"sin título")}));
   P.push({k:"portada",name:"Portada"});
   if(I.crv)P.push({k:"crv",name:"Qué es CicloRecreoVía"});
+  if(I.circ_stgo)P.push({k:"circ",city:"stgo",name:"Circuito Santiago"});
+  if(I.circ_vina)P.push({k:"circ",city:"vina",name:"Circuito Viña del Mar"});
+  if(I.perf_stgo)P.push({k:"perf",city:"stgo",name:"Perfil asistentes Santiago"});
+  if(I.perf_vina)P.push({k:"perf",city:"vina",name:"Perfil asistentes Viña del Mar"});
   if(I.objetivos&&S.objetivos.length)P.push({k:"objetivos",name:"Objetivos"});
   lib("obj");
   S.activaciones.forEach((a,i)=>P.push({k:"act",a,i,name:"Activación "+(i+1)}));
@@ -563,7 +586,7 @@ async function dibujar(R,sp,n,tot){
     break;}
   case "crv":{
     R.slide(t.bg);cabecera(R,n,tot);
-    await R.image(stdPhoto("crv","CicloRecreoVía","#0b69b2"),7.55,0,W-7.55,H);
+    await R.image(S.imgs.crv||stdPhoto("crv","CicloRecreoVía","#0b69b2"),7.55,0,W-7.55,H);
     titulo(R,"Qué es CicloRecreoVía",0.6,0.6,6.7);
     R.text(CAT.crv.descripcion,0.6,1.7,6.6,2.0,{size:fitSize(CAT.crv.descripcion,13,[[460,12],[620,11]]),color:t.mu});
     for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=0.6+(i%2)*3.4,y=3.85+Math.floor(i/2)*1.7;const hi=i===0;
@@ -571,6 +594,45 @@ async function dibujar(R,sp,n,tot){
       await icono(R,st.ic||"sparkles",x+0.25,y+0.28,0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
       R.text(st.n,x+0.95,y+0.2,2.1,0.6,{size:24,head:true,valign:"middle"});
       R.text(st.l,x+0.95,y+0.8,2.1,0.5,{size:11.5,bold:true,color:hi?COL.wh:t.mu});}
+    break;}
+  case "circ":{
+    const c=CAT.circuitos[sp.city];R.slide(t.bg);cabecera(R,n,tot);
+    boton(R,"CIRCUITO",0.6,0.62,{w:1.4});
+    titulo(R,c.t,0.6,1.05,6.1,fitSize(c.t,28,[[33,22]]));
+    R.text(c.d,0.6,2.2,5.9,1.15,{size:12.5,color:t.mu});
+    for(let i=0;i<Math.min(4,c.datos.length);i++){const d=c.datos[i];const x=0.6+(i%2)*3.0,y=3.55+Math.floor(i/2)*1.65;const hi=i===0;
+      R.rect(x,y,2.85,1.45,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,d.ic||"sparkles",x+0.22,y+0.25,0.5,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(d.n,x+0.85,y+0.18,1.9,0.6,{size:fitSize(d.n,22,[[7,18]]),head:true,valign:"middle"});
+      R.text(d.l,x+0.85,y+0.78,1.9,0.5,{size:11,bold:true,color:hi?COL.wh:t.mu});}
+    const m=S.imgs["mapa_"+sp.city];
+    R.rect(6.95,0.62,5.78,6.26,{fill:t.p1,radius:0.08});
+    if(m)await R.image(m,7.1,0.77,5.48,5.96,{fit:"contain"});else await R.image(stdPhoto("mapa_"+sp.city,"Mapa del circuito",sp.city==="stgo"?"#179741":"#0b69b2"),6.95,0.62,5.78,6.26);
+    break;}
+  case "perf":{
+    const pf=CAT.perfiles[sp.city];R.slide(t.bg);cabecera(R,n,tot);
+    boton(R,"PERFIL DE ASISTENTES",0.6,0.62,{w:2.4});
+    titulo(R,pf.t,0.6,1.0,12,fitSize(pf.t,28,[[34,25]]));
+    for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],y=2.2+i*1.6;const hi=i===0;
+      R.rect(0.6,y,3.6,1.42,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,k.ic||"users",0.82,y+0.25,0.5,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(k.n,1.45,y+0.15,2.6,0.62,{size:24,head:true,valign:"middle"});
+      R.text(k.l,1.45,y+0.78,2.6,0.5,{size:11,bold:true,color:hi?COL.wh:t.mu});}
+    const gx=4.45,gw=(W-0.6-gx-0.22)/2;
+    pf.grupos.slice(0,2).forEach((g,gi)=>{const x=gx+gi*(gw+0.22),y=2.2;
+      R.rect(x,y,gw,3.55,{fill:t.p1,radius:0.08});
+      R.text(g.t,x+0.3,y+0.22,gw-0.6,0.4,{size:14,head:true});
+      const mx=Math.max(...g.items.map(z=>z[1]),1),rh=Math.min(0.55,2.65/g.items.length);
+      g.items.forEach((z,i)=>{const yy=y+0.8+i*rh;
+        R.text(z[0],x+0.3,yy,1.55,rh,{size:10.5,bold:true,valign:"middle"});
+        const bx=x+1.9,bw=gw-1.9-0.95;R.rect(bx,yy+rh/2-0.08,bw,0.16,{fill:t.p2,radius:0.08});R.rect(bx,yy+rh/2-0.08,Math.max(0.16,bw*z[1]/mx),0.16,{fill:t.acc,radius:0.08});
+        R.text(z[1]+"%",x+gw-0.85,yy,0.6,rh,{size:11,head:true,align:"right",valign:"middle"});});});
+    const y=5.95,gwT=W-0.6-gx;R.rect(gx,y,gwT,0.9,{fill:t.p1,radius:0.08});
+    R.text("Género",gx+0.3,y,1.2,0.9,{size:13,head:true,valign:"middle"});
+    const g0=pf.genero[0],g1=pf.genero[1],bx=gx+1.6,bw=gwT-1.9,w0=bw*g0[1]/(g0[1]+g1[1]);
+    R.rect(bx,y+0.25,w0,0.4,{fill:t.acc});R.rect(bx+w0,y+0.25,bw-w0,0.4,{fill:t.acc2});
+    R.text(g0[0]+" "+g0[1]+"%",bx+0.15,y+0.25,w0-0.2,0.4,{size:11,bold:true,valign:"middle"});
+    R.text(g1[0]+" "+g1[1]+"%",bx+w0+0.15,y+0.25,bw-w0-0.3,0.4,{size:11,bold:true,valign:"middle",align:"right"});
     break;}
   case "objetivos":{
     R.slide(t.bg);
@@ -753,13 +815,14 @@ document.addEventListener("paste",async e=>{
    ===================================================================== */
 const STEPS=[
  {t:"1 · Prospecto",r:stepProspecto},
- {t:"2 · Objetivos",r:stepObjetivos},
- {t:"3 · Activaciones",r:stepActivaciones},
- {t:"4 · Tarifas",r:stepTarifas},
- {t:"5 · Comunicación",r:stepComunicacion},
- {t:"6 · Condiciones y enlaces",r:stepCondiciones},
- {t:"7 · Láminas libres",r:stepLibres},
- {t:"8 · Revisar y generar",r:stepRevisar}
+ {t:"2 · CicloRecreoVía",r:stepCRV},
+ {t:"3 · Objetivos",r:stepObjetivos},
+ {t:"4 · Activaciones",r:stepActivaciones},
+ {t:"5 · Tarifas",r:stepTarifas},
+ {t:"6 · Comunicación",r:stepComunicacion},
+ {t:"7 · Condiciones y enlaces",r:stepCondiciones},
+ {t:"8 · Láminas libres",r:stepLibres},
+ {t:"9 · Revisar y generar",r:stepRevisar}
 ];
 function stepProspecto(){const v=vendedor();return `
   <p class="hint">Datos de la portada. La foto de portada es estándar; puedes reemplazarla pegando otra.</p>
@@ -777,6 +840,21 @@ function stepProspecto(){const v=vendedor();return `
   <div class="lbl">Foto de portada</div>
   <div class="seg"><button class="${!S.portada?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada?"on":""}" onclick="A.portadaPropia()">Propia</button></div>
   ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}</div></div>`}
+function stepCRV(){
+  const I=S.incluir;
+  const tog=(k,t,sub)=>`<div class="row ${I[k]?"on":""}" onclick="S.incluir.${k}=!S.incluir.${k};save();render()"><div class="chk"></div><div class="tx"><b>${t}</b><small>${sub}</small></div></div>`;
+  const foto=(key,std,ph,propiaTxt)=>{const img=S.imgs[key],prop=img||S["_p_"+key];return `<div class="seg"><button class="${!prop?"on":""}" onclick="A.setImg('${key}',null)">Estándar</button><button class="${prop?"on":""}" onclick="S['_p_${key}']=true;save();render()">${propiaTxt||"Propia"}</button></div>`+
+    (prop?imgZone(key,img,false,ph):`<div class="imgz"><div class="prev" style="background-image:url('${std.data}');background-size:cover"></div></div>`)};
+  const card=(inner)=>`<div class="ccard">${inner}</div>`;
+  const resumen=d=>d.map(x=>x.n+" "+x.l).join(" · ");
+  return `<p class="hint">Láminas institucionales. Marca las que quieres mostrar en esta propuesta y elige sus fotos o mapas.</p>
+  <div class="cgrid">
+  ${card(tog("crv","Qué es CicloRecreoVía","Descripción y cifras principales")+(I.crv?`<div class="lbl">Foto</div>`+foto("crv",stdPhoto("crv","CicloRecreoVía","#0b69b2"),"Pega aquí la foto"):""))}
+  ${card(tog("circ_stgo","Circuito CicloRecreoVía Santiago",resumen(CAT.circuitos.stgo.datos))+(I.circ_stgo?`<div class="lbl">Mapa del circuito</div>`+foto("mapa_stgo",stdPhoto("mapa_stgo","Mapa del circuito","#179741"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa"):""))}
+  ${card(tog("circ_vina","Circuito CicloRecreoVía Viña del Mar",resumen(CAT.circuitos.vina.datos))+(I.circ_vina?`<div class="lbl">Mapa del circuito</div>`+foto("mapa_vina",stdPhoto("mapa_vina","Mapa del circuito","#0b69b2"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa"):""))}
+  ${card(tog("perf_stgo","Perfil asistentes CicloRecreoVía Santiago",resumen(CAT.perfiles.stgo.kpis)))}
+  ${card(tog("perf_vina","Perfil asistentes CicloRecreoVía Viña del Mar",resumen(CAT.perfiles.vina.kpis)))}
+  </div>`}
 function stepObjetivos(){return `
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en la propuesta.</p>
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
@@ -823,7 +901,7 @@ function stepRevisar(){
   <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>
   <div class="lbl">Incluir / quitar láminas</div>
-  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
+  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("circ_stgo","Circuito Santiago")}${tg("circ_vina","Circuito Viña del Mar")}${tg("perf_stgo","Perfil asistentes Santiago")}${tg("perf_vina","Perfil asistentes Viña del Mar")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","RRSS de CicloRecreoVía")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
 
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
   el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
@@ -892,6 +970,7 @@ const A={
     else if(key==="portada"){S.portada=img;if(!img)S._portadaPropia=false}
     else if(key.startsWith("act_")){const a=S.activaciones.find(x=>x.uid===key.slice(4));if(a){a.foto=img;if(!img)a._propia=false}}
     else if(key.startsWith("libre_")){const l=S.libres.find(x=>x.uid===key.slice(6));if(l)l.foto=img}
+    else {S.imgs=S.imgs||{};S.imgs[key]=img;if(!img)delete S["_p_"+key]}
     save();const y=window.scrollY;render();window.scrollTo(0,y);
   },
   nuevaAct(){if(S.activaciones.length>=4)return;const t=CAT.tipos[0];
@@ -915,7 +994,7 @@ const A={
   async preview(start,onlyAct){
     const all=plan();const hs=await renderHtmlSlides(all);
     const idx=onlyAct?[all.findIndex(p=>p.k==="act"&&p.a.uid===onlyAct)]:all.map((_,i)=>i);
-    if(start===-1){const want=[["portada"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],["portada"]][cur]||["portada"];
+    if(start===-1){const want=[["portada"],["crv","circ","perf"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],["portada"]][cur]||["portada"];
       start=Math.max(0,all.findIndex(p=>want.includes(p.k)))}
     let pos=Math.max(0,Math.min(idx.length-1,start>0?start:0));
     layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa</span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
@@ -936,7 +1015,7 @@ const A={
   menu(){picker("Menú",[{v:"nuevo",t:"🆕 Nueva propuesta",sub:"Borra la propuesta actual"},{v:"exp",t:"💾 Guardar propuesta (archivo)",sub:"Para retomarla o duplicarla después"},{v:"imp",t:"📂 Abrir propuesta guardada"}],null,v=>{
     if(v==="nuevo"&&confirm("¿Borrar la propuesta actual y empezar una nueva?")){S=nuevo();cur=0;save();render()}
     if(v==="exp"){const b=new Blob([JSON.stringify(S)],{type:"application/json"});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Propuesta "+(S.prospecto||"sin nombre")+".json";l.click()}
-    if(v==="imp"){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async()=>{try{S=Object.assign(nuevo(),JSON.parse(await i.files[0].text()));cur=0;save();render();toast("Propuesta abierta")}catch(e){alert("Archivo no válido")}};i.click()}
+    if(v==="imp"){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async()=>{try{S=Object.assign(nuevo(),JSON.parse(await i.files[0].text()));normalizar();cur=0;save();render();toast("Propuesta abierta")}catch(e){alert("Archivo no válido")}};i.click()}
   })}
 };
 $("#hlogo").src=LOGO_CRV.data;
