@@ -211,7 +211,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 const CAT = {
   crv:{
     descripcion:"CicloRecreoVía abre las calles de Santiago cada domingo para que miles de personas caminen, pedaleen, patinen y compartan en familia. Es el espacio público recreativo más masivo de la ciudad: un punto de encuentro con alto tiempo de permanencia y un público activo, diverso y receptivo a las marcas que aportan a su experiencia.",
-    stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"40 km",l:"de calles abiertas",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"+15",l:"años de trayectoria",ic:"award"}]
+    stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"25 km",l:"de calles habilitadas todos los domingos",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
     {id:"branding",t:"Branding",d:"Presencia visible de la marca en los puntos de mayor flujo del circuito.",kpi:"visualizaciones",ic:"flag"},
@@ -382,15 +382,15 @@ async function cropCover(img,bw,bh){
    ESTADO
    ===================================================================== */
 function nuevo(){return {
-  prospecto:"",logo:null,tema:"azul",fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
+  ver:2,prospecto:"",logo:null,tema:"azul",fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
   portada:null,objetivos:[],activaciones:[],periodos:["p1","p13","p52"],
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
   imgs:{},
-  incluir:{crv:true,circ_stgo:true,circ_vina:false,perf_stgo:true,perf_vina:false,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
+  incluir:{crv:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
-function normalizar(){const n=nuevo();S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul"}normalizar();
+function normalizar(){const n=nuevo();if(!S.ver||S.ver<2){S.incluir=S.incluir||{};S.incluir.circ_vina=true;S.incluir.perf_vina=true;S.ver=2}S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul"}normalizar();
 let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("crvPropuesta",JSON.stringify(S))}catch(e){}},300);asideLater()}
 /* data URL → object URL (más liviano para miniaturas y vista previa) */
 const OBJ=new Map();
@@ -600,7 +600,7 @@ async function dibujar(R,sp,n,tot){
     await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
     if(S.logo){R.text("+",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
     R.text([{text:P,o:{color:t.acc,br:true}},{text:"en CicloRecreoVía",o:{}}],0.7,2.15,7.4,2.1,{size:fitSize(P,44,[[12,40],[18,34],[26,28]]),head:true,valign:"middle"});
-    R.text("Propuesta de auspicio para activar tu marca en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.4,7.0,0.9,{size:14,color:t.mu});
+    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.35,7.3,1.9,{size:21,color:t.mu});
     await bandaFina(R,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha),w:1.32},{ic:"handshake",l:"Ejecutivo/a",v:v.n,w:1.05},{ic:"badge",l:"Cargo",v:v.c,w:1.05},{ic:"mail",l:"Correo",v:v.m,w:1.45},{ic:"smartphone",l:"Celular",v:v.t,w:0.95}]);
     break;}
   case "crv":{
