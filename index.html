@@ -127,6 +127,22 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--te);color:#fff;font-weight:900;padding:12px 18px;border-radius:12px;z-index:90}
 .warn{background:#fff4e8;border:1px solid var(--or);color:#8a4300;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
 @media(min-width:700px){.act img{width:180px}}
+/* Columna de miniaturas (pantallas anchas) */
+#aside{display:none}
+@media(min-width:900px){
+  body{padding-right:20%}
+  #aside{display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;width:20%;background:#e8ecf1;border-left:1px solid var(--line);z-index:45}
+  #aside .ah{padding:14px 14px 8px;font-weight:900;font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;display:flex;justify-content:space-between;align-items:center}
+  #aside .al{flex:1;overflow:auto;padding:4px 14px 20px}
+  #aside .th{margin-bottom:12px;cursor:pointer}
+  #aside .th .sw{border-radius:6px;border:3px solid transparent;box-shadow:0 1px 4px rgba(17,24,39,.15)}
+  #aside .th.hi .sw{border-color:var(--or)}
+  #aside .th .cap{font-size:12px;font-weight:800;color:var(--mut);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #aside .th.hi .cap{color:var(--or)}
+  nav.bot{right:20%}
+  .full{right:20%}
+  main{max-width:none;padding-left:28px;padding-right:28px}
+}
 </style>
 </head>
 <body>
@@ -138,6 +154,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 </header>
 <main id="main"></main>
 <nav class="bot" id="nav"></nav>
+<aside id="aside"><div class="ah"><span>Láminas</span><span id="acount"></span></div><div class="al" id="alist"></div></aside>
 <div id="layer"></div>
 
 <script>
@@ -313,7 +330,29 @@ function nuevo(){return {
   incluir:{crv:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
-let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("crvPropuesta",JSON.stringify(S))}catch(e){}},300)}
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("crvPropuesta",JSON.stringify(S))}catch(e){}},300);asideLater()}
+/* data URL → object URL (más liviano para miniaturas y vista previa) */
+const OBJ=new Map();
+function objUrl(d){if(!d||!d.startsWith("data:"))return d;let u=OBJ.get(d);if(u)return u;
+  try{const [h,b]=d.split(",");const mime=h.slice(5).split(";")[0];const bin=atob(b);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);
+    u=URL.createObjectURL(new Blob([a],{type:mime}))}catch(e){u=d}OBJ.set(d,u);return u}
+/* Columna de miniaturas */
+let asideT,asideBusy=false,asideAgain=false;
+function asideLater(){clearTimeout(asideT);asideT=setTimeout(updateAside,350)}
+function pasoActual(list){
+  if(editAct)return list.map((p,i)=>p.k==="act"&&p.a.uid===editAct?i:-1).filter(i=>i>=0);
+  const want=[["portada"],["objetivos"],["act"],["tarifas"],["comunicacion","rrss"],["condiciones","enlaces"],["libre"],[]][cur]||[];
+  return list.map((p,i)=>want.includes(p.k)?i:-1).filter(i=>i>=0);
+}
+async function updateAside(){
+  const el=$("#alist");if(!el||getComputedStyle($("#aside")).display==="none")return;
+  if(asideBusy){asideAgain=true;return}asideBusy=true;
+  try{const list=plan();const hs=await renderHtmlSlides(list);const hi=pasoActual(list);
+    el.innerHTML=hs.map((h,i)=>`<div class="th ${hi.includes(i)?"hi":""}" onclick="A.preview(${i})"><div class="sw">${h}</div><div class="cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");
+    $("#acount").textContent=list.length;scaleSlides(el);
+    if(hi.length){const t=el.children[hi[0]];if(t&&(t.offsetTop<el.scrollTop||t.offsetTop>el.scrollTop+el.clientHeight-80))el.scrollTo({top:t.offsetTop-12,behavior:"smooth"})}
+  }finally{asideBusy=false;if(asideAgain){asideAgain=false;asideLater()}}
+}
 let cur=0,editAct=null;
 
 /* Cálculos */
@@ -402,7 +441,7 @@ function HtmlR(){
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||T().tx};font-weight:${o.head?900:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:${o.head?1.05:1.25};overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
     },
     async image(img,x,y,w,h,o){
-      html+=`<img src="${img.data}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
+      html+=`<img src="${objUrl(img.data)}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
     },
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
@@ -737,7 +776,7 @@ function stepRevisar(){
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
   el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
 function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
-window.addEventListener("resize",()=>document.querySelectorAll("#pvs,#thumbs").forEach(scaleSlides));
+window.addEventListener("resize",()=>{document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
 let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 
 /* Editor de activación */
@@ -773,6 +812,7 @@ function editorAct(a){
    RENDER Y ACCIONES
    ===================================================================== */
 function render(){
+  asideLater();
   if(editAct){const a=S.activaciones.find(x=>x.uid===editAct);if(a){const sc=($("#full")||{}).scrollTop||0;
     let ed=$("#editor");if(!ed){ed=document.createElement("div");ed.id="editor";document.body.appendChild(ed)}ed.innerHTML=editorAct(a);$("#full").scrollTop=sc;return}editAct=null}
   const ed=$("#editor");if(ed)ed.remove();
