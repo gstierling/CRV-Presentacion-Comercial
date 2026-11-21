@@ -537,21 +537,29 @@ async function banda(R,y,h,items,pill){const t=T();R.rect(0,y,W,h,{fill:t.p1});
     R.text(it.l,ix+(it.ic?0.42:0),y+0.3,iw-0.6,0.32,{size:10.5,bold:true,color:t.mu,valign:"middle"});
     R.text(it.v,ix,y+0.68,iw-0.4,h-0.95,{size:fitSize(it.v,26,[[9,22],[13,18],[20,15]]),head:true,valign:"middle"});}
   if(pill)boton(R,pill,W-0.6-2.4,y+h/2-0.22,{w:2.4,h:0.44,size:11});}
+/* Franja inferior delgada (portada) */
+async function bandaFina(R,items){const t=T(),h=0.82,y=H-h;R.rect(0,y,W,h,{fill:t.p1});
+  const tw=items.reduce((s,i)=>s+(i.w||1),0),avail=W-1.2;let x=0.6;
+  for(let i=0;i<items.length;i++){const it=items[i],iw=avail*(it.w||1)/tw;
+    if(i>0)R.rect(x-0.12,y+0.2,0.02,h-0.4,{fill:t.p2});
+    await R.image(await iconPng(it.ic,t.acc),x,y+0.27,0.28,0.28,{fit:"contain"});
+    R.text(it.l,x+0.38,y+0.12,iw-0.5,0.25,{size:8.5,bold:true,color:t.mu});
+    R.text(it.v,x+0.38,y+0.37,iw-0.5,0.32,{size:fitSize(it.v,11.5,[[24,10.5],[30,9.5]]),bold:true,valign:"middle"});
+    x+=iw;}}
 async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.1});await R.image(img,x+0.15,y+0.12,w-0.3,h-0.24,{fit:"contain"})}
 
 async function dibujar(R,sp,n,tot){
   const P=S.prospecto||"Prospecto",t=T();
   switch(sp.k){
   case "portada":{
-    R.slide(t.bg);
-    await R.image(fotoPortada(),8.35,0.7,4.38,4.35);
+    R.slide(t.bg);const v=vendedor();
+    await R.image(fotoPortada(),8.35,0.7,4.38,5.75);
     await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
-    if(S.logo){R.text("×",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
-    R.text([{text:"CicloRecreoVía",o:{br:true}},{text:"× "+P,o:{color:t.acc}}],0.7,2.05,7.4,2.0,{size:fitSize(P,44,[[12,38],[20,32],[30,26]]),head:true,valign:"middle"});
-    R.text("Propuesta de auspicio para activar la marca en el espacio recreativo más masivo de Santiago.",0.7,4.15,6.6,0.6,{size:13,color:t.mu});
-    boton(R,"PROPUESTA DE AUSPICIO",0.7,4.85,{w:2.5});
-    const v=vendedor();
-    await banda(R,5.6,1.9,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha)},{ic:"handshake",l:"Ejecutivo/a",v:v.n},{ic:"users",l:"Público",v:(CAT.crv.stats[0]||{}).n||""}]);
+    if(S.logo){R.text("+",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
+    R.text([{text:P,o:{color:t.acc,br:true}},{text:"en CicloRecreoVía",o:{}}],0.7,2.15,7.4,2.1,{size:fitSize(P,44,[[12,40],[18,34],[26,28]]),head:true,valign:"middle"});
+    R.text("Propuesta de auspicio para activar tu marca en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.4,7.0,0.9,{size:14,color:t.mu});
+    boton(R,"PROPUESTA DE AUSPICIO",0.7,5.45,{w:2.5});
+    await bandaFina(R,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha),w:1.32},{ic:"handshake",l:"Ejecutivo/a",v:v.n,w:1.05},{ic:"badge",l:"Cargo",v:v.c,w:1.05},{ic:"mail",l:"Correo",v:v.m,w:1.45},{ic:"smartphone",l:"Celular",v:v.t,w:0.95}]);
     break;}
   case "crv":{
     R.slide(t.bg);cabecera(R,n,tot);
