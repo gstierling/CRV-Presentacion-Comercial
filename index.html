@@ -304,7 +304,7 @@ async function cropCover(img,bw,bh){
    ESTADO
    ===================================================================== */
 function nuevo(){return {
-  prospecto:"",logo:null,fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
+  prospecto:"",logo:null,tema:"azul",fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
   portada:null,objetivos:[],activaciones:[],periodos:["p1","p13","p52"],
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
@@ -360,16 +360,20 @@ function plan(){
    DIBUJO DE LÁMINAS — un solo diseño, dos salidas (HTML y PowerPoint)
    Medidas en pulgadas, lámina 13,333 x 7,5
    ===================================================================== */
-const COL={dark:"111827",navy:"0A3D6B",or:"E87115",bl:"0B69B2",gr:"179741",tx:"111827",mu:"6B7280",card:"F3F4F6",wh:"FFFFFF",line:"E5E7EB",soft:"374151",
-  tbl:"EAF2FA",tor:"FDF0E6",tgr:"E8F5EC"};
-const ROT=[COL.bl,COL.or,COL.gr];const TINT={[COL.bl]:COL.tbl,[COL.or]:COL.tor,[COL.gr]:COL.tgr};
-/* Tipografía: títulos y cifras en Arial Black (gruesa, tipo Helvetica Heavy); texto en Arial. Ambas vienen en Windows, Mac y Google Slides */
+/* ===== Paletas: un color dominante oscuro en capas + acento naranjo (como la referencia) ===== */
+const TEMAS={
+  azul:{t:"Azul CicloRecreoVía",bg:"0B2545",p1:"13355F",p2:"1C4878",acc:"E87115",acc2:"2FB45A",tx:"FFFFFF",mu:"B4C3D6"},
+  verde:{t:"Verde CicloRecreoVía",bg:"0E3A22",p1:"165031",p2:"1F6640",acc:"E87115",acc2:"3B9BE6",tx:"FFFFFF",mu:"B9D3C2"},
+  grafito:{t:"Grafito",bg:"14171C",p1:"20252D",p2:"2C333D",acc:"E87115",acc2:"2FB45A",tx:"FFFFFF",mu:"AEB6C2"}
+};
+function T(){return TEMAS[S.tema]||TEMAS.azul}
+const COL={wh:"FFFFFF",dark:"111827"};
+/* Tipografía: títulos y cifras en Arial Black; texto en Arial (vienen en Windows, Mac y Google Slides) */
 const FH="Arial Black",FB="Arial";
 const CSS_H="'Arial Black','Nunito',Arial,sans-serif",CSS_B="Arial,'Nunito',sans-serif";
 const moneyIva=n=>money(n)+" + IVA";
 function runsOf(t){return typeof t==="string"?[{text:t,o:{}}]:t}
 
-/* Ícono → PNG del color pedido (sirve igual para vista previa y PowerPoint) */
 const ICP={};
 async function iconPng(name,color){
   const k=name+"_"+color;if(ICP[k])return ICP[k];
@@ -387,13 +391,13 @@ function HtmlR(){
     slide(bg){html=`<div class="s" style="background:#${bg};overflow:hidden">`;},
     end(){out.push(html+"</div>")},
     rect(x,y,w,h,o){const rad=o.ellipse?"50%":o.pill?px(Math.min(w,h)/2):o.radius?px(o.radius):0;
-      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${rad};${o.rot?`transform:rotate(${o.rot}deg);`:""}${o.line?`border:2px solid #${o.line};`:""}"></div>`},
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${rad};${o.line?`border:2px solid #${o.line};`:""}"></div>`},
     text(t,x,y,w,h,o){
       const r=runsOf(t).map(r=>{const ro=r.o||{};let s=esc(r.text).replace(/\n/g,"<br>");
         s=`<span style="${ro.color?`color:#${ro.color};`:""}${ro.size?`font-size:${pt(ro.size)};`:""}${ro.head?`font-family:${CSS_H};font-weight:900;`:ro.body?`font-family:${CSS_B};font-weight:${ro.bold?700:400};`:ro.bold?"font-weight:700;":""}${ro.link?"text-decoration:underline;":""}">${s}</span>`;
         return s+(ro.br?"<br>":"")}).join("");
       const jv={top:"flex-start",middle:"center",bottom:"flex-end"}[o.valign||"top"];
-      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||COL.tx};font-weight:${o.head?900:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:${o.head?1.05:1.2};overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
+      html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||T().tx};font-weight:${o.head?900:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:${o.head?1.05:1.25};overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
     },
     async image(img,x,y,w,h,o){
       html+=`<img src="${img.data}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"}">`;
@@ -401,7 +405,7 @@ function HtmlR(){
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
-      rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:${o.noBorder?"none":`1px solid #${o.border||COL.line}`};border-bottom:1px solid #${o.border||COL.line};padding:0 ${px(.12)};background:#${c.fill||"FFFFFF"};color:#${c.color||COL.tx};${c.head?`font-family:${CSS_H};font-weight:900;`:`font-weight:${c.bold?700:400};`}text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${esc(c.t).replace(/\n/g,"<br>")}</td>`).join("")+"</tr>").join("")+"</table>";
+      rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:2px solid #${o.border};padding:0 ${px(.14)};background:#${c.fill};color:#${c.color||T().tx};${c.head?`font-family:${CSS_H};font-weight:900;`:`font-weight:${c.bold?700:400};`}text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${esc(c.t).replace(/\n/g,"<br>")}</td>`).join("")+"</tr>").join("")+"</table>";
     }
   };
 }
@@ -411,13 +415,13 @@ function PptxR(pptx){
     slide(bg){s=pptx.addSlide();s.background={color:bg}},
     end(){},
     rect(x,y,w,h,o){const shape=o.ellipse?"ellipse":(o.radius||o.pill)?"roundRect":"rect";
-      s.addShape(shape,{x,y,w,h,fill:{color:o.fill,transparency:o.transp||0},line:o.line?{color:o.line,width:1.5}:{type:"none"},rectRadius:o.pill?Math.min(w,h)/2:(o.radius||undefined),rotate:o.rot||undefined})},
+      s.addShape(shape,{x,y,w,h,fill:{color:o.fill,transparency:o.transp||0},line:o.line?{color:o.line,width:1.5}:{type:"none"},rectRadius:o.pill?Math.min(w,h)/2:(o.radius||undefined)})},
     text(t,x,y,w,h,o){
       const runs=runsOf(t).map(r=>{const ro=r.o||{},op={};
         if(ro.color)op.color=ro.color;if(ro.size)op.fontSize=ro.size;if(ro.br)op.breakLine=true;if(ro.link)op.hyperlink={url:ro.link};
         if(ro.head){op.fontFace=FH;op.bold=false}else if(ro.body){op.fontFace=FB;op.bold=!!ro.bold}else if(ro.bold!=null)op.bold=ro.bold;
         return {text:r.text,options:op}});
-      s.addText(runs,{x,y,w,h,margin:0,isTextBox:true,fontFace:o.head?FH:FB,fontSize:o.size||14,color:o.color||COL.tx,bold:o.head?false:!!o.bold,italic:!!o.italic,align:o.align||"left",valign:o.valign||"top",charSpacing:o.cs||undefined,lineSpacingMultiple:o.head?0.95:1.05,fit:"shrink"});
+      s.addText(runs,{x,y,w,h,margin:0,isTextBox:true,fontFace:o.head?FH:FB,fontSize:o.size||14,color:o.color||T().tx,bold:o.head?false:!!o.bold,italic:!!o.italic,align:o.align||"left",valign:o.valign||"top",charSpacing:o.cs||undefined,lineSpacingMultiple:o.head?0.95:1.1,fit:"shrink"});
     },
     async image(img,x,y,w,h,o){
       if(o&&o.fit==="contain"){const r=Math.min(w/(img.w||1),h/(img.h||1));const iw=(img.w||1)*r,ih=(img.h||1)*r;
@@ -425,191 +429,183 @@ function PptxR(pptx){
       else s.addImage({data:await cropCover(img,w,h),x,y,w,h});
     },
     table(rows,x,y,w,colW,o){
-      s.addTable(rows.map(r=>r.map(c=>({text:c.t,options:{fill:{color:c.fill||"FFFFFF"},color:c.color||COL.tx,bold:c.head?false:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:c.head?FH:FB}}))),
-        {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:0.75,color:o.border||COL.line},fontFace:FB,fontSize:o.size||12,margin:[0,0.12,0,0.12]});
+      s.addTable(rows.map(r=>r.map(c=>({text:c.t,options:{fill:{color:c.fill},color:c.color||T().tx,bold:c.head?false:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:c.head?FH:FB}}))),
+        {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:2,color:o.border},fontFace:FB,fontSize:o.size||12,margin:[0,0.14,0,0.14]});
     }
   };
 }
 const W=13.333,H=7.5;
 function fitSize(txt,base,steps){const n=(txt||"").length;let s=base;for(const [len,size] of steps) if(n>len) s=size;return s}
-/* Motivo gráfico: "píldoras" diagonales como la de FUNDACIÓN del logo */
-function pildoras(R,x,y,s,cols){const c=cols||[COL.or,COL.gr,COL.bl];s=s||1;
-  R.rect(x,y,4.2*s,1.0*s,{fill:c[0],pill:true,rot:-32});
-  R.rect(x+1.1*s,y+1.05*s,3.0*s,0.72*s,{fill:c[1],pill:true,rot:-32});
-  R.rect(x-0.15*s,y+1.6*s,1.7*s,0.5*s,{fill:c[2],pill:true,rot:-32});}
-function etiqueta(R,t,x,y,fill,color){const w=Math.max(1.6,0.12*t.length+0.6);R.rect(x,y,w,0.42,{fill,pill:true});R.text(t,x,y,w,0.42,{size:11,head:true,color:color||COL.wh,align:"center",valign:"middle",cs:1.5});return w}
-function titulo(R,t,o){o=o||{};R.text(t,o.x||0.6,o.y||0.5,o.w||9.6,1.0,{size:fitSize(t,30,[[30,26],[42,22],[58,19]]),head:true,color:o.color||COL.tx,valign:"middle"})}
-async function burbuja(R,ic,x,y,d,fill,iconColor){R.rect(x,y,d,d,{fill,ellipse:true});const p=d*0.25;await R.image(await iconPng(ic,iconColor||COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
-async function pie(R,n,tot,dark){
-  if(dark){R.rect(0.6,6.9,0.86,0.46,{fill:COL.wh,radius:0.08});await R.image(LOGO_CRV,0.66,6.93,0.74,0.4,{fit:"contain"})}
-  else await R.image(LOGO_CRV,0.6,6.92,0.7,0.43,{fit:"contain"});
-  const c=dark==="color"?COL.wh:dark?"9CA3AF":COL.mu;
-  R.text("Propuesta para "+(S.prospecto||"—"),1.6,6.98,7,0.3,{size:10,color:c});R.text(n+" / "+tot,11.7,6.98,1.03,0.3,{size:10,color:c,align:"right",bold:true})}
-async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.2});await R.image(img,x+0.2,y+0.18,w-0.4,h-0.36,{fit:"contain"})}
+/* Micro encabezado como en la referencia */
+function cabecera(R,n,tot){const t=T();R.text("CicloRecreoVía · Propuesta para "+(S.prospecto||"—"),0.6,0.22,8,0.28,{size:9,bold:true,color:t.mu});
+  R.text(String(n).padStart(2,"0")+" / "+String(tot).padStart(2,"0"),11.2,0.22,1.53,0.28,{size:9,bold:true,color:t.mu,align:"right"})}
+/* Botón/píldora de acento */
+function boton(R,t,x,y,o){o=o||{};const w=o.w||Math.max(1.3,0.105*t.length+0.55),h=o.h||0.4;R.rect(x,y,w,h,{fill:o.fill||T().acc,radius:0.07});
+  R.text(o.link?[{text:t,o:{link:o.link,color:o.color||COL.wh}}]:t,x,y,w,h,{size:o.size||10.5,bold:true,color:o.color||COL.wh,align:"center",valign:"middle"});return w}
+function titulo(R,t,x,y,w,size){R.text(t,x,y,w,1.0,{size:size||fitSize(t,34,[[24,30],[34,26],[48,22]]),head:true,valign:"middle"})}
+async function icono(R,ic,x,y,d,fill,iconColor){R.rect(x,y,d,d,{fill,radius:d*0.22});const p=d*0.22;await R.image(await iconPng(ic,iconColor||COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
+/* Banda inferior de cifras con divisores */
+async function banda(R,y,h,items,pill){const t=T();R.rect(0,y,W,h,{fill:t.p1});
+  const pw=pill?2.6:0,n=items.length,iw=(W-1.2-pw)/n;
+  for(let i=0;i<n;i++){const it=items[i],x=0.6+i*iw;
+    if(i>0)R.rect(x-0.02,y+0.35,0.03,h-0.7,{fill:t.p2});
+    const ix=x+(i>0?0.3:0);
+    if(it.ic)await R.image(await iconPng(it.ic,t.acc),ix,y+0.3,0.32,0.32,{fit:"contain"});
+    R.text(it.l,ix+(it.ic?0.42:0),y+0.3,iw-0.6,0.32,{size:10.5,bold:true,color:t.mu,valign:"middle"});
+    R.text(it.v,ix,y+0.68,iw-0.4,h-0.95,{size:fitSize(it.v,26,[[9,22],[13,18],[20,15]]),head:true,valign:"middle"});}
+  if(pill)boton(R,pill,W-0.6-2.4,y+h/2-0.22,{w:2.4,h:0.44,size:11});}
+async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.1});await R.image(img,x+0.15,y+0.12,w-0.3,h-0.24,{fit:"contain"})}
 
 async function dibujar(R,sp,n,tot){
-  const P=S.prospecto||"Prospecto";
+  const P=S.prospecto||"Prospecto",t=T();
   switch(sp.k){
   case "portada":{
-    R.slide(COL.dark);
-    await R.image(fotoPortada(),6.6,0,W-6.6,H);
-    pildoras(R,5.4,5.3,1.25);
-    await tarjetaLogo(R,LOGO_CRV,0.7,0.65,2.7,1.65);
-    if(S.logo){R.text("×",3.45,0.65,0.7,1.65,{size:36,head:true,color:COL.or,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,4.2,0.65,2.7,1.65)}
-    etiqueta(R,"PROPUESTA DE AUSPICIO",0.7,2.95,COL.or);
-    R.text("para",0.7,3.6,5.6,0.55,{size:24,head:true,color:COL.wh});
-    R.text(P,0.7,4.1,5.8,1.6,{size:fitSize(P,50,[[10,42],[16,34],[24,27],[34,22]]),head:true,color:COL.or});
+    R.slide(t.bg);
+    await R.image(fotoPortada(),8.35,0.7,4.38,4.35);
+    await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
+    if(S.logo){R.text("×",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
+    R.text([{text:"CicloRecreoVía",o:{br:true}},{text:"× "+P,o:{color:t.acc}}],0.7,2.05,7.4,2.0,{size:fitSize(P,44,[[12,38],[20,32],[30,26]]),head:true,valign:"middle"});
+    R.text("Propuesta de auspicio para activar la marca en el espacio recreativo más masivo de Santiago.",0.7,4.15,6.6,0.6,{size:13,color:t.mu});
+    boton(R,"PROPUESTA DE AUSPICIO",0.7,4.85,{w:2.5});
     const v=vendedor();
-    R.text([{text:fechaLarga(S.fecha),o:{bold:true,br:true}},{text:v.n+" · "+v.c,o:{color:"9CA3AF"}}],0.7,6.35,5.0,0.7,{size:13,color:COL.wh});
+    await banda(R,5.6,1.9,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha)},{ic:"handshake",l:"Ejecutivo/a",v:v.n},{ic:"users",l:"Público",v:(CAT.crv.stats[0]||{}).n||""}]);
     break;}
   case "crv":{
-    R.slide(COL.wh);
-    R.rect(0,0,5.4,H,{fill:COL.bl});
-    pildoras(R,2.9,6.5,0.75,[COL.or,COL.gr,COL.wh]);
-    etiqueta(R,"QUIÉNES SOMOS",0.6,0.7,COL.or);
-    R.text("Qué es CicloRecreoVía",0.6,1.25,4.5,1.6,{size:30,head:true,color:COL.wh});
-    R.text(CAT.crv.descripcion,0.6,3.0,4.4,3.0,{size:fitSize(CAT.crv.descripcion,14,[[440,12.5],[600,11]]),color:"E6F0FA"});
-    const tc=[COL.or,COL.gr,COL.navy,COL.dark];
-    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=5.95+(i%2)*3.55,y=0.7+Math.floor(i/2)*3.0;const c=tc[i];
-      R.rect(x,y,3.35,2.8,{fill:c,radius:0.25});
-      await burbuja(R,st.ic||"sparkles",x+0.3,y+0.3,0.75,COL.wh,c);
-      R.text(st.n,x+0.3,y+1.15,2.9,0.85,{size:fitSize(st.n,36,[[6,32]]),head:true,color:COL.wh,valign:"middle"});
-      R.text(st.l,x+0.3,y+2.0,2.9,0.6,{size:14,bold:true,color:COL.wh});}
-    await pie(R,n,tot,"color");break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    await R.image(stdPhoto("crv","CicloRecreoVía","#0b69b2"),7.55,0,W-7.55,H);
+    titulo(R,"Qué es CicloRecreoVía",0.6,0.6,6.7);
+    R.text(CAT.crv.descripcion,0.6,1.7,6.6,2.0,{size:fitSize(CAT.crv.descripcion,13,[[460,12],[620,11]]),color:t.mu});
+    for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i];const x=0.6+(i%2)*3.4,y=3.85+Math.floor(i/2)*1.7;const hi=i===0;
+      R.rect(x,y,3.2,1.5,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,st.ic||"sparkles",x+0.25,y+0.28,0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(st.n,x+0.95,y+0.2,2.1,0.6,{size:24,head:true,valign:"middle"});
+      R.text(st.l,x+0.95,y+0.8,2.1,0.5,{size:11.5,bold:true,color:hi?COL.wh:t.mu});}
+    break;}
   case "objetivos":{
-    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
-    etiqueta(R,"LO QUE BUSCA "+P.toUpperCase().slice(0,22),0.6,0.45,COL.or);titulo(R,"Objetivos de "+P,{y:0.9});
+    R.slide(t.bg);
     const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
-    const cols=c<=3?c:c===4?2:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),gap=0.25;
-    const cw=(W-1.2-gap*(cols-1))/cols,ch=Math.min(2.55,(4.85-gap*(rows-1))/rows);
-    const big=cols<=3,d=big?0.8:0.62;
-    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=2.0+Math.floor(i/cols)*(ch+gap);const col=ROT[i%3];
-      R.rect(x,y,cw,ch,{fill:col,radius:0.25});
-      await burbuja(R,o.ic||"target",x+0.25,y+0.25,d,COL.wh,col);
-      R.text(o.t,x+0.25,y+d+0.4,cw-0.5,0.55,{size:big?20:cols>=5?13:15,head:true,color:COL.wh});
-      R.text(o.d,x+0.25,y+d+0.95,cw-0.5,ch-d-1.05,{size:big?14:cols>=5?10.5:12,color:COL.wh});}
-    await pie(R,n,tot);break;}
+    const cols=c<=4?c:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),bh=rows>1?2.0:2.6;
+    await R.image(fotoPortada(),0,0,W,bh);R.rect(0,0,W,bh,{fill:t.bg,transp:35});
+    cabecera(R,n,tot);
+    R.text("Objetivos de "+P,0.6,0.45,W-1.2,bh-0.6,{size:fitSize(P,34,[[16,30],[26,26]]),head:true,align:"center",valign:"middle"});
+    const gap=0.25,cw=(W-1.2-gap*(cols-1))/cols,top=bh+0.35,ch=Math.min(3.6,(H-top-0.45-gap*(rows-1))/rows);const hiI=Math.floor((Math.min(c,cols)-1)/2);
+    const big=cols<=3;
+    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=top+Math.floor(i/cols)*(ch+gap);const hi=i===hiI;
+      R.rect(x,y,cw,ch,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,o.ic||"target",x+0.25,y+0.25,big?0.7:0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(o.t,x+0.25,y+(big?1.1:0.9),cw-0.5,0.55,{size:big?18:cols>=5?12.5:14,head:true});
+      R.text(o.d,x+0.25,y+(big?1.7:1.45),cw-0.5,ch-(big?1.85:1.55),{size:big?13:cols>=5?10:11.5,color:hi?COL.wh:t.mu});}
+    break;}
   case "act":{
-    const a=sp.a,col=ROT[sp.i%3];
-    R.slide(COL.wh);
-    await R.image(fotoAct(a),0,0,6.1,H);
-    etiqueta(R,"ACTIVACIÓN "+(sp.i+1),0.5,0.5,col);
-    const ks=kpisAct(a).slice(0,3);
-    if(ks.length){const kw=(6.1-0.5*2-0.2*(ks.length-1))/ks.length;
-      for(let i=0;i<ks.length;i++){const k=ks[i],kx=0.5+i*(kw+0.2);const ki=byId(CAT.kpis,k.id)||{};const kc=ROT[(sp.i+i)%3];
-        R.rect(kx,4.85,kw,1.75,{fill:kc,radius:0.22});
-        await R.image(await iconPng(ki.ic||"sparkles",COL.wh),kx+0.2,5.02,0.38,0.38,{fit:"contain"});
-        R.text(fmt(k.v),kx+0.2,5.45,kw-0.4,0.55,{size:ks.length>2?20:24,head:true,color:COL.wh,valign:"middle"});
-        R.text(k.t+" por domingo",kx+0.2,6.02,kw-0.4,0.5,{size:9.5,bold:true,color:COL.wh})}}
-    const x=6.65,w=W-0.55-x;
-    pildoras(R,11.7,-0.75,0.6);
-    R.text(a.nombre||"",x,0.45,w-1.4,1.0,{size:fitSize(a.nombre,28,[[22,24],[32,20]]),head:true,color:COL.tx,valign:"middle"});
-    R.rect(x,1.6,w,1.95,{fill:TINT[col],radius:0.2});
-    await burbuja(R,"sparkles",x+0.25,1.8,0.55,col);
-    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),x+0.95,1.8,w-1.2,0.55,{size:11.5,head:true,color:col,valign:"middle"});
-    const dt=dinTexto(a);R.text(dt,x+0.3,2.45,w-0.6,1.05,{size:fitSize(dt,13,[[230,11.5],[330,10]]),color:COL.soft});
-    R.text("ELEMENTOS Y VALOR POR DOMINGO",x,3.75,w,0.35,{size:11.5,head:true,color:COL.tx});
+    const a=sp.a;R.slide(t.bg);cabecera(R,n,tot);
+    boton(R,"ACTIVACIÓN "+(sp.i+1),0.6,0.62,{w:1.7});
+    titulo(R,a.nombre||"",0.6,1.1,7.9,fitSize(a.nombre,32,[[20,28],[30,23]]));
+    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.6,2.2,7.9,0.3,{size:10.5,bold:true,color:t.acc,cs:1});
+    const dt=dinTexto(a);R.text(dt,0.6,2.5,7.9,1.0,{size:fitSize(dt,12.5,[[260,11],[380,10]]),color:t.mu});
     const els=Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e);
-    const many=els.length>6,rowH=many?0.24:0.29,fs=many?9.5:11;
-    const rows=els.map(z=>[{t:String(z.q),align:"center",head:true,color:col},{t:z.e.t},{t:moneyIva(z.e.p*z.q),align:"right"}]);
-    if(rows.length)R.table(rows,x,4.15,w,[0.65,w-2.75,2.1],{rowH,size:fs});
-    R.rect(x,6.25,w,0.6,{fill:COL.or,pill:true});
-    R.text([{text:"Total por domingo  ",o:{bold:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],x+0.3,6.25,w-0.6,0.6,{size:13,color:COL.wh,valign:"middle",align:"right"});
-    await pie(R,n,tot,"color");break;}
+    const sub=subDomingo(a)||1,max=Math.max(...els.map(z=>z.e.p*z.q),1);
+    const rh=els.length>6?0.27:els.length>4?0.34:0.4,y0=3.65,bw=2.6;
+    els.slice(0,8).forEach((z,i)=>{const y=y0+i*rh,v=z.e.p*z.q;
+      R.text(z.q+" × "+z.e.t,0.6,y,3.0,rh,{size:rh<0.3?9.5:11,bold:true,valign:"middle"});
+      R.rect(3.7,y+rh/2-0.06,bw,0.12,{fill:t.p1,radius:0.06});R.rect(3.7,y+rh/2-0.06,Math.max(0.12,bw*v/max),0.12,{fill:t.acc,radius:0.06});
+      R.text(moneyIva(v),6.45,y,2.05,rh,{size:rh<0.3?9.5:11,color:t.mu,align:"right",valign:"middle"});});
+    await R.image(fotoAct(a),9.0,0.62,3.73,3.9);
+    R.rect(9.0,4.52,3.73,0.95,{fill:t.acc});
+    R.text([{text:"Total por domingo",o:{bold:true,size:10.5,br:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:17}}],9.2,4.52,3.4,0.95,{size:12,valign:"middle"});
+    const ks=kpisAct(a).slice(0,3).map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,l:k.t+" / domingo",v:fmt(k.v)}));
+    if(ks.length)await banda(R,5.75,1.75,ks);
+    break;}
   case "numeros":{
-    R.slide(COL.dark);pildoras(R,10.6,-0.55,0.95);
-    etiqueta(R,"IMPACTO ESTIMADO",0.6,0.45,COL.gr);titulo(R,"Lo que lograremos cada domingo",{y:0.9,color:COL.wh});
-    const ks=kpisTotales();const c=ks.length,cols=c<=4?c:Math.ceil(c/2),rows=c<=4?1:2,gap=0.25;
-    const cw=(W-1.2-gap*(cols-1))/cols,ch=rows===1?4.0:2.25;const y0=2.15;
-    const pl=periodosSel().slice(-1)[0];
-    for(let i=0;i<c;i++){const k=ks[i];const x=0.6+(i%cols)*(cw+gap),y=y0+Math.floor(i/cols)*(ch+gap);const col=ROT[i%3];const d=rows===1?0.95:0.6;
-      R.rect(x,y,cw,ch,{fill:col,radius:0.25});
-      await burbuja(R,(byId(CAT.kpis,k.id)||{}).ic||"sparkles",x+0.3,y+0.3,d,COL.wh,col);
-      const big=rows===1?(cols>=4?34:42):26;
-      R.text(fmt(k.v),x+0.3,y+d+(rows===1?0.5:0.3),cw-0.6,rows===1?1.0:0.6,{size:big,head:true,color:COL.wh,valign:"middle"});
-      R.text(k.t,x+0.3,y+d+(rows===1?1.55:0.95),cw-0.6,0.5,{size:rows===1?15:12,bold:true,color:COL.wh});
-      if(pl&&pl.dom>1)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.3,y+ch-(rows===1?0.6:0.4),cw-0.6,0.35,{size:rows===1?12:10,color:COL.wh});}
-    await pie(R,n,tot,true);break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    const ks=kpisTotales(),pl=periodosSel().slice(-1)[0];
+    titulo(R,"Lo que lograremos cada domingo",0.6,0.7,4.3,30);
+    R.text("Estimaciones por jornada según los elementos de cada activación"+(pl&&pl.dom>1?", proyectadas a "+pl.t+".":"."),0.6,2.05,4.1,1.0,{size:12.5,color:t.mu});
+    boton(R,"POR DOMINGO",0.6,3.15,{w:1.8});
+    const c=ks.length,cols=c<=2?c:2,rows=Math.ceil(c/cols),gap=0.22,x0=5.2,cw=(W-0.6-x0-gap*(cols-1))/cols,ch=Math.min(3.0,(H-1.3-gap*(rows-1))/rows);
+    for(let i=0;i<c;i++){const k=ks[i];const x=x0+(i%cols)*(cw+gap),y=0.7+Math.floor(i/cols)*(ch+gap);const hi=i===0;
+      R.rect(x,y,cw,ch,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,(byId(CAT.kpis,k.id)||{}).ic||"sparkles",x+0.3,y+0.3,0.6,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(k.t,x+1.05,y+0.3,cw-1.3,0.6,{size:12,bold:true,color:hi?COL.wh:t.mu,valign:"middle"});
+      R.text(fmt(k.v),x+0.3,y+0.95,cw-0.6,ch>1.9?0.8:0.6,{size:ch>1.9?36:28,head:true,valign:"middle"});
+      if(pl&&pl.dom>1&&ch>1.6)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.3,y+ch-0.5,cw-0.6,0.3,{size:11,bold:true,color:hi?COL.wh:t.mu});}
+    break;}
   case "tarifas":{
-    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
-    etiqueta(R,"INVERSIÓN",0.6,0.45,COL.bl);titulo(R,"Valores por período",{y:0.9});
-    const ps=periodosSel(),acts=S.activaciones;
-    const head=[{t:"Activación",fill:COL.bl,color:COL.wh,head:true,size:12}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · "+p.desc+"% dcto.":""),fill:COL.bl,color:COL.wh,head:true,align:"center",size:10.5})));
-    const many=ps.length>=5;
-    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?COL.wh:COL.tbl}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?12:13.5,fill:i%2?COL.wh:COL.tbl}))));
-    const totRow=[{t:"TOTAL",fill:COL.or,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:COL.or,color:COL.wh,head:true,align:"center",size:many?11.5:13})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.78;
-    R.table([head,...body,totRow],0.6,2.15,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:COL.wh});
-    await pie(R,n,tot);break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    titulo(R,"Inversión",0.6,0.6,7);
+    R.text("Valores por activación según el período de presencia. Los descuentos por período ya están aplicados.",0.6,1.55,8.5,0.5,{size:12.5,color:t.mu});
+    const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
+    const head=[{t:"Activación",fill:t.bg,color:t.mu,bold:true,size:11}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:t.bg,color:t.mu,bold:true,align:"center",size:10.5})));
+    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.p2:t.p1}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.p2:t.p1}))));
+    const totRow=[{t:"TOTAL",fill:t.acc,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,head:true,align:"center",size:many?11:12.5})));
+    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    R.table([head,...body,totRow],0.6,2.35,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    break;}
   case "comunicacion":{
-    R.slide(COL.wh);
-    R.rect(0,0,4.6,H,{fill:COL.gr});pildoras(R,2.9,6.75,0.65,[COL.or,COL.bl,COL.wh]);
-    etiqueta(R,"DIFUSIÓN",0.6,0.7,COL.or);
-    R.text("Plan comunicacional",0.6,1.25,3.7,1.7,{size:30,head:true,color:COL.wh});
-    R.text("Así amplificamos la presencia de "+P+" antes, durante y después de cada domingo.",0.6,3.1,3.6,1.6,{size:14,color:"E8F5EC"});
-    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const two=it.length>4;const rh=two?(it.length>8?1.15:1.35):1.4;
-    const cw=two?4.05:8.0;
-    for(let i=0;i<it.length;i++){const c=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=5.1+col*(cw+0.2),y=0.75+row*rh;const cc=ROT[i%3];
-      R.rect(x,y,cw,rh-0.2,{fill:TINT[cc],radius:0.2});
-      await burbuja(R,c.ic||"megaphone",x+0.2,y+(rh-0.2)/2-0.35,0.7,cc);
-      R.text(c.t,x+1.1,y+0.15,cw-1.25,0.5,{size:13.5,head:true,color:COL.tx,valign:"middle"});
-      R.text(c.d,x+1.1,y+0.62,cw-1.25,rh-0.9,{size:11,color:COL.soft});}
-    if(S.comNota)R.text(S.comNota,0.6,5.0,3.6,1.2,{size:12,italic:true,color:COL.wh});
-    await pie(R,n,tot,"color");break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    titulo(R,"Plan comunicacional",0.6,0.6,8);
+    R.text("Así amplificamos la presencia de "+P+" antes, durante y después de cada domingo.",0.6,1.55,8.5,0.5,{size:12.5,color:t.mu});
+    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const c=it.length;
+    const cols=c<=4?Math.max(c,1):Math.ceil(c/2),rows=c<=4?1:2,gap=0.22,cw=(W-1.2-gap*(cols-1))/cols,top=2.35,ch=rows===1?3.9:(H-top-0.5-gap)/2;
+    for(let i=0;i<c;i++){const z=it[i];const x=0.6+(i%cols)*(cw+gap),y=top+Math.floor(i/cols)*(ch+gap);const hi=i===0;
+      R.rect(x,y,cw,ch,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,z.ic||"megaphone",x+0.25,y+0.25,rows===1?0.75:0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(z.t,x+0.25,y+(rows===1?1.25:0.95),cw-0.5,0.8,{size:rows===1?16:13,head:true});
+      R.text(z.d,x+0.25,y+(rows===1?2.15:1.6),cw-0.5,ch-(rows===1?2.3:1.7),{size:rows===1?12:10.5,color:hi?COL.wh:t.mu});}
+    if(S.comNota)R.text(S.comNota,9.2,1.55,3.5,0.6,{size:10.5,italic:true,color:t.mu});
+    break;}
   case "rrss":{
-    R.slide(COL.bl);pildoras(R,10.6,-0.55,0.95,[COL.or,COL.gr,COL.wh]);
-    etiqueta(R,"COMUNIDAD DIGITAL",0.6,0.45,COL.or);titulo(R,"Nuestra comunidad en redes",{y:0.9,color:COL.wh});
-    const r=CAT.rrss,c=r.length,gap=0.25,cw=(W-1.2-gap*(c-1))/c;
-    for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const col=ROT[(i+1)%3];
-      R.rect(x,2.25,cw,4.2,{fill:COL.wh,radius:0.25});
-      await burbuja(R,x0.ic||"globe",x+0.3,2.55,0.9,col);
-      R.text(x0.red,x+0.3,3.65,cw-0.6,0.45,{size:17,head:true,color:COL.tx});
-      R.text(x0.user,x+0.3,4.1,cw-0.6,0.4,{size:12,color:COL.mu});
-      R.text(fmt(x0.n),x+0.3,4.6,cw-0.6,0.9,{size:c>4?28:34,head:true,color:col,valign:"middle"});
-      R.text(x0.u||"seguidores",x+0.3,5.55,cw-0.6,0.45,{size:13,bold:true,color:COL.soft});}
-    await pie(R,n,tot,true);break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    titulo(R,"Nuestra comunidad digital",0.6,0.6,8);
+    R.text("Una audiencia activa que sigue y comparte lo que pasa cada domingo en CicloRecreoVía.",0.6,1.55,8,0.5,{size:12.5,color:t.mu});
+    const r=CAT.rrss,c=r.length,gap=0.22,cw=(W-1.2-gap*(c-1))/c;
+    for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const hi=i===0;
+      R.rect(x,2.45,cw,3.2,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,x0.ic||"globe",x+0.3,2.75,0.7,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(x0.red,x+0.3,3.65,cw-0.6,0.4,{size:15,head:true});
+      R.text(x0.user,x+0.3,4.05,cw-0.6,0.3,{size:11,color:hi?COL.wh:t.mu});
+      R.text(fmt(x0.n),x+0.3,4.45,cw-0.6,0.7,{size:c>4?26:32,head:true,valign:"middle"});
+      R.text(x0.u||"seguidores",x+0.3,5.15,cw-0.6,0.35,{size:11.5,bold:true,color:hi?COL.wh:t.mu});}
+    R.rect(0.6,5.95,W-1.2,0.9,{fill:t.p1,radius:0.08});
+    R.text([{text:"Total comunidad  ",o:{bold:true,color:t.mu,size:12}},{text:fmt(r.filter(z=>!z.u).reduce((s,z)=>s+z.n,0))+" seguidores",o:{head:true,size:18}}],0.9,5.95,8,0.9,{size:14,valign:"middle"});
+    boton(R,"@ciclorecreovia",W-0.6-2.5-0.3,6.18,{w:2.5,h:0.44});
+    break;}
   case "condiciones":{
-    R.slide(COL.wh);pildoras(R,10.6,-0.55,0.95);
-    etiqueta(R,"LETRA CHICA, EN GRANDE",0.6,0.45,COL.gr);titulo(R,"Condiciones del auspicio",{y:0.9});
+    R.slide(t.bg);cabecera(R,n,tot);
+    titulo(R,"Condiciones del auspicio",0.6,0.6,9);
     const it=S.condiciones.map(id=>byId(CAT.condiciones,id)).filter(Boolean).map(c=>({t:c.t,ic:c.ic}));if(S.condExtra)it.push({t:S.condExtra,ic:"sparkles"});
-    const two=it.length>4,gap=0.25,cw=two?(W-1.2-gap)/2:W-1.2,rows=two?Math.ceil(it.length/2):it.length,rh=Math.min(1.25,(4.75-gap*(rows-1))/rows);
-    for(let i=0;i<it.length;i++){const z=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*(cw+gap),y=2.05+row*(rh+gap);const cc=ROT[i%3];
-      R.rect(x,y,cw,rh,{fill:TINT[cc],radius:0.2});
-      await burbuja(R,z.ic||"badge",x+0.2,y+rh/2-0.33,0.66,cc);
-      R.text(z.t,x+1.05,y+0.1,cw-1.25,rh-0.2,{size:z.t.length>110?11.5:13,bold:true,color:COL.tx,valign:"middle"});}
-    await pie(R,n,tot);break;}
+    const two=it.length>4,gap=0.22,cw=two?(W-1.2-gap)/2:W-1.2,rows=two?Math.ceil(it.length/2):it.length,rh=Math.min(1.15,(H-2.0-0.5-gap*(rows-1))/rows);
+    for(let i=0;i<it.length;i++){const z=it[i];const col=two?i%2:0,row=two?Math.floor(i/2):i;const x=0.6+col*(cw+gap),y=1.95+row*(rh+gap);
+      R.rect(x,y,cw,rh,{fill:t.p1,radius:0.08});
+      await icono(R,z.ic||"badge",x+0.22,y+rh/2-0.3,0.6,t.acc);
+      R.text(z.t,x+1.05,y+0.08,cw-1.3,rh-0.16,{size:z.t.length>110?11:12.5,bold:true,valign:"middle"});}
+    break;}
   case "enlaces":{
-    R.slide(COL.dark);pildoras(R,10.6,-0.55,0.95);
-    etiqueta(R,"MIRA CÓMO SE VIVE",0.6,0.45,COL.or);titulo(R,"Fotos y videos",{y:0.9,color:COL.wh});
-    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const cols=it.length<=2?it.length:2,gap=0.25,cw=(W-1.2-gap*(cols-1))/cols;
-    for(let i=0;i<it.length;i++){const l=it[i];const x=0.6+(i%cols)*(cw+gap),y=2.15+Math.floor(i/cols)*2.2;const cc=ROT[i%3];
-      R.rect(x,y,cw,1.95,{fill:cc,radius:0.25});
-      await burbuja(R,l.ic||"link",x+0.3,y+0.5,0.95,COL.wh,cc);
-      R.text(l.t,x+1.5,y+0.45,cw-1.8,0.55,{size:18,head:true,color:COL.wh,valign:"middle"});
-      R.text([{text:l.url,o:{link:l.url,color:COL.wh}}],x+1.5,y+1.05,cw-1.8,0.45,{size:13});}
-    await pie(R,n,tot,true);break;}
+    R.slide(t.bg);cabecera(R,n,tot);
+    titulo(R,"Fotos y videos",0.6,0.6,8);
+    R.text("Mira cómo se vive CicloRecreoVía y cómo lucen las activaciones de nuestras marcas aliadas.",0.6,1.55,8.5,0.5,{size:12.5,color:t.mu});
+    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const c=it.length,gap=0.22,cw=(W-1.2-gap*(c-1))/Math.max(c,1);
+    for(let i=0;i<c;i++){const l=it[i];const x=0.6+i*(cw+gap);
+      await R.image(stdPhoto("enl"+i,l.t,["#0b69b2","#e87115","#179741","#7c3aed"][i%4]),x,2.4,cw,2.6);
+      R.rect(x,5.0,cw,1.6,{fill:t.p1});
+      await icono(R,l.ic||"link",x+0.25,5.25,0.5,t.acc);
+      R.text(l.t,x+0.9,5.22,cw-1.1,0.55,{size:13,head:true,valign:"middle"});
+      boton(R,"Ver enlace ↗",x+0.25,5.95,{w:1.6,h:0.38,size:10,link:l.url});}
+    break;}
   case "libre":{
-    const l=sp.l;R.slide(COL.wh);
-    const tx=l.texto||"";
-    if(l.foto){await R.image(l.foto,7.2,0,W-7.2,H);pildoras(R,6.0,5.6,1.0);
-      titulo(R,l.titulo||"",{w:6.3});R.text(tx,0.6,1.8,6.2,4.8,{size:fitSize(tx,16,[[350,14],[600,12.5],[900,11]]),color:COL.soft})}
-    else{pildoras(R,10.6,-0.55,0.95);titulo(R,l.titulo||"");R.text(tx,0.6,1.8,12.1,4.8,{size:fitSize(tx,18,[[500,16],[900,14],[1400,12.5]]),color:COL.soft})}
-    await pie(R,n,tot);break;}
+    const l=sp.l;R.slide(t.bg);const tx=l.texto||"";
+    if(l.foto){await R.image(l.foto,0,0,5.9,H);cabecera(R,n,tot);
+      titulo(R,l.titulo||"",6.5,0.7,6.2);R.text(tx,6.5,1.85,6.2,5.0,{size:fitSize(tx,15,[[350,13.5],[600,12],[900,10.5]]),color:t.mu})}
+    else{cabecera(R,n,tot);titulo(R,l.titulo||"",0.6,0.7,12);R.rect(0.6,1.9,W-1.2,4.9,{fill:t.p1,radius:0.08});
+      R.text(tx,0.95,2.2,W-1.9,4.3,{size:fitSize(tx,17,[[500,15],[900,13],[1400,11.5]]),color:t.tx})}
+    break;}
   case "cierre":{
-    R.slide(COL.dark);const v=vendedor();
-    await R.image(fotoCierre(),7.4,0,W-7.4,H);
-    pildoras(R,6.2,5.4,1.25,[COL.gr,COL.or,COL.bl]);
-    await tarjetaLogo(R,LOGO_CRV,0.7,0.6,2.4,1.47);
-    R.text("¡Gracias!",0.7,2.25,6.4,1.1,{size:56,head:true,color:COL.wh,valign:"middle"});
-    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",0.7,3.35,6.0,0.9,{size:17,head:true,color:COL.or});
-    R.rect(0.7,4.45,5.9,2.05,{fill:COL.bl,radius:0.25});
-    R.text(v.n,1.0,4.65,5.4,0.5,{size:19,head:true,color:COL.wh});
-    R.text(v.c,1.0,5.12,5.4,0.4,{size:13,color:"D6E6F5"});
-    await R.image(await iconPng("mail",COL.wh),1.0,5.62,0.3,0.3,{fit:"contain"});
-    R.text(v.m,1.42,5.59,5.0,0.36,{size:14,bold:true,color:COL.wh,valign:"middle"});
-    await R.image(await iconPng("smartphone",COL.wh),1.0,6.03,0.3,0.3,{fit:"contain"});
-    R.text(v.t,1.42,6.0,5.0,0.36,{size:14,bold:true,color:COL.wh,valign:"middle"});
-    R.text("ciclorecreovia.cl",0.7,6.8,6,0.4,{size:14,head:true,color:COL.or});
+    R.slide(t.bg);const v=vendedor();
+    await R.image(fotoCierre(),8.35,0.7,4.38,4.35);
+    await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
+    R.text("¡Gracias!",0.7,2.0,7.4,1.2,{size:60,head:true,valign:"middle"});
+    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",0.7,3.25,7.2,0.8,{size:16,bold:true,color:t.mu});
+    boton(R,"ciclorecreovia.cl",0.7,4.3,{w:2.2});
+    await banda(R,5.6,1.9,[{ic:"handshake",l:v.c||"Ejecutivo/a",v:v.n},{ic:"mail",l:"Correo",v:v.m},{ic:"smartphone",l:"Teléfono",v:v.t}]);
     break;}
   }
   R.end();
@@ -683,6 +679,8 @@ function stepProspecto(){const v=vendedor();return `
   <button class="sel" onclick="A.pickVendedor()"><span>${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)}</small></span></button>
   <div class="lbl">Fecha de la propuesta</div>
   <input class="field" type="date" value="${S.fecha}" onchange="S.fecha=this.value;save()">
+  <div class="lbl">Estilo de color</div>
+  <div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>
   <div class="lbl">Foto de portada</div>
   <div class="seg"><button class="${!S.portada?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada?"on":""}" onclick="A.portadaPropia()">Propia</button></div>
   ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}`}
@@ -727,6 +725,8 @@ function stepRevisar(){
   setTimeout(drawThumbs,0);
   return `${f.length?`<div class="warn">Falta completar: ${f.map(esc).join(" · ")}</div>`:""}
   <button class="b-big b-pri" onclick="A.generar()">⬇ Descargar PowerPoint</button>
+  <div class="lbl">Estilo de color</div>
+  <div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>
   <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>
   <div class="lbl">Incluir / quitar láminas</div>
