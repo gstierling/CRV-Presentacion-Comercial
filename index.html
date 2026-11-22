@@ -560,6 +560,9 @@ const TEMAS={
   iclaro:{t:"Investor Claro",inv:true,light:true,bg:"F3F5F8",card:"FFFFFF",p1:"FFFFFF",line:"DFE4EA",tx:"1F2D3D",mu:"6B7886",navy:"0F2A44",acc:"E87115",pal:["0B69B2","179741","E87115","0A3D6B"]},
   imedio:{t:"Investor Medio",inv:true,light:true,bg:"D2D9E1",card:"EEF2F6",p1:"EEF2F6",line:"BCC6D1",tx:"1F2D3D",mu:"4E5B69",navy:"0F2A44",acc:"E87115",pal:["0B69B2","179741","E87115","0A3D6B"]},
   ioscuro:{t:"Investor Oscuro",inv:true,bg:"131B25",card:"1D2733",p1:"1D2733",line:"2D3947",tx:"FFFFFF",mu:"A3AFBD",navy:"0A111B",acc:"F07F23",pal:["2F86D0","1FAE55","F07F23","4A6B8F"]},
+  cclaro:{t:"Cajas Clara",caj:true,light:true,bg:"FFFFFF",card:"F1F4F8",line:"DDE3EA",tx:"1F2A36",mu:"6B7785",ghost:"EEF2F6",acc:"3C82C4",pal:["3C82C4","2AA3B6","1F5C99"]},
+  cmedio:{t:"Cajas Media",caj:true,light:true,bg:"E3EAF1",card:"F6F8FB",line:"C9D3DE",tx:"1F2A36",mu:"52606E",ghost:"D2DCE6",acc:"3C82C4",pal:["3C82C4","2AA3B6","1F5C99"]},
+  coscuro:{t:"Cajas Oscura",caj:true,bg:"111B26",card:"1B2835",line:"2C3A49",tx:"FFFFFF",mu:"A7B4C2",ghost:"1B2836",acc:"4A93D6",pal:["4A93D6","2FB3C6","2C6FB0"]},
   vclaro:{t:"Visual Claro",vis:true,light:true,bg:"FFFFFF",panel:"F2F4F6",p1:"F2F4F6",line:"D9DEE4",tx:"1F2933",mu:"6B7785",acc:"E87115",acc2:"179741"},
   vmedio:{t:"Visual Medio",vis:true,light:true,bg:"E3E7EC",panel:"EEF1F4",p1:"EEF1F4",line:"C3CBD4",tx:"1F2933",mu:"55616F",acc:"E87115",acc2:"179741"},
   voscuro:{t:"Visual Oscuro",vis:true,bg:"1A1F26",panel:"242B34",p1:"242B34",line:"39424E",tx:"FFFFFF",mu:"A3ADB9",acc:"F07F23",acc2:"1FAE55"},
@@ -1252,9 +1255,224 @@ async function dibujarInvestor(R,sp,n,tot){
   R.end();
 }
 
+/* ===================== ESTILO CAJAS ===================== */
+const CJ=i=>T().pal[i%T().pal.length];
+function cGhost(){return T().ghost}
+function cHead(R,title,n,tot){const t=T();
+  R.text(String(n).padStart(2,"0"),0.38,0.12,3.2,1.4,{size:84,head:true,color:t.ghost,valign:"middle"});
+  R.text(title.toUpperCase(),0.6,0.45,11.6,0.75,{size:fitSize(title,24,[[30,21],[44,18]]),head:true,cs:1.5,color:t.tx,valign:"middle"});
+  R.rect(0.62,1.22,0.75,0.06,{fill:CJ(0)});}
+async function cFoot(R,n,dark){const t=T();
+  R.text([{text:"CICLORECREOVÍA  ·  ",o:{bold:true}},{text:"Propuesta para "+(S.prospecto||"—"),o:{}}],0.6,7.08,8,0.26,{size:8.5,color:dark?"DCE6F0":t.mu});
+  R.text(String(n).padStart(2,"0"),12.2,7.08,0.53,0.26,{size:9,bold:true,color:dark?"DCE6F0":t.mu,align:"right"});}
+/* Caja de color con ícono y texto (el motivo del estilo) */
+async function cBox(R,x,y,w,h,col,ic,big,small,o){o=o||{};R.rect(x,y,w,h,{fill:col});
+  const d=Math.min(0.62,h*0.28),cx=x+w/2;
+  if(ic)await R.image(await iconPng(ic,COL.wh),cx-d/2,y+h*(big?0.14:0.26),d,d,{fit:"contain"});
+  if(big)R.text(big,x+0.12,y+h*0.14+d+0.08,w-0.24,h*0.3,{size:o.bs||fitSize(big,26,[[8,22],[12,18]]),head:true,color:COL.wh,align:"center",valign:"middle"});
+  if(small)R.text(small,x+0.15,big?y+h*0.14+d+0.08+h*0.3:y+h*0.26+d+0.12,w-0.3,big?h*0.3:h*0.5,{size:o.ss||(small.length>70?10:11.5),bold:!big,color:COL.wh,align:"center",valign:"top"});}
+async function cIcBox(R,ic,x,y,d,col){R.rect(x,y,d,d,{fill:col});const p=d*0.25;await R.image(await iconPng(ic||"sparkles",COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
+/* Mancha tipo pincel: bordes irregulares sobre una foto */
+function cBrush(R,x,y,w,h,bg){let sd=7;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280};
+  const E=(cx,cy,ew,eh)=>R.rect(cx-ew/2,cy-eh/2,ew,eh,{fill:bg,ellipse:true});
+  // bordes superior e inferior: trazos alargados e irregulares
+  for(const yy of [y,y+h]){let cx=x-0.2;while(cx<x+w+0.2){const ew=0.25+rnd()*0.9,eh=0.12+rnd()*(rnd()<0.25?0.55:0.28),off=(rnd()-0.5)*0.12;E(cx+ew/2,yy+off,ew,eh);cx+=ew*(0.45+rnd()*0.35)}}
+  for(const xx of [x,x+w]){let cy=y-0.2;while(cy<y+h+0.2){const eh=0.25+rnd()*0.8,ew=0.1+rnd()*(rnd()<0.25?0.5:0.25),off=(rnd()-0.5)*0.12;E(xx+off,cy+eh/2,ew,eh);cy+=eh*(0.45+rnd()*0.35)}}
+  // esquinas redondeadas y gotas de pintura
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>E(cx,cy,0.9+rnd()*0.5,0.7+rnd()*0.4));
+  [[0.03,-0.07,0.09],[0.97,0.08,0.06],[-0.03,0.88,0.07],[0.92,1.06,0.1],[1.03,0.45,0.05],[0.55,-0.08,0.05]].forEach(([a,b,c],i)=>R.rect(x+a*w,y+b*h,c,c,{fill:CJ(i),ellipse:true,transp:30}));}
+
+async function dibujarCajas(R,sp,n,tot){
+  const P=S.prospecto||"Prospecto",t=T();
+  switch(sp.k){
+  case "portada":{
+    R.slide(t.bg);
+    const px=4.7,py=0.55,pw=W-px-0.35,ph=6.4;
+    await R.image(fotoPortada(),px,py,pw,ph);R.rect(px,py,pw,ph,{fill:"0B1A2A",transp:62});cBrush(R,px,py,pw,ph,t.bg);
+    R.text(P.toUpperCase(),px+0.5,2.35,pw-1.0,1.3,{size:fitSize(P,54,[[10,46],[16,38],[24,30]]),head:true,color:COL.wh,align:"center",valign:"middle"});
+    R.text("EN CICLORECREOVÍA",px+0.5,3.65,pw-1.0,0.45,{size:16,bold:true,cs:5,color:COL.wh,align:"center"});
+    R.rect(px+pw/2-0.45,4.25,0.9,0.06,{fill:COL.wh});
+    await tarjetaLogo(R,LOGO_CRV,0.6,0.7,1.6,0.98);
+    if(S.logo)await tarjetaLogo(R,S.logo,2.4,0.7,1.6,0.98);
+    R.text("PROPUESTA DE AUSPICIO",0.6,2.05,3.9,0.35,{size:11,bold:true,cs:2.5,color:CJ(0)});
+    R.rect(0.62,2.45,0.75,0.06,{fill:CJ(0)});
+    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.6,2.7,3.95,3.9,{size:21,color:t.tx,valign:"top"});
+    break;}
+  case "crv":{
+    R.slide(t.bg);cHead(R,"Qué es CicloRecreoVía",n,tot);
+    const d=txD("crv",CAT.crv.descripcion);
+    R.text(d,0.6,1.5,5.9,2.6,{size:fitSize(d,13,[[460,12],[620,11]]),color:t.mu,valign:"top"});
+    const st=CAT.crv.stats.slice(0,4),bw=3.0,bh=1.25;
+    for(let i=0;i<st.length;i++){const x=6.73+(i%2)*bw,y=1.35+Math.floor(i/2)*bh;
+      R.rect(x,y,bw,bh,{fill:i===1||i===2?CJ(1):CJ(i===3?2:0)});
+      await R.image(await iconPng(st[i].ic,COL.wh),x+0.22,y+0.25,0.42,0.42,{fit:"contain"});
+      R.text(st[i].n,x+0.8,y+0.12,bw-0.9,0.6,{size:fitSize(st[i].n,22,[[8,18]]),head:true,color:COL.wh,valign:"middle"});
+      R.text(st[i].l,x+0.8,y+0.68,bw-0.95,0.5,{size:9.5,bold:true,color:COL.wh,valign:"top"});}
+    const fy=4.1,fh=2.85,fw=(W-1.2-0.3)/3;
+    for(let i=0;i<3;i++)await R.image(i===0?fotoCRV():foto("crv_"+(i+1),[0,5,7][i]),0.6+i*(fw+0.15),fy,fw,fh);
+    await cFoot(R,n);break;}
+  case "circ":{
+    const c=CAT.circuitos[sp.city];R.slide(t.bg);cHead(R,c.t,n,tot);
+    R.rect(0.6,1.55,6.3,5.35,{fill:t.card});await R.image(mapaImg(sp.city),0.72,1.67,6.06,5.11,{fit:"contain"});
+    R.tri(5.4,5.4,1.5,1.5,{fill:CJ(0),corner:"br"});
+    const dd=txD("circ_"+sp.city,c.d);R.text(dd,7.3,1.5,5.43,1.15,{size:12.5,color:t.mu});
+    const bw=(5.43-0.15)/2,bh=1.95;
+    for(let i=0;i<Math.min(4,c.datos.length);i++){const z=c.datos[i],x=7.3+(i%2)*(bw+0.15),y=2.85+Math.floor(i/2)*(bh+0.15);
+      await cBox(R,x,y,bw,bh,[CJ(0),CJ(1),CJ(1),CJ(2)][i],z.ic,z.n,z.l);}
+    await cFoot(R,n);break;}
+  case "perf":{
+    const pf=CAT.perfiles[sp.city];R.slide(t.bg);cHead(R,pf.t,n,tot);
+    const kw=(W-1.2-0.3)/3;
+    for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],x=0.6+i*(kw+0.15);
+      R.rect(x,1.55,kw,1.1,{fill:CJ(i)});
+      await R.image(await iconPng(k.ic,COL.wh),x+0.25,1.83,0.55,0.55,{fit:"contain"});
+      R.text(k.n,x+1.0,1.6,kw-1.1,0.55,{size:22,head:true,color:COL.wh,valign:"middle"});
+      R.text(k.l,x+1.0,2.13,kw-1.1,0.45,{size:10,bold:true,color:COL.wh});}
+    const gw=(W-1.2-0.15)/2;
+    pf.grupos.slice(0,2).forEach((g,gi)=>{const x=0.6+gi*(gw+0.15),y=2.85;
+      R.rect(x,y,gw,3.3,{fill:t.card});
+      R.text(g.t.toUpperCase(),x+0.25,y+0.12,gw-0.5,0.4,{size:11.5,head:true,cs:1.5,color:t.tx,valign:"middle"});R.rect(x+0.27,y+0.55,0.5,0.05,{fill:CJ(gi)});
+      R.donut(g.items,x+0.2,y+0.72,gw-0.4,2.45,DONA);});
+    const y=6.35,g0=pf.genero[0],g1=pf.genero[1];R.text("GÉNERO",0.6,y,1.4,0.46,{size:11,head:true,cs:1.5,color:t.tx,valign:"middle"});
+    const bx=2.0,bw=W-0.6-bx,w0=bw*g0[1]/(g0[1]+g1[1]);
+    R.rect(bx,y,w0,0.46,{fill:CJ(1)});R.rect(bx+w0,y,bw-w0,0.46,{fill:CJ(2)});
+    R.text(g0[0]+" "+g0[1]+"%",bx+0.15,y,w0-0.2,0.46,{size:11,bold:true,color:COL.wh,valign:"middle"});
+    R.text(g1[0]+" "+g1[1]+"%",bx+w0+0.15,y,bw-w0-0.3,0.46,{size:11,bold:true,color:COL.wh,valign:"middle",align:"right"});
+    await cFoot(R,n);break;}
+  case "objetivos":{
+    R.slide(t.bg);cHead(R,"Objetivos de "+P,n,tot);
+    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    // Mosaico: cajas de color con cada objetivo, intercaladas con fotos
+    const cells=Math.max(8,c<=4?8:c<=6?12:Math.ceil(c*1.5/4)*4),cols=4,rows=Math.ceil(cells/cols);
+    const gx=0,top=1.55,cw=(W-1.2)/cols,ch=(6.9-top)/rows;
+    const order=[];let oi=0,fi=0;
+    for(let k=0;k<rows*cols;k++){const r=Math.floor(k/cols),col=k%cols,isBox=(r+col)%2===0;order.push(isBox&&oi<c?{o:ob[oi++]}:{f:fi++})}
+    // si sobran objetivos, reemplaza fotos
+    for(let k=0;k<order.length&&oi<c;k++)if(order[k].f!=null)order[k]={o:ob[oi++]};
+    let bi=0;
+    for(let k=0;k<order.length;k++){const x=0.6+(k%cols)*cw,y=top+Math.floor(k/cols)*ch,z=order[k];
+      if(z.o){const col=[CJ(0),CJ(2),CJ(1)][bi++%3];await cBox(R,x,y,cw,ch,col,z.o.ic,null,null);
+        R.text(z.o.t.toUpperCase(),x+0.15,y+ch*0.52,cw-0.3,0.4,{size:rows>2?11:13,head:true,cs:1,color:COL.wh,align:"center",valign:"middle"});
+        R.text(z.o.d,x+0.2,y+ch*0.52+0.4,cw-0.4,ch*0.48-0.45,{size:rows>2?8.5:10,color:COL.wh,align:"center"});}
+      else await R.image(foto("obj_"+z.f,[1,3,6,8,10,2,4,7,9,11][z.f%10]),x,y,cw,ch);}
+    await cFoot(R,n);break;}
+  case "act":{
+    const a=sp.a;R.slide(t.bg);cHead(R,"Activación "+(sp.i+1)+": "+(a.nombre||""),n,tot);
+    await R.image(fotoAct(a),0.6,1.55,4.6,3.0);
+    R.rect(0.6,4.55,4.6,0.45,{fill:CJ(0)});
+    R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,4.55,4.3,0.45,{size:10,bold:true,cs:1,color:COL.wh,valign:"middle"});
+    const dt=dinTexto(a);R.rect(0.6,5.0,4.6,1.9,{fill:t.card});R.text(dt,0.78,5.1,4.25,1.7,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
+    const ks=kpisAct(a).slice(0,3),kx0=5.5,kwT=W-0.6-kx0,kw=kwT/Math.max(ks.length,1);
+    for(let i=0;i<ks.length;i++){const k=ks[i],x=kx0+i*kw;
+      R.rect(x,1.55,kw,1.15,{fill:CJ(i+1)});
+      await R.image(await iconPng((byId(CAT.kpis,k.id)||{}).ic,COL.wh),x+0.2,1.85,0.5,0.5,{fit:"contain"});
+      R.text(fmt(k.v),x+0.85,1.6,kw-0.95,0.55,{size:20,head:true,color:COL.wh,valign:"middle"});
+      R.text(k.t+" / domingo",x+0.85,2.12,kw-0.95,0.5,{size:9.5,bold:true,color:COL.wh});}
+    const els=elemsDe(a);
+    R.text(ELH(),kx0,2.9,kwT,0.32,{size:11,head:true,cs:1.5,color:t.tx,valign:"middle"});R.rect(kx0+0.02,3.25,0.5,0.05,{fill:CJ(0)});
+    {const LW=kwT,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=3.4,rh=Math.min(0.36,(6.05-top)/Math.max(rows,1));
+     const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=cols===3?0.4:0.5,vw=!DET()?0:cols===3?1.15:1.5;
+     els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
+       R.rect(xx,y+rh*0.12,qw,rh*0.76,{fill:CJ(c)});
+       R.text(String(z.q),xx,y+rh*0.12,qw,rh*0.76,{size:fs,bold:true,color:COL.wh,align:"center",valign:"middle"});
+       R.text(z.e.t,xx+qw+0.12,y,cw-qw-0.2-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
+       if(vw)R.text(moneyIva(v),xx+cw-vw,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
+       R.rect(xx,y+rh-0.01,cw,0.01,{fill:t.line});});}
+    R.tri(W-1.6,6.2,1.0,0.7,{fill:CJ(1),corner:"br"});
+    R.rect(kx0,6.2,kwT-1.0,0.7,{fill:CJ(2)});
+    R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:11}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],kx0+0.25,6.2,kwT-1.4,0.7,{size:12,color:COL.wh,valign:"middle"});
+    await cFoot(R,n);break;}
+  case "numeros":{
+    R.slide(t.bg);cHead(R,"Lo que lograremos cada domingo",n,tot);
+    const ks=kpisTotales(),pl=periodosSel().slice(-1)[0];const c=ks.length;
+    const cols=c<=2?4:c<=4?4:c<=6?6:8,rows=c<=4?2:2,top=1.55,cw=(W-1.2)/Math.min(cols,4),ch=(6.9-top)/rows;
+    const cells=[];const nb=Math.min(c,8);
+    // patrón ajedrez de cajas y fotos en 4 columnas × 2 filas
+    const slots=[];for(let r=0;r<2;r++)for(let q=0;q<4;q++)slots.push({x:0.6+q*cw,y:top+r*ch,box:(r+q)%2===0});
+    let ki=0,fi=0;const boxes=slots.filter(s=>s.box),fots=slots.filter(s=>!s.box);
+    if(c>4){fots.slice(0,c-4).forEach(s=>s.box=true)}
+    for(const s of slots){
+      if(s.box&&ki<c){const k=ks[ki],col=[CJ(0),CJ(1),CJ(2),CJ(0),CJ(1),CJ(2),CJ(0),CJ(1)][ki];ki++;
+        await cBox(R,s.x,s.y,cw,ch,col,(byId(CAT.kpis,k.id)||{}).ic,fmt(k.v),k.t.toUpperCase()+(pl&&pl.dom>1?"\nEn "+pl.t+": "+fmt(k.v*pl.dom):""),{bs:28,ss:10.5});}
+      else await R.image(foto("num_"+fi,[2,4,7,9,1,3][fi++%6]),s.x,s.y,cw,ch);}
+    await cFoot(R,n);break;}
+  case "tarifas":{
+    R.slide(t.bg);cHead(R,"Inversión",n,tot);
+    R.text("Valores por período · descuentos ya aplicados",4.0,0.6,8.73,0.4,{size:11,color:t.mu,align:"right",valign:"middle"});
+    const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
+    const head=[{t:"ACTIVACIÓN",fill:t.tx===COL.wh?"0A121B":"1D3247",color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:[CJ(0),CJ(1),CJ(2)][i%3],color:COL.wh,bold:true,align:"center",size:10})));
+    const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
+    const totRow=[{t:"TOTAL",fill:CJ(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:CJ(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
+    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    R.table([head,...body,totRow],0.6,1.6,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.tri(W-1.9,5.9,1.3,1.0,{fill:CJ(1),corner:"br"});
+    await cFoot(R,n);break;}
+  case "comunicacion":{
+    R.slide(t.bg);cHead(R,"Plan comunicacional",n,tot);
+    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const rows=Math.ceil(it.length/2),gap=0.3,cw=(W-1.2-gap)/2,rh=Math.min(1.6,(S.comNota?4.85:5.35)/Math.max(rows,1));
+    for(let i=0;i<it.length;i++){const z=it[i],x=0.6+(i%2)*(cw+gap),y=1.55+Math.floor(i/2)*rh,bh=rh-0.15;
+      R.rect(x,y,cw,bh,{fill:t.card});await cIcBox(R,z.ic,x,y,bh,[CJ(0),CJ(1),CJ(2)][i%3]);
+      R.text(z.t.toUpperCase(),x+bh+0.2,y+0.06,cw-bh-0.35,0.42,{size:12,head:true,cs:0.5,color:t.tx,valign:"middle"});
+      R.text(z.d,x+bh+0.2,y+0.48,cw-bh-0.35,bh-0.55,{size:10.5,color:t.mu});}
+    if(S.comNota)R.text(S.comNota,0.6,6.55,W-1.2,0.4,{size:11,italic:true,color:t.mu,align:"center"});
+    await cFoot(R,n);break;}
+  case "rrss":{
+    R.slide(t.bg);cHead(R,"Nuestra comunidad digital",n,tot);
+    const r=CAT.rrss,c=r.length,cw=(W-1.2)/c,y=1.6,h=3.6;
+    for(let i=0;i<c;i++){const z=r[i],x=0.6+i*cw;
+      await cBox(R,x,y,cw,h,[CJ(0),CJ(2),CJ(1),CJ(0),CJ(2)][i%5],z.ic,fmt(z.n),z.red.toUpperCase()+"\n"+z.user+" · "+(z.u||"seguidores"),{bs:30,ss:11});}
+    await R.image(foto("rrss",4),0.6,y+h+0.15,W-1.2,6.9-(y+h+0.15));
+    R.rect(0.6,y+h+0.15,W-1.2,6.9-(y+h+0.15),{fill:"0B1A2A",transp:40});
+    R.text([{text:"TOTAL COMUNIDAD   ",o:{bold:true,size:12}},{text:fmt(r.filter(z=>!z.u).reduce((s,z)=>s+z.n,0))+" seguidores",o:{head:true,size:24}}],0.6,y+h+0.15,W-1.2,6.9-(y+h+0.15),{size:14,color:COL.wh,valign:"middle",align:"center"});
+    await cFoot(R,n);break;}
+  case "condiciones":{
+    R.slide(t.bg);cHead(R,"Condiciones del auspicio",n,tot);
+    const it=S.condiciones.map(id=>byId(CAT.condiciones,id)).filter(Boolean).map(c=>({t:c.t,ic:c.ic}));if(S.condExtra)it.push({t:S.condExtra,ic:"sparkles"});
+    const rows=Math.ceil(it.length/2),gap=0.3,cw=(W-1.2-gap)/2,rh=Math.min(1.45,5.35/Math.max(rows,1));
+    for(let i=0;i<it.length;i++){const z=it[i],x=0.6+(i%2)*(cw+gap),y=1.55+Math.floor(i/2)*rh,bh=rh-0.15;
+      R.rect(x,y,cw,bh,{fill:t.card});R.rect(x,y,bh,bh,{fill:[CJ(0),CJ(1),CJ(2)][i%3]});
+      R.text(String(i+1).padStart(2,"0"),x,y,bh,bh,{size:20,head:true,color:COL.wh,align:"center",valign:"middle"});
+      R.text(z.t,x+bh+0.2,y+0.05,cw-bh-0.35,bh-0.1,{size:z.t.length>110?10.5:11.5,bold:true,color:t.tx,valign:"middle"});}
+    await cFoot(R,n);break;}
+  case "enlaces":{
+    R.slide(t.bg);cHead(R,"Fotos y videos",n,tot);
+    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const c=it.length,cw=(W-1.2)/Math.max(c,1);
+    for(let i=0;i<c;i++){const l=it[i],x=0.6+i*cw;
+      await R.image(foto("enl_"+l.id,i+1),x,1.6,cw,3.3);
+      const col=[CJ(0),CJ(2),CJ(1),CJ(0)][i%4];R.rect(x,4.9,cw,1.95,{fill:i%2?t.card:col});
+      const tc=i%2?t.tx:COL.wh;
+      await R.image(await iconPng(l.ic,i%2?col:COL.wh),x+cw/2-0.25,5.08,0.5,0.5,{fit:"contain"});
+      R.text(l.t.toUpperCase(),x+0.15,5.65,cw-0.3,0.45,{size:12,head:true,cs:0.5,color:tc,align:"center",valign:"middle"});
+      R.text([{text:"Ver enlace ↗",o:{link:l.url,color:tc}}],x+0.15,6.12,cw-0.3,0.4,{size:11,bold:true,color:tc,align:"center",valign:"middle"});}
+    await cFoot(R,n);break;}
+  case "libre":{
+    const l=sp.l,lf=fotoLibre(l);R.slide(t.bg);cHead(R,l.titulo||"",n,tot);const tx=l.texto||"";
+    if(lf){await R.image(lf,7.4,1.55,W-0.6-7.4,5.35);R.tri(7.4,5.3,1.6,1.6,{fill:CJ(0),corner:"bl"});
+      R.text(tx,0.6,1.6,6.4,5.2,{size:fitSize(tx,15,[[350,13.5],[600,12],[900,10.5]]),color:t.tx})}
+    else{R.rect(0.6,1.6,W-1.2,5.3,{fill:t.card});R.rect(0.6,1.6,0.12,5.3,{fill:CJ(0)});
+      R.text(tx,1.0,1.85,W-2.0,4.8,{size:fitSize(tx,17,[[500,15],[900,13],[1400,11.5]]),color:t.tx})}
+    await cFoot(R,n);break;}
+  case "cierre":{
+    R.slide(t.bg);const v=vendedor();
+    const px=0.35,py=0.55,pw=7.0,ph=6.4;
+    await R.image(fotoCierre(),px,py,pw,ph);R.rect(px,py,pw,ph,{fill:"0B1A2A",transp:55});cBrush(R,px,py,pw,ph,t.bg);
+    R.text("¡GRACIAS!",px+0.5,2.4,pw-1.0,1.1,{size:50,head:true,color:COL.wh,align:"center",valign:"middle"});
+    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",px+0.8,3.55,pw-1.6,0.9,{size:15,bold:true,color:COL.wh,align:"center"});
+    await tarjetaLogo(R,LOGO_CRV,7.95,0.7,1.5,0.92);
+    const rows=[["handshake",v.n,"Ejecutivo/a"],["badge",v.c,"Cargo"],["mail",v.m,"Correo"],["smartphone",v.t,"Teléfono"],["globe","ciclorecreovia.cl","Sitio web"]];
+    for(let i=0;i<rows.length;i++){const y=1.9+i*0.98;
+      await cIcBox(R,rows[i][0],7.95,y,0.74,[CJ(0),CJ(1),CJ(2)][i%3]);
+      R.text(rows[i][2].toUpperCase(),8.9,y,3.9,0.28,{size:9.5,bold:true,cs:1.5,color:t.mu});
+      R.text(rows[i][1],8.9,y+0.28,3.9,0.46,{size:15,head:true,color:t.tx,valign:"middle"});}
+    break;}
+  }
+  R.end();
+}
+
 /* ===================== VARIANTES DE DISEÑO (B y C) PARA PERFIL Y ACTIVACIÓN ===================== */
 function K(){const t=T();
   if(t.mod)return {fam:"mod",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.band,bandMu:t.bandMu,pal:t.pal,line:t.line};
+  if(t.caj)return {fam:"caj",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.light?"1D3247":"0A121B",bandMu:"C9D3DE",pal:t.pal,line:t.line};
   if(t.inv)return {fam:"inv",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.navy,bandMu:"C9D3DE",pal:t.pal,line:t.line};
   if(t.vis)return {fam:"vis",bg:t.bg,card:t.panel,tx:t.tx,mu:t.mu,band:t.light?"1F2933":"0B0F14",bandMu:"C9D3DE",pal:[t.acc,t.acc2,"0B69B2"],line:t.line};
   return {fam:"for",bg:t.bg,card:t.p1,tx:t.tx,mu:t.mu,band:t.light?"0B2545":t.p2,bandMu:t.light?"C9D6E6":t.mu,pal:[t.acc,t.acc2||"179741","0B69B2"],line:t.p2};}
@@ -1262,9 +1480,10 @@ const KP=i=>K().pal[i%K().pal.length];
 function famHead(R,title,n,tot){const k=K();
   if(k.fam==="mod"){mHead(R,title,n,tot);return 1.55}
   if(k.fam==="inv"){iHead(R,title,n,tot);return 1.4}
+  if(k.fam==="caj"){cHead(R,title,n,tot);return 1.55}
   if(k.fam==="vis"){vNum(R,n);vTitle(R,title,0.6,0.45,10.8,0.8);return 1.45}
   cabecera(R,n,tot);R.text(title,0.6,0.5,12.1,0.85,{size:fitSize(title,28,[[30,24],[44,20]]),head:true,valign:"middle"});return 1.5}
-async function famFoot(R,n){const k=K();if(k.fam==="mod")await mFoot(R);else if(k.fam==="inv")await iFoot(R,n);else if(k.fam==="vis")await vLogo(R)}
+async function famFoot(R,n){const k=K();if(k.fam==="mod")await mFoot(R);else if(k.fam==="inv")await iFoot(R,n);else if(k.fam==="caj")await cFoot(R,n);else if(k.fam==="vis")await vLogo(R)}
 async function kCirc(R,ic,x,y,d,col){R.rect(x,y,d,d,{fill:col,ellipse:true});const p=d*0.25;await R.image(await iconPng(ic||"sparkles",COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
 const ICON_REC=n=>/bici/i.test(n)?"bike":/pie|trote/i.test(n)?"users":/patin|scoot/i.test(n)?"route":"sparkles";
 
@@ -1372,6 +1591,7 @@ async function dibujar(R,sp,n,tot){
   if(T().mod)return dibujarModerno(R,sp,n,tot);
   if(T().vis)return dibujarVisual(R,sp,n,tot);
   if(T().inv)return dibujarInvestor(R,sp,n,tot);
+  if(T().caj)return dibujarCajas(R,sp,n,tot);
   const P=S.prospecto||"Prospecto",t=T();
   switch(sp.k){
   case "portada":{
@@ -1803,7 +2023,7 @@ function renderTools(){
   const sw=v=>`<span style="display:inline-block;width:16px;height:16px;border-radius:5px;background:#${v.bg};border:3px solid #${v.acc}"></span>`;
   el.innerHTML=`
   <div class="dd"><button class="ddb ${DD==="tema"?"on":""}" onclick="event.stopPropagation();A.dd('tema')">${sw(tm)}<span><small>Estilo diapositiva</small>${esc(tm.t)}</span></button>
-    ${DD==="tema"?`<div class="ddm" onclick="event.stopPropagation()">${Object.entries(TEMAS).map(([k,v])=>(k==="azul"?`<div class="ddh">Formal</div>`:k==="mclaro"?`<div class="ddh">Moderno</div>`:k==="vclaro"?`<div class="ddh">Visual</div>`:k==="iclaro"?`<div class="ddh">Investor</div>`:"")+`<button class="ddi ${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';DD=null;save();render()">${sw(v)}<span class="tt">${esc(v.t)}</span>${(S.tema||"azul")===k?"✓":""}</button>`).join("")}</div>`:""}</div>
+    ${DD==="tema"?`<div class="ddm" onclick="event.stopPropagation()">${Object.entries(TEMAS).map(([k,v])=>(k==="azul"?`<div class="ddh">Formal</div>`:k==="mclaro"?`<div class="ddh">Moderno</div>`:k==="cclaro"?`<div class="ddh">Cajas</div>`:k==="vclaro"?`<div class="ddh">Visual</div>`:k==="iclaro"?`<div class="ddh">Investor</div>`:"")+`<button class="ddi ${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';DD=null;save();render()">${sw(v)}<span class="tt">${esc(v.t)}</span>${(S.tema||"azul")===k?"✓":""}</button>`).join("")}</div>`:""}</div>
   <div class="dd"><button class="ddb ${DD==="diapos"?"on":""}" onclick="event.stopPropagation();A.dd('diapos')"><span><small>Diapositivas</small>${vis} visibles de ${P.length}</span></button>
     ${DD==="diapos"?`<div class="ddm wide" onclick="event.stopPropagation()">${P.map((p,k)=>{const key=INCL[p.id],v=key?!!S.incluir[key]:true;
       return `<div class="ddi one ${p.id===curId?"on":""}" onclick="DD=null;A.ir(${k})"><span class="n">${k+1}</span><span class="tt">${esc(p.t)}</span><button class="tog ${v?"g":"r"} ${key?"":"fix"}" title="${key?(v?"Visible: toca para ocultar":"Oculta: toca para mostrar"):"Siempre visible"}" onclick="event.stopPropagation();${key?`S.incluir.${key}=!S.incluir.${key};save();render()`:""}"></button></div>`}).join("")}</div>`:""}</div>
