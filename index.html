@@ -61,7 +61,11 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .dnum.off{background:var(--line);color:var(--mut);margin:0 0 0 8px}
 .row.incl{max-width:480px;margin-bottom:12px}
 .prog{display:flex;gap:5px}
-.prog i{flex:1;height:6px;border-radius:3px;background:var(--line);cursor:pointer}
+.prog i{display:block;height:6px;border-radius:3px;background:var(--line);cursor:pointer}
+.pg{flex:1;min-width:0;cursor:pointer}
+.pg span{display:block;margin-top:3px;font-size:10px;font-weight:800;color:var(--mut);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.pg.on span{color:var(--or)}
+.prog .x,.prog .nn,.prog .l{display:none}.prog.wl .l,.prog.wx .x,.prog.wn .nn{display:block}
 .chip,.row,.act,.el,.kpi,.sel,.field,.imgz,.opt{box-shadow:0 1px 3px rgba(17,24,39,.06)}
 .prog i.on{background:var(--or)}.prog i.done{background:var(--te)}
 /* Main */
@@ -1548,29 +1552,30 @@ function pRevisar(){
   <div class="lbl">Diapositivas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>`}
 
+const XS={"Portada": "Port.", "Qué es": "CRV", "Circ. Stgo": "Stgo", "Circ. Viña": "Viña", "Perfil Stgo": "Perf. S", "Perfil Viña": "Perf. V", "Objetivos": "Obj.", "Act. 1": "A1", "Números": "Núm.", "Tarifas": "Tarif.", "Comunic.": "Com.", "RRSS": "RRSS", "Condic.": "Cond.", "Fotos": "Fotos", "Despedida": "Desp.", "Descargar": "Fin", "Libre": "Libre"};
 function PANELS(){
-  const P=[],lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({id:"lib_"+l.uid,t:"Diapositiva libre"+(l.titulo?": "+l.titulo:""),r:()=>pLibre(l),m:p=>p.k==="libre"&&p.l.uid===l.uid}));
-  P.push({id:"portada",t:"Portada",r:pPortada,m:p=>p.k==="portada"});
-  P.push({id:"crv",t:"Qué es CicloRecreoVía",r:pCRV,m:p=>p.k==="crv"});
-  P.push({id:"circ_stgo",t:"Circuito Santiago",r:()=>pCirc("stgo"),m:p=>p.k==="circ"&&p.city==="stgo"});
-  P.push({id:"circ_vina",t:"Circuito Viña del Mar",r:()=>pCirc("vina"),m:p=>p.k==="circ"&&p.city==="vina"});
-  P.push({id:"perf_stgo",t:"Perfil asistentes Santiago",r:()=>pPerf("stgo"),m:p=>p.k==="perf"&&p.city==="stgo"});
-  P.push({id:"perf_vina",t:"Perfil asistentes Viña del Mar",r:()=>pPerf("vina"),m:p=>p.k==="perf"&&p.city==="vina"});
-  P.push({id:"objetivos",t:"Objetivos",r:pObjetivos,m:p=>p.k==="objetivos"});
+  const P=[],lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({id:"lib_"+l.uid,s:"Libre",t:"Diapositiva libre"+(l.titulo?": "+l.titulo:""),r:()=>pLibre(l),m:p=>p.k==="libre"&&p.l.uid===l.uid}));
+  P.push({id:"portada",s:"Portada",t:"Portada",r:pPortada,m:p=>p.k==="portada"});
+  P.push({id:"crv",s:"Qué es",t:"Qué es CicloRecreoVía",r:pCRV,m:p=>p.k==="crv"});
+  P.push({id:"circ_stgo",s:"Circ. Stgo",t:"Circuito Santiago",r:()=>pCirc("stgo"),m:p=>p.k==="circ"&&p.city==="stgo"});
+  P.push({id:"circ_vina",s:"Circ. Viña",t:"Circuito Viña del Mar",r:()=>pCirc("vina"),m:p=>p.k==="circ"&&p.city==="vina"});
+  P.push({id:"perf_stgo",s:"Perfil Stgo",t:"Perfil asistentes Santiago",r:()=>pPerf("stgo"),m:p=>p.k==="perf"&&p.city==="stgo"});
+  P.push({id:"perf_vina",s:"Perfil Viña",t:"Perfil asistentes Viña del Mar",r:()=>pPerf("vina"),m:p=>p.k==="perf"&&p.city==="vina"});
+  P.push({id:"objetivos",s:"Objetivos",t:"Objetivos",r:pObjetivos,m:p=>p.k==="objetivos"});
   lib("obj");
-  if(!S.activaciones.length)P.push({id:"act_new",t:"Activación 1",r:pActNueva,m:()=>false});
-  S.activaciones.forEach((a,i)=>P.push({id:"act_"+a.uid,t:"Activación "+(i+1)+(a.nombre?": "+a.nombre:""),r:()=>pAct(a),m:p=>p.k==="act"&&p.a.uid===a.uid}));
+  if(!S.activaciones.length)P.push({id:"act_new",s:"Act. 1",t:"Activación 1",r:pActNueva,m:()=>false});
+  S.activaciones.forEach((a,i)=>P.push({id:"act_"+a.uid,s:"Act. "+(i+1),t:"Activación "+(i+1)+(a.nombre?": "+a.nombre:""),r:()=>pAct(a),m:p=>p.k==="act"&&p.a.uid===a.uid}));
   lib("act");
-  P.push({id:"numeros",t:"Números proyectados",r:pNumeros,m:p=>p.k==="numeros"});
-  P.push({id:"tarifas",t:"Inversión (tarifas)",r:pTarifas,m:p=>p.k==="tarifas"});
+  P.push({id:"numeros",s:"Números",t:"Números proyectados",r:pNumeros,m:p=>p.k==="numeros"});
+  P.push({id:"tarifas",s:"Tarifas",t:"Inversión (tarifas)",r:pTarifas,m:p=>p.k==="tarifas"});
   lib("tar");
-  P.push({id:"comunicacion",t:"Plan comunicacional",r:pComunicacion,m:p=>p.k==="comunicacion"});
-  P.push({id:"rrss",t:"Nuestra comunidad digital",r:pRRSS,m:p=>p.k==="rrss"});
-  P.push({id:"condiciones",t:"Condiciones del auspicio",r:pCondiciones,m:p=>p.k==="condiciones"});
-  P.push({id:"enlaces",t:"Fotos y videos",r:pEnlaces,m:p=>p.k==="enlaces"});
+  P.push({id:"comunicacion",s:"Comunic.",t:"Plan comunicacional",r:pComunicacion,m:p=>p.k==="comunicacion"});
+  P.push({id:"rrss",s:"RRSS",t:"Nuestra comunidad digital",r:pRRSS,m:p=>p.k==="rrss"});
+  P.push({id:"condiciones",s:"Condic.",t:"Condiciones del auspicio",r:pCondiciones,m:p=>p.k==="condiciones"});
+  P.push({id:"enlaces",s:"Fotos",t:"Fotos y videos",r:pEnlaces,m:p=>p.k==="enlaces"});
   lib("fin");
-  P.push({id:"cierre",t:"Despedida",r:pCierre,m:p=>p.k==="cierre"});
-  P.push({id:"revisar",t:"Revisar y descargar",r:pRevisar,m:()=>false,final:true});
+  P.push({id:"cierre",s:"Despedida",t:"Despedida",r:pCierre,m:p=>p.k==="cierre"});
+  P.push({id:"revisar",s:"Descargar",t:"Revisar y descargar",r:pRevisar,m:()=>false,final:true});
   return P;
 }
 let curId="portada";
@@ -1580,7 +1585,7 @@ function numDiapo(pn,list){const i=list.findIndex(pn.m);return i<0?null:i+1}
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
   el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
 function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
-window.addEventListener("resize",()=>{document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
+window.addEventListener("resize",()=>{progTier();document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
 let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 
 /* =====================================================================
@@ -1607,12 +1612,14 @@ function renderTools(){
     ${DD==="monto"?`<div class="ddm" onclick="event.stopPropagation()">${ps.map(p=>`<button class="ddi ${p.id===pSel.id?"on":""}" onclick="S.montoPer='${p.id}';DD=null;save();renderTools()"><span class="tt">${esc(p.t)}</span><span class="amt">${money(totalPeriodo(p))} + IVA</span></button>`).join("")}</div>`:""}</div>`;
 }
 document.addEventListener("click",()=>{if(DD){DD=null;renderTools()}});
+function progTier(){const pr=$("#prog");if(!pr)return;const n=pr.children.length||1,w=pr.clientWidth/n;pr.className="prog "+(w>=62?"wl":w>=34?"wx":"wn")}
 function render(){
   asideLater();renderTools();
   const P=PANELS(),i=curIndex(P),pn=P[i];curId=pn.id;
   const on=pn.final||!!numDiapo(pn,plan());
   $("#stepname").innerHTML=pn.final?esc(pn.t):`<span class="dnum">Diapositiva ${i+1}</span>${esc(pn.t)}${on?"":` <span class="dnum off">no incluida</span>`}`;
-  $("#prog").innerHTML=P.map((p,k)=>`<i class="${k===i?"on":k<i?"done":""}" title="${k+1}. ${esc(p.t)}" onclick="A.ir(${k})"></i>`).join("");
+  $("#prog").innerHTML=P.map((p,k)=>`<div class="pg ${k===i?"on":""}" title="${k+1}. ${esc(p.t)}" onclick="A.ir(${k})"><i class="${k===i?"on":k<i?"done":""}"></i><span class="l">${esc(p.s||p.t)}</span><span class="x">${esc(XS[p.s]||(p.s||"").replace("Act. ","A"))}</span><span class="nn">${k+1}</span></div>`).join("");
+  progTier();
   $("#main").innerHTML=pn.r();
   $("#nav").innerHTML=`<button class="b-sec" ${i===0?"disabled style=opacity:.35":""} onclick="A.ir(${i-1})">← Atrás</button><button class="b-sec" onclick="A.preview(-1)">👁 Ver</button>`+
     (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
