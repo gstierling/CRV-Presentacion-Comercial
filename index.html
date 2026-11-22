@@ -62,6 +62,9 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .vopt.on{border-color:var(--or);background:#fdf0e6}
 .vopt b{display:block;font-size:13px;margin-top:6px}
 .vopt .sw{border-radius:6px}
+#layer2 .ov{z-index:80}
+.pv .s img[data-slot]{cursor:pointer;transition:filter .15s}
+.pv .s img.hov{filter:brightness(1.12) saturate(1.1);outline:3px solid #e87115;outline-offset:-3px}
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-width:980px}
 .ft{aspect-ratio:16/10;border-radius:10px;background:#e8edf3 center/cover no-repeat;border:3px solid transparent;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .ft.on{border-color:var(--or);box-shadow:inset 0 0 0 2px #fff}
@@ -419,7 +422,7 @@ function foto(slot,def){const f=(S.fotos||{})[slot];
   const i=typeof f==="number"?f:def;if(!i)return null;return Object.assign({slot,def},FOTOS[(i-1)%FOTOS.length])}
 function fotoPortada(){return foto("portada",2)}
 function fotoCRV(){return foto("crv",1)}
-function mapaImg(city){const f=(S.mapaSel||{})[city]||1;return f==="nueva"?(S.imgs["mapa_"+city]||MAPAS[city][0]):MAPAS[city][(f-1)%4]}
+function mapaImg(city){const f=(S.mapaSel||{})[city]||1,im=S.imgs["mapa_"+city];return Object.assign({slot:"mapa_"+city,def:1,kind:"mapa"},f==="nueva"&&im&&im.data?im:MAPAS[city][f==="nueva"?0:(f-1)%4])}
 function fotoCierre(){return foto("cierre",4)}
 function fotoAct(a){const i=Math.max(0,S.activaciones.indexOf(a));return foto("act_"+a.uid,[5,6,8,9][i%4])}
 function fotoLibre(l){return foto("libre_"+l.uid,0)}
@@ -587,7 +590,7 @@ function HtmlR(){
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};display:flex;flex-direction:column;justify-content:${jv};font-family:${o.head?CSS_H:CSS_B};font-size:${pt(o.size||14)};color:#${o.color||T().tx};font-weight:${o.head?900:o.bold?700:400};${o.italic?"font-style:italic;":""}text-align:${o.align||"left"};line-height:${o.head?1.05:1.25};overflow:hidden;${o.cs?`letter-spacing:${o.cs}px;`:""}"><div>${r}</div></div>`;
     },
     async image(img,x,y,w,h,o){
-      html+=`<img src="${objUrl(img.data)}" style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"};${o&&o.round?"border-radius:50%;":""}">`;
+      html+=`<img src="${objUrl(img.data)}" ${img.slot?`data-slot="${img.slot}" data-def="${img.def||0}" data-kind="${img.kind||"foto"}"`:""} style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};object-fit:${o&&o.fit==="contain"?"contain":"cover"};${o&&o.round?"border-radius:50%;":""}">`;
     },
     donut(items,x,y,w,h,cols){const tot=items.reduce((s,z)=>s+z[1],0)||1;let acc=0;
       const grad=items.map((z,i)=>{const a0=acc/tot*360;acc+=z[1];return `#${cols[i%cols.length]} ${a0}deg ${acc/tot*360}deg`}).join(",");
@@ -1558,7 +1561,20 @@ function validar(){const f=[];if(!S.prospecto.trim())f.push("Nombre del prospect
    COMPONENTES DE INTERFAZ
    ===================================================================== */
 const layer=$("#layer");
-function closeLayer(){layer.innerHTML="";activeImg=null}
+function closeLayer(){layer.innerHTML="";activeImg=null;closeSheet2()}
+/* Hoja de galería sobre la vista previa (toca una foto o mapa en la vista previa) */
+let PVREF=null;
+function closeSheet2(){const l=document.getElementById("layer2");if(l)l.remove()}
+let SHDEF=0;function fotoSheet(slot,def,kind){SHDEF=def;let l=document.getElementById("layer2");if(!l){l=document.createElement("div");l.id="layer2";document.body.appendChild(l)}
+  const mapa=kind==="mapa",city=mapa?slot.slice(5):null;
+  const cur=mapa?((S.mapaSel||{})[city]||1):((S.fotos||{})[slot]??(def||"sin"));const im=(S.imgs||{})[slot];
+  const lista=mapa?MAPAS[city]:FOTOS,tit=mapa?"Elige el mapa":fotoLabel(slot);
+  l.innerHTML=`<div class="ov" onclick="if(event.target===this)closeSheet2()"><div class="sheet" style="max-width:820px"><h3>${esc(tit)}</h3><div class="fgrid">`+
+    (!mapa&&def===0?`<div class="ft sin ${cur==="sin"?"on":""}" onclick="A.pickFoto('${slot}','sin','${kind}')"><span>Sin foto</span></div>`:"")+
+    lista.map((p,i)=>`<div class="ft ${cur===i+1?"on":""}" onclick="A.pickFoto('${slot}',${i+1},'${kind}')" style="background-image:url('${objUrl(p.th||p.data)}');${mapa?"background-size:contain;background-color:#fff":""}"><i>${i+1}</i></div>`).join("")+
+    `<div class="ft nueva ${cur==="nueva"?"on":""}" onclick="A.pickFoto('${slot}','nueva','${kind}')" ${im&&im.data?`style="background-image:url('${objUrl(im.data)}')"`:""}><span>＋ ${mapa?"Nuevo":"Nueva"}</span></div></div>`+
+    (cur==="nueva"?`<div style="margin-top:12px">${imgZone(slot,im,false,mapa?"Pega aquí el mapa (Ctrl+V) o elígelo":"Pega aquí la foto nueva (Ctrl+V) o elígela")}</div>`:"")+
+    `<button class="b-big b-sec" style="margin-top:14px;width:100%" onclick="closeSheet2()">Listo</button></div></div>`}
 function picker(title,opts,val,onPick){
   layer.innerHTML=`<div class="ov" onclick="if(event.target===this)closeLayer()"><div class="sheet"><h3>${esc(title)}</h3>${opts.map((o,i)=>`<button class="opt ${o.v===val?"on":""}" data-i="${i}">${esc(o.t)}${o.sub?`<small>${esc(o.sub)}</small>`:""}</button>`).join("")}<button class="b-big b-sec" onclick="closeLayer()">Cancelar</button></div></div>`;
   layer.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{closeLayer();onPick(opts[+b.dataset.i].v)});
@@ -1639,7 +1655,7 @@ function fotoGrid(slot,def){const f=(S.fotos||{})[slot],im=(S.imgs||{})[slot];le
     `<div class="ft nueva ${cur==="nueva"?"on":""}" onclick="A.setFoto('${slot}','nueva')" ${im&&im.data?`style="background-image:url('${objUrl(im.data)}')"`:""}><span>＋ Nueva</span></div></div>`+
     (cur==="nueva"?imgZone(slot,im,false,"Pega aquí la foto nueva (Ctrl+V) o elígela"):"")}
 async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filter(pn.m),seen=new Map();
-  const NR=new Proxy({},{get:(t,p)=>p==="image"?async img=>{if(img&&img.slot&&!seen.has(img.slot))seen.set(img.slot,img.def)}:p==="out"?[]:()=>{}});
+  const NR=new Proxy({},{get:(t,p)=>p==="image"?async img=>{if(img&&img.slot&&img.kind!=="mapa"&&!seen.has(img.slot))seen.set(img.slot,img.def)}:p==="out"?[]:()=>{}});
   for(const sp of sps){try{await dibujar(NR,sp,1,list.length)}catch(e){console.warn(e)}}
   if(pn.id.startsWith("lib_")){const k="libre_"+pn.id.slice(4);if(!seen.has(k))seen.set(k,0)}
   const box=$("#fotosBox");if(!box||curId!==pn.id)return;
@@ -1799,11 +1815,16 @@ const A={
       toast("No hay imagen copiada")}catch(e){activeImg=key;const z=document.getElementById("iz_"+key);if(z)z.focus();toast("Presiona Ctrl+V (o mantén presionado → Pegar)")}
   },
   archivo(key){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=async()=>{if(i.files[0])A.setImg(key,await procesarImagen(i.files[0],IMG[key]&&IMG[key].isLogo))};i.click()},
+  async pickFoto(slot,v,kind){if(kind==="mapa"){S.mapaSel=S.mapaSel||{};S.mapaSel[slot.slice(5)]=v}else{S.fotos=S.fotos||{};S.fotos[slot]=v}
+    save();const y=window.scrollY;render();window.scrollTo(0,y);
+    const im=(S.imgs||{})[slot];if(v==="nueva"&&!(im&&im.data))fotoSheet(slot,SHDEF,kind);else closeSheet2();
+    if(PVREF)await PVREF()},
   setFoto(slot,v){S.fotos=S.fotos||{};S.fotos[slot]=v;save();keepY=window.scrollY;render();window.scrollTo(0,keepY)},
   setImg(key,img){
     if(key==="logo")S.logo=img;
     else {S.imgs=S.imgs||{};S.imgs[key]=img;if(!img)delete S["_p_"+key];else if(!key.startsWith("mapa_")){S.fotos=S.fotos||{};S.fotos[key]="nueva"}}
     save();const y=window.scrollY;render();window.scrollTo(0,y);
+    if(img&&document.getElementById("layer2")){closeSheet2();if(PVREF)PVREF()}
   },
   nuevaAct(){if(S.activaciones.length>=4)return;const t=CAT.tipos[0];
     const a={uid:uid(),tipo:t.id,nombre:t.t,objetivos:[...S.objetivos],din:t.din[0],dinTexto:"",elementos:{...t.el},kpiMan:{},foto:null};
@@ -1824,11 +1845,11 @@ const A={
   libre(u,k,v){const l=S.libres.find(x=>x.uid===u);l[k]=v;save()},
   posLibre(u){const l=S.libres.find(x=>x.uid===u);picker("¿Dónde va esta lámina?",POS.map(p=>({v:p.id,t:p.t})),l.pos,v=>{l.pos=v;save();render()})},
   async preview(start,onlyAct){
-    const all=plan();const hs=await renderHtmlSlides(all);
+    const all=plan();const hs=await renderHtmlSlides(all);PVREF=null;
     const idx=onlyAct?[all.findIndex(p=>p.k==="act"&&p.a.uid===onlyAct)]:all.map((_,i)=>i);
     if(start===-1){const P=PANELS(),pn=P[curIndex(P)];start=Math.max(0,all.findIndex(pn.m))}
     let pos=Math.max(0,Math.min(idx.length-1,start>0?start:0));
-    layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa</span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
+    layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa <small style="opacity:.65;font-weight:600">· toca una foto o mapa para cambiarlo</small></span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
       <div class="pv-stage" id="pvs"><div class="sw" id="pvsw"></div></div>
       <div class="pv-nav"><button id="pvp">‹</button><div class="cnt" id="pvn"></div><button id="pvx">›</button></div></div>`;
     const sw=$("#pvsw");
@@ -1836,6 +1857,11 @@ const A={
       $("#pvn").innerHTML=`${i+1} / ${all.length}<br>${esc(all[i].name)}`;$("#pvp").disabled=pos===0;$("#pvx").disabled=pos===idx.length-1};
     const go=d=>{const n=pos+d;if(n<0||n>=idx.length)return;pos=n;show()};
     $("#pvp").onclick=()=>go(-1);$("#pvx").onclick=()=>go(1);
+    PVREF=async()=>{const i=idx[pos];const R2=HtmlR();await dibujar(R2,all[i],i+1,all.length);hs[i]=R2.out[0];if($("#pvsw"))show()};
+    const hit=e=>document.elementsFromPoint(e.clientX,e.clientY).find(el=>el.matches&&el.matches("#pvsw img[data-slot]"));
+    sw.onclick=e=>{const im=hit(e);if(im)fotoSheet(im.dataset.slot,+im.dataset.def,im.dataset.kind)};
+    sw.onmousemove=e=>{const im=hit(e);sw.querySelectorAll("img.hov").forEach(x=>x!==im&&x.classList.remove("hov"));if(im)im.classList.add("hov");sw.style.cursor=im?"pointer":""};
+    sw.onmouseleave=()=>sw.querySelectorAll("img.hov").forEach(x=>x.classList.remove("hov"));
     let x0=null;const st=$("#pvs");st.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
     st.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40)go(dx<0?1:-1)});
     PVKEY=e=>{if(!$("#pvs"))return;if(e.key==="ArrowRight")go(1);else if(e.key==="ArrowLeft")go(-1);else if(e.key==="Escape")closeLayer()};
