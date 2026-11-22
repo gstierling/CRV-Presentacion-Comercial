@@ -22,6 +22,9 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .brand b span{color:var(--or)}
 .hbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:7px 11px;font-size:14px;font-weight:700}
 .stepname{font-size:24px;font-weight:900;margin:8px 0 8px}
+.dnum{display:inline-block;background:var(--or);color:#fff;border-radius:8px;padding:2px 10px;font-size:.7em;margin-right:10px;vertical-align:3px}
+.dnum.off{background:var(--line);color:var(--mut);margin:0 0 0 8px}
+.row.incl{max-width:480px;margin-bottom:12px}
 .prog{display:flex;gap:5px}
 .prog i{flex:1;height:6px;border-radius:3px;background:var(--line);cursor:pointer}
 .chip,.row,.act,.el,.kpi,.sel,.field,.imgz,.opt{box-shadow:0 1px 3px rgba(17,24,39,.06)}
@@ -403,11 +406,7 @@ function objUrl(d){if(!d||!d.startsWith("data:"))return d;let u=OBJ.get(d);if(u)
 /* Columna de miniaturas */
 let asideT,asideBusy=false,asideAgain=false;
 function asideLater(){clearTimeout(asideT);asideT=setTimeout(updateAside,350)}
-function pasoActual(list){
-  if(editAct)return list.map((p,i)=>p.k==="act"&&p.a.uid===editAct?i:-1).filter(i=>i>=0);
-  const want=[["portada"],["crv","circ","perf","rrss"],["objetivos"],["act"],["tarifas"],["comunicacion"],["condiciones","enlaces"],["libre"],[]][cur]||[];
-  return list.map((p,i)=>want.includes(p.k)?i:-1).filter(i=>i>=0);
-}
+function pasoActual(list){const P=PANELS(),pn=P[curIndex(P)];return list.map((p,i)=>pn.m(p)?i:-1).filter(i=>i>=0)}
 async function updateAside(){
   const el=$("#alist");if(!el||getComputedStyle($("#aside")).display==="none")return;
   if(asideBusy){asideAgain=true;return}asideBusy=true;
@@ -417,7 +416,7 @@ async function updateAside(){
     if(hi.length){const t=el.children[hi[0]];if(t&&(t.offsetTop<el.scrollTop||t.offsetTop>el.scrollTop+el.clientHeight-80))el.scrollTo({top:t.offsetTop-12,behavior:"smooth"})}
   }finally{asideBusy=false;if(asideAgain){asideAgain=false;asideLater()}}
 }
-let cur=0,editAct=null;
+let editAct=null;
 
 /* Cálculos */
 function subDomingo(a){return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
@@ -599,12 +598,11 @@ async function dibujar(R,sp,n,tot){
   switch(sp.k){
   case "portada":{
     R.slide(t.bg);const v=vendedor();
-    await R.image(fotoPortada(),8.35,0.7,4.38,5.75);
+    await R.image(fotoPortada(),8.35,0.7,4.38,6.1);
     await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
     if(S.logo){R.text("+",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
     R.text([{text:P,o:{color:t.acc,br:true}},{text:"en CicloRecreoVía",o:{}}],0.7,2.15,7.4,2.1,{size:fitSize(P,44,[[12,40],[18,34],[26,28]]),head:true,valign:"middle"});
     R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.35,7.3,1.9,{size:21,color:t.mu});
-    await bandaFina(R,[{ic:"calendar",l:"Fecha",v:fechaLarga(S.fecha),w:1.32},{ic:"handshake",l:"Ejecutivo/a",v:v.n,w:1.05},{ic:"badge",l:"Cargo",v:v.c,w:1.05},{ic:"mail",l:"Correo",v:v.m,w:1.45},{ic:"smartphone",l:"Celular",v:v.t,w:0.95}]);
     break;}
   case "crv":{
     R.slide(t.bg);cabecera(R,n,tot);
@@ -829,117 +827,55 @@ document.addEventListener("paste",async e=>{
 /* =====================================================================
    PASOS
    ===================================================================== */
-const STEPS=[
- {t:"1 · Prospecto",r:stepProspecto},
- {t:"2 · CicloRecreoVía",r:stepCRV},
- {t:"3 · Objetivos",r:stepObjetivos},
- {t:"4 · Activaciones",r:stepActivaciones},
- {t:"5 · Tarifas",r:stepTarifas},
- {t:"6 · Comunicación",r:stepComunicacion},
- {t:"7 · Condiciones y enlaces",r:stepCondiciones},
- {t:"8 · Láminas libres",r:stepLibres},
- {t:"9 · Revisar y generar",r:stepRevisar}
-];
-function stepProspecto(){const v=vendedor();return `
-  <p class="hint">Datos de la portada. La foto de portada es estándar; puedes reemplazarla pegando otra.</p>
-  <div class="cols2"><div>
-  <div class="lbl">Nombre del prospecto</div>
-  <input class="field" value="${esc(S.prospecto)}" placeholder="Ej: Powerade" oninput="S.prospecto=this.value;save()">
-  <div class="lbl">Vendedor/a</div>
-  <button class="sel" onclick="A.pickVendedor()"><span>${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)}</small></span></button>
-  <div class="lbl">Fecha de la propuesta</div>
-  <input class="field" type="date" value="${S.fecha}" onchange="S.fecha=this.value;save()">
-  <div class="lbl">Estilo de color</div>
-  <div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>
-  </div><div>
-  <div class="lbl">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
-  <div class="lbl">Foto de portada</div>
-  <div class="seg"><button class="${!S.portada?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada?"on":""}" onclick="A.portadaPropia()">Propia</button></div>
-  ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoPortada().data}');background-size:cover"></div></div>`}</div></div>`}
+/* =====================================================================
+   PANELES: uno por diapositiva
+   ===================================================================== */
+const togIncl=(k,t)=>`<div class="row incl ${S.incluir[k]?"on":""}" onclick="S.incluir.${k}=!S.incluir.${k};save();render()"><div class="chk"></div><div class="tx"><b>${t||"Incluir esta diapositiva en la propuesta"}</b></div></div>`;
+const offMsg=`<div class="warn">Esta diapositiva no está incluida. Márcala arriba para agregarla a la propuesta.</div>`;
+function fotoSel(key,std,ph,propiaTxt){const img=S.imgs[key],prop=img||S["_p_"+key];return `<div class="seg">
+  <button class="${!prop?"on":""}" onclick="A.setImg('${key}',null)">Estándar</button><button class="${prop?"on":""}" onclick="S['_p_${key}']=true;save();render()">${propiaTxt||"Nueva"}</button></div>`+
+  (prop?imgZone(key,img,false,ph):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(std.data)}');background-size:cover"></div></div>`)}
 function fotoCRVui(){const f=S.crvFoto||1;
   return `<div class="seg">${[1,2,3,4].map(i=>`<button class="${f===i?"on":""}" onclick="S.crvFoto=${i};save();render()">Foto ${i}</button>`).join("")}<button class="${f==="nueva"?"on":""}" onclick="S.crvFoto='nueva';save();render()">Nueva</button></div>`+
     (f==="nueva"?imgZone("crv",S.imgs.crv,false,"Pega aquí la foto nueva (Ctrl+V)"):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(fotoCRV().data)}');background-size:cover"></div></div>`)}
-function stepCRV(){
-  const I=S.incluir;
-  const tog=(k,t,sub)=>`<div class="row ${I[k]?"on":""}" onclick="S.incluir.${k}=!S.incluir.${k};save();render()"><div class="chk"></div><div class="tx"><b>${t}</b><small>${sub}</small></div></div>`;
-  const foto=(key,std,ph,propiaTxt)=>{const img=S.imgs[key],prop=img||S["_p_"+key];return `<div class="seg"><button class="${!prop?"on":""}" onclick="A.setImg('${key}',null)">Estándar</button><button class="${prop?"on":""}" onclick="S['_p_${key}']=true;save();render()">${propiaTxt||"Propia"}</button></div>`+
-    (prop?imgZone(key,img,false,ph):`<div class="imgz"><div class="prev" style="background-image:url('${std.data}');background-size:cover"></div></div>`)};
-  const card=(inner)=>`<div class="ccard">${inner}</div>`;
-  const resumen=d=>d.map(x=>x.n+" "+x.l).join(" · ");
-  return `<p class="hint">Láminas institucionales. Marca las que quieres mostrar en esta propuesta y elige sus fotos o mapas.</p>
-  <div class="cgrid">
-  ${card(tog("crv","Qué es CicloRecreoVía","Descripción y cifras principales")+(I.crv?`<div class="lbl">Foto</div>`+fotoCRVui():""))}
-  ${card(tog("circ_stgo","Circuito CicloRecreoVía Santiago",resumen(CAT.circuitos.stgo.datos))+(I.circ_stgo?`<div class="lbl">Mapa del circuito</div>`+foto("mapa_stgo",stdPhoto("mapa_stgo","Mapa del circuito","#179741"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa"):""))}
-  ${card(tog("circ_vina","Circuito CicloRecreoVía Viña del Mar",resumen(CAT.circuitos.vina.datos))+(I.circ_vina?`<div class="lbl">Mapa del circuito</div>`+foto("mapa_vina",stdPhoto("mapa_vina","Mapa del circuito","#0b69b2"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa"):""))}
-  ${card(tog("perf_stgo","Perfil asistentes CicloRecreoVía Santiago",resumen(CAT.perfiles.stgo.kpis)))}
-  ${card(tog("perf_vina","Perfil asistentes CicloRecreoVía Viña del Mar",resumen(CAT.perfiles.vina.kpis)))}
-  ${card(tog("rrss","Nuestra comunidad digital (RRSS)",CAT.rrss.map(r=>r.red+" "+fmt(r.n)).join(" · ")))}
-  </div>`}
-function stepObjetivos(){return `
-  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en la propuesta.</p>
+const temaSel=()=>`<div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>`;
+const datosLista=d=>`<div class="rows">${d.map(x=>`<div class="row" style="cursor:default"><div class="tx"><b>${esc(x.n)}</b><small>${esc(x.l)}</small></div></div>`).join("")}</div>`;
+
+function pPortada(){return `
+  <div class="cols2"><div>
+  <div class="lbl" style="margin-top:0">Nombre del prospecto</div>
+  <input class="field" value="${esc(S.prospecto)}" placeholder="Ej: Powerade" oninput="S.prospecto=this.value;save()">
+  <div class="lbl">Estilo de color de la presentación</div>${temaSel()}
+  <div class="lbl">Foto de portada</div>
+  <div class="seg"><button class="${!S.portada&&!S._portadaPropia?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada||S._portadaPropia?"on":""}" onclick="A.portadaPropia()">Nueva</button></div>
+  ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(fotoPortada().data)}');background-size:cover"></div></div>`}
+  </div><div>
+  <div class="lbl" style="margin-top:0">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
+  </div></div>`}
+function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`<p class="hint">Descripción y cifras principales de CicloRecreoVía.</p>${datosLista(CAT.crv.stats)}<div class="lbl">Foto</div>${fotoCRVui()}`:offMsg)}
+function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`<p class="hint">${esc(c.d)}</p>${datosLista(c.datos)}
+  <div class="lbl">Mapa del circuito</div>${fotoSel("mapa_"+city,stdPhoto("mapa_"+city,"Mapa del circuito",city==="stgo"?"#179741":"#0b69b2"),"Pega aquí el mapa (Ctrl+V)","Pegar mapa")}`:offMsg)}
+function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?`${datosLista(pf.kpis)}
+  <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
+function pObjetivos(){return togIncl("objetivos")+`
+  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
-function stepActivaciones(){return `
-  <p class="hint">Agrega de 1 a 4 activaciones. Toca una para editar sus elementos, dinámica, foto y números.</p>
-  <div class="rows acts">${S.activaciones.map((a,i)=>`<div class="act" onclick="A.editar('${a.uid}')"><img src="${fotoAct(a).data}"><div class="in"><b>${i+1}. ${esc(a.nombre)}</b><small>${esc(dinNombre(a))}</small><small>${Object.values(a.elementos).reduce((s,q)=>s+q,0)} elementos · ${kpisAct(a).map(k=>fmt(k.v)+" "+k.t.toLowerCase()).slice(0,2).join(" · ")||"sin números"}</small><div class="money">${money(subDomingo(a))} <span style="color:var(--mut);font-size:14px;font-weight:700">+ IVA por domingo</span></div></div></div>`).join("")}</div>
-  <button class="addbtn" ${S.activaciones.length>=4?"disabled":""} onclick="A.nuevaAct()">＋ Agregar activación</button>`}
-function stepTarifas(){
-  const ps=periodosSel();return `
-  <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
-  <div class="rows">${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}</div>
-  ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`}
-function stepComunicacion(){return `
-  <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
-  <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
-  <div class="lbl">Nota adicional (opcional)</div>
-  <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>
-`}
-function stepCondiciones(){return `
-  <div class="lbl" style="margin-top:0">Condiciones</div>
-  <div class="rows">${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}</div>
-  <div class="lbl">Condición especial (opcional)</div>
-  <textarea class="field" style="min-height:80px" placeholder="Ej: Exclusividad de categoría bebidas isotónicas" oninput="S.condExtra=this.value;save()">${esc(S.condExtra)}</textarea>
-  <div class="lbl">Enlaces a fotos y videos</div>
-  <div class="rows">${CAT.enlaces.map(l=>`<div class="row ${S.enlaces.includes(l.id)?"on":""}" onclick="A.toggle('enlaces','${l.id}')"><div class="chk"></div><div class="tx"><b>${esc(l.t)}</b><small>${esc(l.url)}</small></div></div>`).join("")}</div>`}
-function stepLibres(){return `
-  <p class="hint">Para ese contenido que no calza con lo estándar: agrega láminas con título, texto y foto, y elige dónde van.</p>
-  ${S.libres.map((l,i)=>`<div style="background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Lámina libre ${i+1}</b><button class="hbtn" onclick="A.borrarLibre('${l.uid}')">🗑 Quitar</button></div>
-    <div class="lbl">Título</div><input class="field" value="${esc(l.titulo)}" oninput="A.libre('${l.uid}','titulo',this.value)">
-    <div class="lbl">Texto</div><textarea class="field" oninput="A.libre('${l.uid}','texto',this.value)">${esc(l.texto)}</textarea>
-    <div class="lbl">Ubicación</div><button class="sel" onclick="A.posLibre('${l.uid}')"><span>${esc(byId(POS,l.pos).t)}</span></button>
-    <div class="lbl">Foto (opcional)</div>${imgZone("libre_"+l.uid,l.foto,false,"Pega aquí una foto")}</div>`).join("")}
-  <button class="addbtn" onclick="A.nuevaLibre()">＋ Agregar lámina libre</button>`}
-function stepRevisar(){
-  const f=validar(),I=S.incluir;
-  const tg=(k,t)=>`<div class="row ${I[k]?"on":""}" onclick="S.incluir.${k}=!S.incluir.${k};save();render()"><div class="chk"></div><div class="tx"><b>${t}</b></div></div>`;
-  setTimeout(drawThumbs,0);
-  return `${f.length?`<div class="warn">Falta completar: ${f.map(esc).join(" · ")}</div>`:""}
-  <button class="b-big b-pri" onclick="A.generar()">⬇ Descargar PowerPoint</button>
-  <div class="lbl">Estilo de color</div>
-  <div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>
-  <div class="lbl">Láminas de la propuesta (toca para ver en grande)</div>
-  <div class="thumbs" id="thumbs"></div>
-  <div class="lbl">Incluir / quitar láminas</div>
-  <div class="rows">${tg("crv","Qué es CicloRecreoVía")}${tg("circ_stgo","Circuito Santiago")}${tg("circ_vina","Circuito Viña del Mar")}${tg("perf_stgo","Perfil asistentes Santiago")}${tg("perf_vina","Perfil asistentes Viña del Mar")}${tg("objetivos","Objetivos")}${tg("numeros","Números proyectados")}${tg("tarifas","Tarifas")}${tg("comunicacion","Plan comunicacional")}${tg("rrss","Nuestra comunidad digital (RRSS)")}${tg("condiciones","Condiciones")}${tg("enlaces","Fotos y videos")}</div>`}
-
-async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
-  el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
-function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
-window.addEventListener("resize",()=>{document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
-let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
-
-/* Editor de activación */
-function editorAct(a){
-  const t=byId(CAT.tipos,a.tipo);const dins=CAT.dinamicas;const ks=kpisAct(a);
-  const objOpts=S.objetivos.length?S.objetivos:[];
-  return `<div class="full" id="full"><header><button class="hbtn" onclick="A.cerrarEditor()">← Volver</button><div class="stepname">Activación ${S.activaciones.indexOf(a)+1}</div><button class="hbtn" style="color:var(--red)" onclick="A.borrarAct('${a.uid}')">🗑</button></header>
-  <main>
-  <div class="lbl" style="margin-top:0">Tipo de activación</div>
+function pActNueva(){return `<p class="hint">Todavía no hay activaciones. Crea la primera para definir su tipo, dinámica, elementos, foto y números.</p>
+  <button class="addbtn" onclick="A.nuevaAct()">＋ Crear activación</button>`}
+function pAct(a){
+  const t=byId(CAT.tipos,a.tipo);const dins=CAT.dinamicas;const ks=kpisAct(a);const idx=S.activaciones.indexOf(a);
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+    ${S.activaciones.length<4&&idx===S.activaciones.length-1?`<button class="hbtn" onclick="A.nuevaAct()">＋ Agregar otra activación</button>`:""}
+    <button class="hbtn" style="color:var(--red)" onclick="A.borrarAct('${a.uid}')">🗑 Quitar esta activación</button></div>
+  <div class="cols2"><div>
+  <div class="lbl">Tipo de activación</div>
   <button class="sel" onclick="A.pickTipo('${a.uid}')"><span>${esc(t.t)}<small>${esc(t.d)}</small></span></button>
+  </div><div>
   <div class="lbl">Nombre que verá el prospecto</div>
   <input class="field" value="${esc(a.nombre)}" oninput="A.setA('${a.uid}','nombre',this.value)">
+  </div></div>
   <div class="lbl">Objetivos que cubre</div>
-  ${objOpts.length?`<div class="grid">${objOpts.map(id=>{const o=byId(CAT.objetivos,id);return `<button class="chip ${a.objetivos.includes(id)?"on":""}" style="min-height:60px" onclick="A.toggleObjAct('${a.uid}','${id}')"><b>${esc(o.t)}</b></button>`}).join("")}</div>`:`<div class="warn">Primero elige objetivos en el paso 2.</div>`}
+  ${S.objetivos.length?`<div class="grid">${S.objetivos.map(id=>{const o=byId(CAT.objetivos,id);return `<button class="chip ${a.objetivos.includes(id)?"on":""}" style="min-height:52px" onclick="A.toggleObjAct('${a.uid}','${id}')"><b>${esc(o.t)}</b></button>`}).join("")}</div>`:`<div class="warn">Primero elige objetivos en la diapositiva de Objetivos.</div>`}
   <div class="lbl">Dinámica</div>
   <div class="rows opts">${dins.filter(d=>t.din.includes(d.id)).concat(dins.filter(d=>!t.din.includes(d.id))).map(d=>`<button class="opt ${a.din===d.id?"on":""}" onclick="A.setA('${a.uid}','din','${d.id}',1)">${t.din.includes(d.id)?"★ ":""}${esc(d.t)}<small>${esc(d.tx)}</small></button>`).join("")}
   <button class="opt ${a.din==="otra"?"on":""}" onclick="A.setA('${a.uid}','din','otra',1)">✎ Otra (escribir)<small>Describe una dinámica a medida</small></button></div>
@@ -951,28 +887,98 @@ function editorAct(a){
   <p class="hint">Se calculan solos según los elementos y objetivos. Toca un número para fijarlo a mano.</p>
   <div class="rows">${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}</div>
   <div class="lbl">Foto</div>
-  <div class="seg"><button class="${!a.foto?"on":""}" onclick="A.setImg('act_${a.uid}',null)">Estándar</button><button class="${a.foto||a._propia?"on":""}" onclick="A.setA('${a.uid}','_propia',true,1)">Propia</button></div>
-  ${a.foto||a._propia?imgZone("act_"+a.uid,a.foto,false,"Pega aquí la foto de la activación"):`<div class="imgz"><div class="prev" style="background-image:url('${fotoAct(a).data}');background-size:cover"></div></div>`}
-  </main>
-  <nav class="bot"><button class="b-sec" onclick="A.previewAct('${a.uid}')">👁 Ver lámina</button><button class="b-pri" onclick="A.cerrarEditor()">Listo ✓</button></nav></div>`;
+  <div class="seg"><button class="${!a.foto&&!a._propia?"on":""}" onclick="A.setImg('act_${a.uid}',null)">Estándar</button><button class="${a.foto||a._propia?"on":""}" onclick="A.setA('${a.uid}','_propia',true,1)">Nueva</button></div>
+  ${a.foto||a._propia?imgZone("act_"+a.uid,a.foto,false,"Pega aquí la foto de la activación"):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(fotoAct(a).data)}');background-size:cover"></div></div>`}`;
 }
+function pNumeros(){const ks=kpisTotales();return togIncl("numeros")+(S.incluir.numeros?`<p class="hint">Suma de los números por domingo de todas las activaciones. Se editan en cada activación.</p>
+  ${ks.length?`<div class="rows">${ks.map(k=>`<div class="row" style="cursor:default"><div class="tx"><b>${fmt(k.v)}</b><small>${esc(k.t)} por domingo</small></div></div>`).join("")}</div>`:`<div class="warn">Aún no hay números: agrega activaciones con objetivos y elementos.</div>`}`:offMsg)}
+function pTarifas(){const ps=periodosSel();return togIncl("tarifas")+(S.incluir.tarifas?`
+  <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
+  <div class="rows">${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}</div>
+  ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`:offMsg)}
+function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?`
+  <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
+  <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
+  <div class="lbl">Nota adicional (opcional)</div>
+  <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>`:offMsg)}
+function pRRSS(){return togIncl("rrss")+(S.incluir.rrss?datosLista(CAT.rrss.map(r=>({n:fmt(r.n),l:r.red+" · "+r.user+" · "+(r.u||"seguidores")}))):offMsg)}
+function pCondiciones(){return togIncl("condiciones")+(S.incluir.condiciones?`
+  <div class="rows">${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}</div>
+  <div class="lbl">Condición especial (opcional)</div>
+  <textarea class="field" style="min-height:80px" placeholder="Ej: Exclusividad de categoría bebidas isotónicas" oninput="S.condExtra=this.value;save()">${esc(S.condExtra)}</textarea>`:offMsg)}
+function pEnlaces(){return togIncl("enlaces")+(S.incluir.enlaces?`
+  <div class="rows">${CAT.enlaces.map(l=>`<div class="row ${S.enlaces.includes(l.id)?"on":""}" onclick="A.toggle('enlaces','${l.id}')"><div class="chk"></div><div class="tx"><b>${esc(l.t)}</b><small>${esc(l.url)}</small></div></div>`).join("")}</div>`:offMsg)}
+function pLibre(l){return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px"><button class="hbtn" style="color:var(--red)" onclick="A.borrarLibre('${l.uid}')">🗑 Quitar esta diapositiva</button></div>
+  <div class="cols2"><div>
+  <div class="lbl">Título</div><input class="field" value="${esc(l.titulo)}" oninput="A.libre('${l.uid}','titulo',this.value)">
+  <div class="lbl">Ubicación en la presentación</div><button class="sel" onclick="A.posLibre('${l.uid}')"><span>${esc(byId(POS,l.pos).t)}</span></button>
+  <div class="lbl">Texto</div><textarea class="field" oninput="A.libre('${l.uid}','texto',this.value)">${esc(l.texto)}</textarea>
+  </div><div>
+  <div class="lbl">Foto (opcional)</div>${imgZone("libre_"+l.uid,l.foto,false,"Pega aquí una foto")}
+  </div></div>`}
+function pCierre(){const v=vendedor();return `
+  <div class="lbl" style="margin-top:0">Ejecutivo/a que firma la propuesta</div>
+  <button class="sel" onclick="A.pickVendedor()"><span>${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)} · ${esc(v.t)}</small></span></button>`}
+function pRevisar(){
+  const f=validar();setTimeout(drawThumbs,0);
+  return `${f.length?`<div class="warn">Falta completar: ${f.map(esc).join(" · ")}</div>`:""}
+  <button class="b-big b-pri" onclick="A.generar()">⬇ Descargar PowerPoint</button>
+  <div class="lbl">Diapositivas libres</div>
+  <p class="hint">Para contenido que no calza con lo estándar. Cada una tiene su propio panel.</p>
+  <button class="addbtn" onclick="A.nuevaLibre()">＋ Agregar diapositiva libre</button>
+  <div class="lbl">Diapositivas de la propuesta (toca para ver en grande)</div>
+  <div class="thumbs" id="thumbs"></div>`}
+
+function PANELS(){
+  const P=[],lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({id:"lib_"+l.uid,t:"Diapositiva libre"+(l.titulo?": "+l.titulo:""),r:()=>pLibre(l),m:p=>p.k==="libre"&&p.l.uid===l.uid}));
+  P.push({id:"portada",t:"Portada",r:pPortada,m:p=>p.k==="portada"});
+  P.push({id:"crv",t:"Qué es CicloRecreoVía",r:pCRV,m:p=>p.k==="crv"});
+  P.push({id:"circ_stgo",t:"Circuito Santiago",r:()=>pCirc("stgo"),m:p=>p.k==="circ"&&p.city==="stgo"});
+  P.push({id:"circ_vina",t:"Circuito Viña del Mar",r:()=>pCirc("vina"),m:p=>p.k==="circ"&&p.city==="vina"});
+  P.push({id:"perf_stgo",t:"Perfil asistentes Santiago",r:()=>pPerf("stgo"),m:p=>p.k==="perf"&&p.city==="stgo"});
+  P.push({id:"perf_vina",t:"Perfil asistentes Viña del Mar",r:()=>pPerf("vina"),m:p=>p.k==="perf"&&p.city==="vina"});
+  P.push({id:"objetivos",t:"Objetivos",r:pObjetivos,m:p=>p.k==="objetivos"});
+  lib("obj");
+  if(!S.activaciones.length)P.push({id:"act_new",t:"Activación 1",r:pActNueva,m:()=>false});
+  S.activaciones.forEach((a,i)=>P.push({id:"act_"+a.uid,t:"Activación "+(i+1)+(a.nombre?": "+a.nombre:""),r:()=>pAct(a),m:p=>p.k==="act"&&p.a.uid===a.uid}));
+  lib("act");
+  P.push({id:"numeros",t:"Números proyectados",r:pNumeros,m:p=>p.k==="numeros"});
+  P.push({id:"tarifas",t:"Inversión (tarifas)",r:pTarifas,m:p=>p.k==="tarifas"});
+  lib("tar");
+  P.push({id:"comunicacion",t:"Plan comunicacional",r:pComunicacion,m:p=>p.k==="comunicacion"});
+  P.push({id:"rrss",t:"Nuestra comunidad digital",r:pRRSS,m:p=>p.k==="rrss"});
+  P.push({id:"condiciones",t:"Condiciones del auspicio",r:pCondiciones,m:p=>p.k==="condiciones"});
+  P.push({id:"enlaces",t:"Fotos y videos",r:pEnlaces,m:p=>p.k==="enlaces"});
+  lib("fin");
+  P.push({id:"cierre",t:"Despedida",r:pCierre,m:p=>p.k==="cierre"});
+  P.push({id:"revisar",t:"Revisar y descargar",r:pRevisar,m:()=>false,final:true});
+  return P;
+}
+let curId="portada";
+function curIndex(P){const i=P.findIndex(p=>p.id===curId);return i<0?0:i}
+function numDiapo(pn,list){const i=list.findIndex(pn.m);return i<0?null:i+1}
+
+async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
+  el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
+function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
+window.addEventListener("resize",()=>{document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
+let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 
 /* =====================================================================
    RENDER Y ACCIONES
    ===================================================================== */
 function render(){
   asideLater();
-  if(editAct){const a=S.activaciones.find(x=>x.uid===editAct);if(a){const sc=($("#full")||{}).scrollTop||0;
-    let ed=$("#editor");if(!ed){ed=document.createElement("div");ed.id="editor";document.body.appendChild(ed)}ed.innerHTML=editorAct(a);$("#full").scrollTop=sc;return}editAct=null}
-  const ed=$("#editor");if(ed)ed.remove();
-  $("#stepname").textContent=STEPS[cur].t;
-  $("#prog").innerHTML=STEPS.map((s,i)=>`<i class="${i===cur?"on":i<cur?"done":""}" onclick="A.ir(${i})"></i>`).join("");
-  $("#main").innerHTML=STEPS[cur].r();
-  $("#nav").innerHTML=`<button class="b-sec" ${cur===0?"disabled style=opacity:.35":""} onclick="A.ir(${cur-1})">← Atrás</button><button class="b-sec" onclick="A.preview(-1)">👁 Ver</button>`+
-    (cur<STEPS.length-1?`<button class="b-pri" onclick="A.ir(${cur+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
+  const P=PANELS(),i=curIndex(P),pn=P[i];curId=pn.id;
+  const on=pn.final||!!numDiapo(pn,plan());
+  $("#stepname").innerHTML=pn.final?esc(pn.t):`<span class="dnum">Diapositiva ${i+1}</span>${esc(pn.t)}${on?"":` <span class="dnum off">no incluida</span>`}`;
+  $("#prog").innerHTML=P.map((p,k)=>`<i class="${k===i?"on":k<i?"done":""}" title="${k+1}. ${esc(p.t)}" onclick="A.ir(${k})"></i>`).join("");
+  $("#main").innerHTML=pn.r();
+  $("#nav").innerHTML=`<button class="b-sec" ${i===0?"disabled style=opacity:.35":""} onclick="A.ir(${i-1})">← Atrás</button><button class="b-sec" onclick="A.preview(-1)">👁 Ver</button>`+
+    (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
 }
 const A={
-  ir(i){if(i<0||i>=STEPS.length)return;cur=i;render();window.scrollTo(0,0)},
+  ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
   toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
     if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
     if(k==="objetivos"&&i>=0) S.activaciones.forEach(x=>x.objetivos=x.objetivos.filter(o=>o!==id));
@@ -995,9 +1001,9 @@ const A={
   nuevaAct(){if(S.activaciones.length>=4)return;const t=CAT.tipos[0];
     const a={uid:uid(),tipo:t.id,nombre:t.t,objetivos:[...S.objetivos],din:t.din[0],dinTexto:"",elementos:{...t.el},kpiMan:{},foto:null};
     S.activaciones.push(a);save();A.editar(a.uid)},
-  editar(u){editAct=u;render();const f=$("#full");if(f)f.scrollTop=0},
-  cerrarEditor(){editAct=null;render()},
-  borrarAct(u){if(!confirm("¿Quitar esta activación?"))return;S.activaciones=S.activaciones.filter(a=>a.uid!==u);editAct=null;save();render()},
+  editar(u){curId="act_"+u;render();window.scrollTo(0,0)},
+  cerrarEditor(){render()},
+  borrarAct(u){if(!confirm("¿Quitar esta activación?"))return;const i=S.activaciones.findIndex(a=>a.uid===u);S.activaciones.splice(i,1);const pv=S.activaciones[Math.max(0,i-1)];curId=pv?"act_"+pv.uid:"act_new";save();render()},
   pickTipo(u){const a=S.activaciones.find(x=>x.uid===u);picker("Tipo de activación",CAT.tipos.map(t=>({v:t.id,t:t.t,sub:t.d})),a.tipo,v=>{const t=byId(CAT.tipos,v);
     const old=byId(CAT.tipos,a.tipo);if(a.nombre===old.t||!a.nombre)a.nombre=t.t;a.tipo=v;a.elementos={...t.el};a.din=t.din[0];a.kpiMan={};save();render()})},
   setA(u,k,v,re){const a=S.activaciones.find(x=>x.uid===u);a[k]=v;save();if(re)render()},
@@ -1006,15 +1012,14 @@ const A={
   qtyKp(u,id){const a=S.activaciones.find(x=>x.uid===u);keypad("Cantidad · "+byId(CAT.elementos,id).t,a.elementos[id]||"",v=>{v=Math.round(v);if(v>0)a.elementos[id]=v;else delete a.elementos[id];save();render()})},
   kpiKp(u,id){const a=S.activaciones.find(x=>x.uid===u);a.kpiMan=a.kpiMan||{};keypad(byId(CAT.kpis,id).t+" por domingo",a.kpiMan[id]!=null?a.kpiMan[id]:"",v=>{a.kpiMan[id]=Math.round(v);save();render()})},
   kpiAuto(u,id){const a=S.activaciones.find(x=>x.uid===u);delete a.kpiMan[id];save();render()},
-  nuevaLibre(){S.libres.push({uid:uid(),titulo:"",texto:"",pos:"act",foto:null});save();render()},
-  borrarLibre(u){S.libres=S.libres.filter(l=>l.uid!==u);save();render()},
+  nuevaLibre(){const l={uid:uid(),titulo:"",texto:"",pos:"fin",foto:null};S.libres.push(l);curId="lib_"+l.uid;save();render();window.scrollTo(0,0)},
+  borrarLibre(u){if(!confirm("¿Quitar esta diapositiva libre?"))return;S.libres=S.libres.filter(l=>l.uid!==u);curId="revisar";save();render()},
   libre(u,k,v){const l=S.libres.find(x=>x.uid===u);l[k]=v;save()},
   posLibre(u){const l=S.libres.find(x=>x.uid===u);picker("¿Dónde va esta lámina?",POS.map(p=>({v:p.id,t:p.t})),l.pos,v=>{l.pos=v;save();render()})},
   async preview(start,onlyAct){
     const all=plan();const hs=await renderHtmlSlides(all);
     const idx=onlyAct?[all.findIndex(p=>p.k==="act"&&p.a.uid===onlyAct)]:all.map((_,i)=>i);
-    if(start===-1){const want=[["portada"],["crv","circ","perf","rrss"],["objetivos"],["act"],["tarifas"],["comunicacion"],["condiciones","enlaces"],["libre"],["portada"]][cur]||["portada"];
-      start=Math.max(0,all.findIndex(p=>want.includes(p.k)))}
+    if(start===-1){const P=PANELS(),pn=P[curIndex(P)];start=Math.max(0,all.findIndex(pn.m))}
     let pos=Math.max(0,Math.min(idx.length-1,start>0?start:0));
     layer.innerHTML=`<div class="pv"><div class="pv-top"><span>Vista previa</span><button class="hbtn" onclick="closeLayer()">✕ Cerrar</button></div>
       <div class="pv-stage" id="pvs"><div class="sw" id="pvsw"></div></div>
@@ -1032,9 +1037,9 @@ const A={
   previewAct(u){A.preview(0,u)},
   generar(){generarPPTX().catch(e=>{console.error(e);alert("Error al generar: "+e.message)})},
   menu(){picker("Menú",[{v:"nuevo",t:"🆕 Nueva propuesta",sub:"Borra la propuesta actual"},{v:"exp",t:"💾 Guardar propuesta (archivo)",sub:"Para retomarla o duplicarla después"},{v:"imp",t:"📂 Abrir propuesta guardada"}],null,v=>{
-    if(v==="nuevo"&&confirm("¿Borrar la propuesta actual y empezar una nueva?")){S=nuevo();cur=0;save();render()}
+    if(v==="nuevo"&&confirm("¿Borrar la propuesta actual y empezar una nueva?")){S=nuevo();curId="portada";save();render()}
     if(v==="exp"){const b=new Blob([JSON.stringify(S)],{type:"application/json"});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Propuesta "+(S.prospecto||"sin nombre")+".json";l.click()}
-    if(v==="imp"){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async()=>{try{S=Object.assign(nuevo(),JSON.parse(await i.files[0].text()));normalizar();cur=0;save();render();toast("Propuesta abierta")}catch(e){alert("Archivo no válido")}};i.click()}
+    if(v==="imp"){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async()=>{try{S=Object.assign(nuevo(),JSON.parse(await i.files[0].text()));normalizar();curId="portada";save();render();toast("Propuesta abierta")}catch(e){alert("Archivo no válido")}};i.click()}
   })}
 };
 $("#hlogo").src=LOGO_CRV.data;
