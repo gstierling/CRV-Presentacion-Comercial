@@ -22,6 +22,31 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .brand b span{color:var(--or)}
 .hbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:7px 11px;font-size:14px;font-weight:700}
 .stepname{font-size:24px;font-weight:900;margin:8px 0 8px}
+.brand{flex-wrap:wrap}
+.htools{display:flex;gap:8px;flex:1;justify-content:center;flex-wrap:wrap;min-width:0}
+.dd{position:relative}
+.ddb{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:5px 12px;font-weight:900;font-size:14px;color:var(--txt);display:flex;gap:10px;align-items:center;text-align:left;line-height:1.15}
+.ddb small{display:block;color:var(--mut);font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+.ddb:after{content:"▾";color:var(--or);font-size:16px}
+.ddb.on{border-color:var(--or);background:#fdf0e6}
+.ddm{position:absolute;top:calc(100% + 6px);left:0;min-width:300px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(17,24,39,.18);padding:6px;z-index:60;max-height:72vh;overflow:auto}
+.ddh{font-size:11px;font-weight:900;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;padding:8px 10px 4px}
+.ddi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;width:100%;border:none;background:none;color:var(--txt);text-align:left}
+.ddi:hover{background:var(--panel2)}.ddi.on{background:#fdf0e6}
+.ddi .n{min-width:26px;height:22px;border-radius:6px;background:var(--panel2);display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--mut)}
+.ddi .tt{flex:1;min-width:0}.ddi .tt small{display:block;color:var(--mut);font-weight:600;font-size:12px}
+.ddi .amt{font-weight:900;white-space:nowrap}
+.st{font-size:11px;font-weight:900;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.st.v{background:#e3f4e8;color:var(--te)}.st.o{background:var(--panel2);color:var(--mut)}
+.eye{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--txt);cursor:pointer;white-space:nowrap}
+@media(max-width:899px){
+  .htools{order:3;flex-basis:100%;gap:6px;margin-top:8px;flex-wrap:nowrap}
+  .dd{flex:1;min-width:0;position:static}
+  .ddb{width:100%;padding:5px 8px;font-size:12px;gap:6px}
+  .ddb small{font-size:8.5px;letter-spacing:.2px}
+  .ddb:after{font-size:13px;margin-left:auto}
+  .ddm{position:fixed;left:8px;right:8px;top:118px;min-width:0!important;max-height:65vh}
+}
 .dnum{display:inline-block;background:var(--or);color:#fff;border-radius:8px;padding:2px 10px;font-size:.7em;margin-right:10px;vertical-align:3px}
 .dnum.off{background:var(--line);color:var(--mut);margin:0 0 0 8px}
 .row.incl{max-width:480px;margin-bottom:12px}
@@ -198,6 +223,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 <body>
 <header>
   <div class="brand"><div style="display:flex;align-items:center;gap:10px"><img id="hlogo" style="height:40px"><b>PROPUESTAS</b></div>
+    <div id="htools" class="htools"></div>
     <div style="display:flex;gap:6px"><button class="hbtn" onclick="A.menu()">☰ Menú</button></div></div>
   <div class="stepname" id="stepname"></div>
   <div class="prog" id="prog"></div>
@@ -845,7 +871,6 @@ function pPortada(){return `
   <div class="cols2"><div>
   <div class="lbl" style="margin-top:0">Nombre del prospecto</div>
   <input class="field" value="${esc(S.prospecto)}" placeholder="Ej: Powerade" oninput="S.prospecto=this.value;save()">
-  <div class="lbl">Estilo de color de la presentación</div>${temaSel()}
   <div class="lbl">Foto de portada</div>
   <div class="seg"><button class="${!S.portada&&!S._portadaPropia?"on":""}" onclick="A.setImg('portada',null)">Estándar</button><button class="${S.portada||S._portadaPropia?"on":""}" onclick="A.portadaPropia()">Nueva</button></div>
   ${S.portada||S._portadaPropia?imgZone("portada",S.portada,false,"Pega aquí la foto de portada"):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(fotoPortada().data)}');background-size:cover"></div></div>`}
@@ -967,8 +992,28 @@ let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 /* =====================================================================
    RENDER Y ACCIONES
    ===================================================================== */
+let DD=null;
+const INCL={crv:"crv",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces"};
+function totalPeriodo(p){return S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0)}
+function renderTools(){
+  const el=$("#htools");if(!el)return;
+  const tm=TEMAS[S.tema]||TEMAS.azul;
+  const mes=byId(CAT.periodos,"p4"),ps=[mes,...periodosSel().filter(p=>p.id!=="p4")];
+  const P=PANELS().filter(p=>!p.final),list=plan(),vis=P.filter(p=>numDiapo(p,list)).length;
+  const sw=v=>`<span style="display:inline-block;width:16px;height:16px;border-radius:5px;background:#${v.bg};border:3px solid #${v.acc}"></span>`;
+  el.innerHTML=`
+  <div class="dd"><button class="ddb ${DD==="tema"?"on":""}" onclick="event.stopPropagation();A.dd('tema')">${sw(tm)}<span><small>Estilo diapositiva</small>${esc(tm.t.replace(" CicloRecreoVía",""))}</span></button>
+    ${DD==="tema"?`<div class="ddm" onclick="event.stopPropagation()"><div class="ddh">Estilo de la presentación</div>${Object.entries(TEMAS).map(([k,v])=>`<button class="ddi ${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';DD=null;save();render()">${sw(v)}<span class="tt">${esc(v.t)}</span>${(S.tema||"azul")===k?"✓":""}</button>`).join("")}</div>`:""}</div>
+  <div class="dd"><button class="ddb ${DD==="monto"?"on":""}" onclick="event.stopPropagation();A.dd('monto')"><span><small>Auspicio 1 mes</small>${money(totalPeriodo(mes))} + IVA</span></button>
+    ${DD==="monto"?`<div class="ddm" onclick="event.stopPropagation()"><div class="ddh">Monto total del auspicio por período</div>${ps.map(p=>`<div class="ddi" style="cursor:default"><span class="tt">${esc(p.t)}<small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% dcto.":""}${p.id==="p4"&&!S.periodos.includes("p4")?" · no se muestra en la propuesta":""}</small></span><span class="amt">${money(totalPeriodo(p))} + IVA</span></div>`).join("")}
+      ${S.activaciones.length?"":`<div class="ddh" style="text-transform:none">Agrega activaciones para calcular los montos.</div>`}</div>`:""}</div>
+  <div class="dd"><button class="ddb ${DD==="diapos"?"on":""}" onclick="event.stopPropagation();A.dd('diapos')"><span><small>Diapositivas</small>${vis} visibles de ${P.length}</span></button>
+    ${DD==="diapos"?`<div class="ddm" style="min-width:360px" onclick="event.stopPropagation()"><div class="ddh">Toca una para ir a su panel</div>${P.map((p,k)=>{const v=!!numDiapo(p,list),key=INCL[p.id];
+      return `<div class="ddi ${p.id===curId?"on":""}" onclick="DD=null;A.ir(${k})"><span class="n">${k+1}</span><span class="tt">${esc(p.t)}</span><span class="st ${v?"v":"o"}">${v?"Visible":"Oculta"}</span>${key?`<button class="eye" onclick="event.stopPropagation();S.incluir.${key}=!S.incluir.${key};save();render()">${S.incluir[key]?"Ocultar":"Mostrar"}</button>`:""}</div>`}).join("")}</div>`:""}</div>`;
+}
+document.addEventListener("click",()=>{if(DD){DD=null;renderTools()}});
 function render(){
-  asideLater();
+  asideLater();renderTools();
   const P=PANELS(),i=curIndex(P),pn=P[i];curId=pn.id;
   const on=pn.final||!!numDiapo(pn,plan());
   $("#stepname").innerHTML=pn.final?esc(pn.t):`<span class="dnum">Diapositiva ${i+1}</span>${esc(pn.t)}${on?"":` <span class="dnum off">no incluida</span>`}`;
@@ -978,6 +1023,7 @@ function render(){
     (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
 }
 const A={
+  dd(k){DD=DD===k?null:k;renderTools()},
   ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
   toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
     if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
