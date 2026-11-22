@@ -73,6 +73,8 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .pen:hover{border-color:var(--or)}
 .edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
 .edb{display:flex;gap:8px;margin-top:8px}
+.dlp{flex:1 1 auto;min-width:0;display:flex;gap:6px;align-items:center;position:relative}.dlp .dli{flex:1 1 auto}
+.edm2{position:absolute;right:46px;top:-9px;font-size:9.5px;font-weight:800;color:var(--or);text-transform:uppercase;background:var(--bg);padding:0 4px}
 .edb .sm{padding:8px 14px;font-size:14px;border-radius:10px;width:auto}
 .ft.map{background-size:contain;background-color:#fff;border-color:var(--line)}
 .ft.map.on{border-color:var(--or)}
@@ -193,7 +195,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 .pv-nav .cnt{flex:1.4;text-align:center;color:#c9d1d9;font-weight:800;font-size:14px;line-height:1.3}
 .sw{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#fff;border-radius:6px}
 .sw>.s{position:absolute;left:0;top:0;width:1333.33px;height:750px;transform-origin:0 0;font-family:Arial,Helvetica,sans-serif}
-.pv-cap{color:#8b949e;text-align:center;font-size:14px;margin-top:8px}
+.pv-cap{color:#8b949e;text-align:center;font-size:14px;margin-top:8px}.pv-cap.top{margin:0 0 6px;text-align:left;font-weight:800;color:var(--mut)}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .thumbs .sw{border-radius:8px;cursor:pointer;border:2px solid var(--line)}
 .ccard{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
@@ -212,7 +214,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
   #aside .th{margin-bottom:12px;cursor:pointer}
   #aside .th .sw{border-radius:6px;border:3px solid transparent;box-shadow:0 1px 4px rgba(17,24,39,.15)}
   #aside .th.hi .sw{border-color:var(--or)}
-  #aside .th .cap{font-size:12px;font-weight:800;color:var(--mut);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #aside .th .cap{font-size:12px;font-weight:800;color:var(--mut);margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #aside .th.hi .cap{color:var(--or)}
   nav.bot{right:20%}
   .full{right:20%}
@@ -495,7 +497,7 @@ async function updateAside(){
   const el=$("#alist");if(!el||getComputedStyle($("#aside")).display==="none")return;
   if(asideBusy){asideAgain=true;return}asideBusy=true;
   try{const list=plan();const hs=await renderHtmlSlides(list);const hi=pasoActual(list);
-    el.innerHTML=hs.map((h,i)=>`<div class="th ${hi.includes(i)?"hi":""}" onclick="A.preview(${i})"><div class="sw">${h}</div><div class="cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");
+    el.innerHTML=hs.map((h,i)=>`<div class="th ${hi.includes(i)?"hi":""}" onclick="A.preview(${i})"><div class="cap">${i+1}. ${esc(list[i].name)}</div><div class="sw">${h}</div></div>`).join("");
     $("#acount").textContent=list.length;scaleSlides(el);
     if(hi.length){const t=el.children[hi[0]];if(t&&(t.offsetTop<el.scrollTop||t.offsetTop>el.scrollTop+el.clientHeight-80))el.scrollTo({top:t.offsetTop-12,behavior:"smooth"})}
   }finally{asideBusy=false;if(asideAgain){asideAgain=false;asideLater()}}
@@ -503,8 +505,28 @@ async function updateAside(){
 let editAct=null;
 
 /* Cálculos */
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function mesAnio(){const d=S.fecha?new Date(S.fecha+"T12:00:00"):new Date();return MESES[d.getMonth()]+" "+d.getFullYear()}
+const rrssFecha=()=>"("+txD("rrss_fecha",mesAnio()).replace(/^\(|\)$/g,"")+")";
+function rrssList(){const o=S.rrssN||{};return CAT.rrss.map((r,i)=>Object.assign({},r,{n:o[i]!=null?o[i]:r.n}))}
 function subDomingo(a){return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
 function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100))}
+/* Tarifas de una activación para todos los períodos elegidos (fuera de las fotos) */
+function tarStrip(R,a,x,y,w,h,o){o=o||{};let ps=periodosSel();if(!ps.length)ps=[{t:"1 domingo",dom:1,desc:0}];
+  const n=ps.length,g=0.06,fill=i=>o.fills?o.fills[i%o.fills.length]:o.fill,tc=o.color||COL.wh;
+  const lab=p=>p.t.toUpperCase()+(p.desc?" · −"+p.desc+"%":""),amt=p=>moneyIva(precioPeriodo(a,p));
+  const fitA=(txt,wd,mx,f)=>Math.max(7,Math.min(mx,wd*72/(txt.length*(f||0.74))));
+  const two=w/n<1.35&&h/n<0.3&&h>=0.95&&w/Math.ceil(n/2)>=1.3;
+  if(w/n>=1.35||two){const pc=two?Math.ceil(n/2):n,cw=(w-g*(pc-1))/pc,bh=two?(h-g)/2:h;
+    ps.forEach((p,i)=>{const xx=x+(i%pc)*(cw+g),y0=y+Math.floor(i/pc)*(bh+g);{const y=y0,h=bh;R.rect(xx,y,cw,h,{fill:fill(i),radius:o.radius||undefined});
+      if(h>=0.46){R.text(lab(p),xx+0.08,y+0.03,cw-0.16,h*0.38,{size:Math.min(h*72*0.3,fitA(lab(p),cw-0.16,9.5,0.62)),bold:true,cs:0.5,color:tc,align:"center",valign:"bottom"});
+        R.text(amt(p),xx+0.06,y+h*0.42,cw-0.12,h*0.52,{size:Math.min(h*72*0.4,fitA(amt(p),cw-0.12,o.max||16)),head:true,color:tc,align:"center",valign:"middle"})}
+      else R.text([{text:lab(p)+"  ",o:{bold:true,size:Math.min(8.5,fitA(lab(p)+amt(p),cw-0.1,8.5))}},{text:amt(p),o:{head:true,size:fitA(lab(p)+amt(p),cw-0.1,12)}}],xx+0.05,y,cw-0.1,h,{size:10,color:tc,align:"center",valign:"middle"});}});return}
+  const cols=h/n<0.26&&w>=3.2?2:1,rows=Math.ceil(n/cols),cw=(w-g*(cols-1))/cols,rh=(h-g*(rows-1))/rows;
+  ps.forEach((p,i)=>{const xx=x+(i%cols)*(cw+g),yy=y+Math.floor(i/cols)*(rh+g);R.rect(xx,yy,cw,rh,{fill:fill(i),radius:o.radius||undefined});
+    const fs=Math.min(o.max||14,rh*72*0.5);
+    R.text(lab(p),xx+0.1,yy,cw*0.42,rh,{size:Math.min(fs*0.72,fitA(lab(p),cw*0.42-0.1,10,0.62)),bold:true,color:tc,valign:"middle"});
+    R.text(amt(p),xx+cw*0.43,yy,cw*0.57-0.1,rh,{size:Math.min(fs,fitA(amt(p),cw*0.57-0.1,fs)),head:true,color:tc,align:"right",valign:"middle"});});}
 function kpisAct(a){
   const ids=[...new Set((a.objetivos||[]).map(o=>(byId(CAT.objetivos,o)||{}).kpi).filter(Boolean))];
   return ids.map(id=>{
@@ -795,8 +817,8 @@ async function dibujarModerno(R,sp,n,tot){
        R.text(z.e.t,xx+qw+0.14,y,cw-qw-0.24-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
        if(vw)R.text(moneyIva(v),xx+cw-vw-0.04,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
        R.rect(xx,y+rh-0.01,cw,0.01,{fill:t.line});});}
-    R.rect(9.85,4.5,2.88,1.5,{fill:PC(1),radius:0.08});
-    R.text([{text:"Total por domingo",o:{bold:true,size:11,br:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],10.05,4.5,2.6,1.5,{size:12,color:COL.wh,valign:"middle"});
+    R.text("INVERSIÓN",9.85,4.42,2.88,0.28,{size:10.5,bold:true,color:t.tx,cs:1});
+    tarStrip(R,a,9.85,4.78,2.88,2.0,{fill:PC(1),radius:0.06});
     await mFoot(R);break;}
   case "numeros":{
     R.slide(t.bg);mHead(R,"Lo que lograremos cada domingo",n,tot,"Estimaciones por jornada según los elementos de cada activación");
@@ -826,8 +848,8 @@ async function dibujarModerno(R,sp,n,tot){
     if(S.comNota)R.text(S.comNota,0.6,6.55,W-1.2,0.4,{size:11.5,italic:true,color:t.mu,align:"center"});
     await mFoot(R);break;}
   case "rrss":{
-    R.slide(t.bg);mHead(R,"Nuestra comunidad digital",n,tot,"@ciclorecreovia");
-    const r=CAT.rrss,c=r.length,gap=0.35,cw=(W-1.2-gap*(c-1))/c;
+    R.slide(t.bg);mHead(R,"Nuestra comunidad digital",n,tot,rrssFecha());
+    const r=rrssList(),c=r.length,gap=0.35,cw=(W-1.2-gap*(c-1))/c;
     for(let i=0;i<c;i++){const x0=r[i],x=0.6+i*(cw+gap);
       R.rect(x,1.75,cw,3.55,{fill:PC(i),radius:0.12});
       R.rect(x+cw/2-0.55,2.05,1.1,1.1,{fill:COL.wh,ellipse:true});
@@ -965,14 +987,15 @@ async function dibujarVisual(R,sp,n,tot){
     R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.6,1.6,LW,0.28,{size:10,bold:true,cs:1.5,color:t.tx});
     const dt=dinTexto(a);R.text(dt,0.6,1.9,LW,many?0.65:0.85,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.mu});
     const hy=many?2.65:2.9;R.text(ELH(),0.6,hy,LW,0.28,{size:10,bold:true,cs:1.5,color:t.tx});
-    {const n2=els.length,cols=n2<=7?1:n2<=16?2:3,rows=Math.ceil(n2/cols),gx=0.25,cw=(LW-gx*(cols-1))/cols,top=hy+0.32,rh=Math.min(0.34,(5.35-top)/Math.max(rows,1));
+    const VB=periodosSel().length>3?4.92:5.3;
+    {const n2=els.length,cols=n2<=7?1:n2<=16?2:3,rows=Math.ceil(n2/cols),gx=0.25,cw=(LW-gx*(cols-1))/cols,top=hy+0.32,rh=Math.min(0.34,(VB-top)/Math.max(rows,1));
      const fs=rh>=0.3?10.5:rh>=0.24?9.5:8.5,vw=!DET()?0:cols===3?1.1:1.4;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,x=0.6+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        R.text(z.q+"×",x,y,0.45,rh,{size:fs,head:true,color:t.acc,valign:"middle"});
        R.text(z.e.t,x+0.45,y,cw-0.5-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
        if(vw)R.text(moneyIva(v),x+cw-vw,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
        vLine(R,x,y+rh-0.01,cw);});}
-    R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:10.5,color:t.mu}},{text:moneyIva(subDomingo(a)),o:{head:true,size:18,color:t.acc}}],0.6,5.4,LW,0.5,{size:12,valign:"middle"});
+    tarStrip(R,a,0.6,VB+0.02,LW,5.94-VB-0.02,{fill:t.acc});
     const ks=kpisAct(a).slice(0,3),kw=LW/3;
     for(let i=0;i<ks.length;i++){const k=ks[i],x=0.6+i*kw;
       R.rect(x,6.0,kw-0.2,0.02,{fill:t.acc});
@@ -1019,8 +1042,8 @@ async function dibujarVisual(R,sp,n,tot){
     R.slide(t.bg);
     await R.image(foto("rrss",4),0,0,W,3.6);R.rect(0,0,W,3.6,{fill:"0B0F14",transp:45});vNum(R,n);
     R.text("NUESTRA COMUNIDAD DIGITAL",0.6,1.25,W-1.2,0.9,{size:26,head:true,cs:6,color:COL.wh,align:"center",valign:"middle"});vPlus(R,10.9,1.2,0.45,COL.wh);
-    R.text("@ciclorecreovia",0.6,2.15,W-1.2,0.4,{size:13,bold:true,cs:3,color:"E5E7EB",align:"center"});
-    const r=CAT.rrss,c=r.length,cw=(W-1.2)/c;
+    R.text(rrssFecha(),0.6,2.15,W-1.2,0.4,{size:13,bold:true,cs:1,color:"E5E7EB",align:"center"});
+    const r=rrssList(),c=r.length,cw=(W-1.2)/c;
     for(let i=0;i<c;i++){const x0=r[i],x=0.6+i*cw;if(i>0)R.rect(x,4.0,0.012,2.3,{fill:t.line});
       await vIcon(R,x0.ic,x+cw/2-0.25,4.1,0.5);
       R.text(fmt(x0.n),x,4.75,cw,0.7,{size:30,head:true,color:t.tx,align:"center",valign:"middle"});
@@ -1171,8 +1194,7 @@ async function dibujarInvestor(R,sp,n,tot){
        R.text(String(z.q),xx+0.04,y+rh*0.15,qw,rh*0.7,{size:fs,bold:true,color:COL.wh,align:"center",valign:"middle"});
        R.text(z.e.t,xx+qw+0.12,y,cw-qw-0.2-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
        if(vw)R.text(moneyIva(v),xx+cw-vw-0.04,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});});}
-    R.rect(kx0,6.2,kwT,0.65,{fill:IC(2),radius:0.05});
-    R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:11}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],kx0+0.25,6.2,kwT-0.5,0.65,{size:12,color:COL.wh,valign:"middle",align:"right"});
+    tarStrip(R,a,kx0,6.15,kwT,0.72,{fills:[IC(0),IC(1),IC(2)],radius:0.05});
     await iFoot(R,n);break;}
   case "numeros":{
     R.slide(t.bg);iHead(R,"Lo que lograremos cada domingo",n,tot);
@@ -1204,8 +1226,8 @@ async function dibujarInvestor(R,sp,n,tot){
     if(S.comNota)R.text(S.comNota,0.6,6.55,W-1.2,0.4,{size:11,italic:true,color:t.mu,align:"center"});
     await iFoot(R,n);break;}
   case "rrss":{
-    R.slide(t.bg);iHead(R,"Nuestra comunidad digital",n,tot);
-    const r=CAT.rrss,c=r.length,cw=(W-1.2)/c;
+    R.slide(t.bg);iHead(R,"Nuestra comunidad digital",n,tot);R.text(rrssFecha(),1.5,1.12,10.33,0.32,{size:12,bold:true,color:t.mu,align:"center",valign:"middle"});
+    const r=rrssList(),c=r.length,cw=(W-1.2)/c;
     R.rect(0.6+cw/2,2.35,W-1.2-cw,0.03,{fill:t.line});
     for(let i=0;i<c;i++){const x0=r[i],x=0.6+i*cw;
       await iCirc(R,x0.ic,x+cw/2-0.65,1.7,1.3,IC(i));
@@ -1378,9 +1400,7 @@ async function dibujarCajas(R,sp,n,tot){
        R.text(z.e.t,xx+qw+0.12,y,cw-qw-0.2-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
        if(vw)R.text(moneyIva(v),xx+cw-vw,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
        R.rect(xx,y+rh-0.01,cw,0.01,{fill:t.line});});}
-    R.tri(W-1.6,6.2,1.0,0.7,{fill:CJ(1),corner:"br"});
-    R.rect(kx0,6.2,kwT-1.0,0.7,{fill:CJ(2)});
-    R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:11}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16}}],kx0+0.25,6.2,kwT-1.4,0.7,{size:12,color:COL.wh,valign:"middle"});
+    tarStrip(R,a,kx0,6.15,kwT,0.75,{fills:[CJ(0),CJ(1),CJ(2)]});
     await cFoot(R,n);break;}
   case "numeros":{
     R.slide(t.bg);cHead(R,"Lo que lograremos cada domingo",n,tot);
@@ -1417,8 +1437,8 @@ async function dibujarCajas(R,sp,n,tot){
     if(S.comNota)R.text(S.comNota,0.6,6.55,W-1.2,0.4,{size:11,italic:true,color:t.mu,align:"center"});
     await cFoot(R,n);break;}
   case "rrss":{
-    R.slide(t.bg);cHead(R,"Nuestra comunidad digital",n,tot);
-    const r=CAT.rrss,c=r.length,cw=(W-1.2)/c,y=1.6,h=3.6;
+    R.slide(t.bg);cHead(R,"Nuestra comunidad digital",n,tot);R.text(rrssFecha(),1.5,1.08,6,0.32,{size:12,bold:true,color:t.mu,valign:"middle"});
+    const r=rrssList(),c=r.length,cw=(W-1.2)/c,y=1.6,h=3.6;
     for(let i=0;i<c;i++){const z=r[i],x=0.6+i*cw;
       await cBox(R,x,y,cw,h,[CJ(0),CJ(2),CJ(1),CJ(0),CJ(2)][i%5],z.ic,fmt(z.n),z.red.toUpperCase()+"\n"+z.user+" · "+(z.u||"seguidores"),{bs:30,ss:11});}
     await R.image(foto("rrss",4),0.6,y+h+0.15,W-1.2,6.9-(y+h+0.15));
@@ -1557,8 +1577,7 @@ async function actB(R,sp,n,tot){
     R.text(String(z.q),x+0.2,y+0.04,0.7,th*0.5,{size:big?26:th>0.7?18:14,head:true,color:c,valign:"middle"});
     R.text(z.e.t,x+0.2,y+th*0.48,tw-0.3,DET()?th*0.28:th*0.46,{size:big?11:9,bold:true,color:k.tx,valign:"middle"});
     if(DET())R.text(moneyIva(z.e.p*z.q),x+0.2,y+th*0.74,tw-0.3,th*0.24,{size:big?10:8,color:k.mu,valign:"middle"});});
-  R.rect(0.6,6.3,W-1.2,0.5,{fill:k.band,radius:0.05});
-  R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:11,color:k.bandMu}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16,color:COL.wh}}],0.8,6.3,W-1.6,0.5,{size:12,valign:"middle",align:"right"});
+  tarStrip(R,a,0.6,6.28,W-1.2,0.6,{fill:k.band,radius:0.05,max:15});
   await famFoot(R,n);R.end();}
 
 async function actC(R,sp,n,tot){
@@ -1574,10 +1593,11 @@ async function actC(R,sp,n,tot){
   const els=elemsDe(a),x=4.8,w=W-0.6-x,many=els.length>14;
   const rowsData=els.map((z,i)=>[{t:z.e.t,fill:i%2?k.bg:k.card,color:k.tx,bold:true},{t:String(z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"center",bold:true},{t:money(z.e.p),fill:i%2?k.bg:k.card,color:k.mu,align:"right"},{t:moneyIva(z.e.p*z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"right"}]);
   const head=["Elemento","Cant.","Valor unitario","Total"].map((h,i)=>({t:h.toUpperCase(),fill:KP(i),color:COL.wh,bold:true,align:i?(i===1?"center":"right"):"left",size:9.5}));
-  const totR=[{t:"TOTAL POR DOMINGO",fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(subDomingo(a)),fill:k.band,color:COL.wh,head:true,align:"right"}];
-  const nR=els.length+2,rh=Math.min(0.38,(6.85-y0)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
-  if(DET())R.table([head,...rowsData,totR],x,y0,w,[w-4.4,0.8,1.6,2.0],{rowH:rh,size:fs,border:k.bg});
-  else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),[totR[0],Object.assign({},totR[3],{align:"center"})]],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
+  const psC=periodosSel().length?periodosSel():[{t:"1 domingo",dom:1,desc:0}];
+  const totRs=psC.map(p=>[{t:"TOTAL "+p.t.toUpperCase()+(p.desc?" (−"+p.desc+"%)":""),fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(precioPeriodo(a,p)),fill:k.band,color:COL.wh,head:true,align:"right"}]);
+  const nR=els.length+1+totRs.length,rh=Math.min(0.38,(6.85-y0)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
+  if(DET())R.table([head,...rowsData,...totRs],x,y0,w,[w-4.4,0.8,1.6,2.0],{rowH:rh,size:fs,border:k.bg});
+  else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),...totRs.map(t=>[t[0],Object.assign({},t[3],{align:"center"})])],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
   await famFoot(R,n);R.end();}
 
 const VARIANTES={perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
@@ -1673,10 +1693,9 @@ async function dibujar(R,sp,n,tot){
        R.text(String(z.q),x+0.06,y+rh*0.15,qw,rh*0.7,{size:fs,bold:true,color:COL.wh,align:"center",valign:"middle"});
        R.text(z.e.t,x+qw+0.14,y,cw-qw-0.24-vw,rh,{size:fs,bold:true,valign:"middle"});
        if(vw)R.text(moneyIva(v),x+cw-vw-0.06,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});});}
-    const px=many?10.1:9.0,pw=W-0.6-px,ph=many?3.25:3.9;
+    const px=many?10.1:9.0,pw=W-0.6-px,nPs=Math.max(1,periodosSel().length),stH=Math.max(0.75,nPs*0.4),ph=Math.min(many?3.25:3.9,5.62-0.74-stH);
     await R.image(fotoAct(a),px,0.62,pw,ph);
-    R.rect(px,0.62+ph,pw,0.95,{fill:t.acc});
-    R.text([{text:"Total por domingo",o:{bold:true,size:10.5,br:true}},{text:moneyIva(subDomingo(a)),o:{head:true,size:many?14:17}}],px+0.2,0.62+ph,pw-0.3,0.95,{size:12,color:COL.wh,valign:"middle"});
+    tarStrip(R,a,px,0.62+ph+0.12,pw,5.62-(0.62+ph+0.12),{fill:t.acc,radius:0.05,max:13});
     const ks=kpisAct(a).slice(0,3).map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,l:k.t+" / domingo",v:fmt(k.v)}));
     if(ks.length)await banda(R,5.75,1.75,ks);
     break;}
@@ -1721,8 +1740,9 @@ async function dibujar(R,sp,n,tot){
   case "rrss":{
     R.slide(t.bg);cabecera(R,n,tot);
     titulo(R,"Nuestra comunidad digital",0.6,0.6,8);
-    R.text("Una audiencia activa que sigue y comparte lo que pasa cada domingo en CicloRecreoVía.",0.6,1.55,8,0.5,{size:12.5,color:t.mu});
-    const r=CAT.rrss,c=r.length,gap=0.22,cw=(W-1.2-gap*(c-1))/c;
+    R.text(rrssFecha(),0.6,1.5,8,0.35,{size:13,bold:true,color:t.acc,valign:"middle"});
+    R.text("Una audiencia activa que sigue y comparte lo que pasa cada domingo en CicloRecreoVía.",0.6,1.85,8,0.45,{size:12.5,color:t.mu});
+    const r=rrssList(),c=r.length,gap=0.22,cw=(W-1.2-gap*(c-1))/c;
     for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const hi=i===0;
       R.rect(x,2.45,cw,3.2,{fill:hi?t.acc:t.p1,radius:0.08});
       await icono(R,x0.ic||"globe",x+0.3,2.75,0.7,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
@@ -1945,7 +1965,10 @@ function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?
   <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
   <div class="lbl">Nota adicional (opcional)</div>
   <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>`:offMsg)}
-function pRRSS(){return togIncl("rrss")+(S.incluir.rrss?datosLista(CAT.rrss.map(r=>({n:fmt(r.n),l:r.red+" · "+r.user+" · "+(r.u||"seguidores")}))):offMsg)}
+function pRRSS(){if(!S.incluir.rrss)return togIncl("rrss")+offMsg;const L=rrssList(),o=S.rrssN||{};
+  return togIncl("rrss")+`<div class="lbl" style="margin-top:4px">Mes y año (bajo el título)</div>${edTxt("rrss_fecha",mesAnio())}
+  <div class="lbl">Cifras</div><div class="dl">${L.map((r,i)=>`<div class="dlp"><div class="dli" title="${esc(fmt(r.n)+" "+r.red+" · "+(r.u||"seguidores"))}"><b>${fmt(r.n)}</b> ${esc(r.red)}</div><button class="pen" title="Editar cifra" onclick="A.rrssN(${i})">✏️</button>${o[i]!=null&&o[i]!==CAT.rrss[i].n?`<span class="edm2">editado</span>`:""}</div>`).join("")}</div>
+  ${Object.keys(o).length?`<button class="b-sec sm hbtn" style="margin-top:6px" onclick="S.rrssN={};save();render()">↺ Volver a las cifras base</button>`:""}`}
 function pCondiciones(){return togIncl("condiciones")+(S.incluir.condiciones?`
   <div class="rows">${CAT.condiciones.map(c=>`<div class="row ${S.condiciones.includes(c.id)?"on":""}" onclick="A.toggle('condiciones','${c.id}')"><div class="chk"></div><div class="tx"><b style="font-weight:700">${esc(c.t)}</b></div></div>`).join("")}</div>
   <div class="lbl">Condición especial (opcional)</div>
@@ -2002,7 +2025,7 @@ function curIndex(P){const i=P.findIndex(p=>p.id===curId);return i<0?0:i}
 function numDiapo(pn,list){const i=list.findIndex(pn.m);return i<0?null:i+1}
 
 async function drawThumbs(){const el=$("#thumbs");if(!el)return;const list=plan();const hs=await renderHtmlSlides(list);
-  el.innerHTML=hs.map((h,i)=>`<div><div class="sw" onclick="A.preview(${i})">${h}</div><div class="pv-cap">${i+1}. ${esc(list[i].name)}</div></div>`).join("");scaleSlides(el)}
+  el.innerHTML=hs.map((h,i)=>`<div><div class="pv-cap top">${i+1}. ${esc(list[i].name)}</div><div class="sw" onclick="A.preview(${i})">${h}</div></div>`).join("");scaleSlides(el)}
 function scaleSlides(root){root.querySelectorAll(".sw").forEach(w=>{const s=w.querySelector(".s");if(s)s.style.transform=`scale(${w.clientWidth/1333.33})`})}
 window.addEventListener("resize",()=>{progTier();document.querySelectorAll("#pvs,#thumbs,#alist").forEach(scaleSlides);asideLater()});
 let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
@@ -2066,6 +2089,7 @@ const A={
     save();const y=window.scrollY;render();window.scrollTo(0,y);
     const im=(S.imgs||{})[slot];if(v==="nueva"&&!(im&&im.data))fotoSheet(slot,SHDEF,kind);else closeSheet2();
     if(PVREF)await PVREF()},
+  rrssN(i){const r=rrssList()[i];keypad(r.red+" · "+(r.u||"seguidores"),r.n,v=>{S.rrssN=S.rrssN||{};S.rrssN[i]=Math.round(v);save();render()})},
   setFoto(slot,v){S.fotos=S.fotos||{};S.fotos[slot]=v;save();keepY=window.scrollY;render();window.scrollTo(0,keepY)},
   setImg(key,img){
     if(key==="logo")S.logo=img;
