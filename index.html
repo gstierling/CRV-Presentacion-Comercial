@@ -62,6 +62,20 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .vopt.on{border-color:var(--or);background:#fdf0e6}
 .vopt b{display:block;font-size:13px;margin-top:6px}
 .vopt .sw{border-radius:6px}
+.dl{display:flex;gap:8px;max-width:1100px;margin-bottom:6px}.dli{flex:1 1 auto;min-width:0}
+.dli{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:9px 12px;font-size:14px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dli b{color:var(--txt);font-weight:900}
+@media(max-width:700px){.dl{flex-direction:column;gap:6px}.dli{font-size:13px;padding:8px 10px}}
+.edt{position:relative;display:flex;align-items:flex-start;gap:10px;max-width:1100px;margin:0 0 12px}
+.edt p{margin:0;color:var(--mut);font-size:15px;line-height:1.45;flex:1}
+.edt.on{display:block}
+.pen{flex:none;border:2px solid var(--line);background:var(--panel);border-radius:10px;width:38px;height:38px;font-size:17px;cursor:pointer}
+.pen:hover{border-color:var(--or)}
+.edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
+.edb{display:flex;gap:8px;margin-top:8px}
+.edb .sm{padding:8px 14px;font-size:14px;border-radius:10px;width:auto}
+.ft.map{background-size:contain;background-color:#fff;border-color:var(--line)}
+.ft.map.on{border-color:var(--or)}
 #layer2 .ov{z-index:80}
 .pv .s img[data-slot]{cursor:pointer;transition:filter .15s}
 .pv .s img.hov{filter:brightness(1.12) saturate(1.1);outline:3px solid #e87115;outline-offset:-3px}
@@ -454,7 +468,7 @@ async function cropCover(img,bw,bh){
    ESTADO
    ===================================================================== */
 function nuevo(){return {
-  ver:2,fotos:{},prospecto:"",logo:null,tema:"azul",fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
+  ver:2,fotos:{},textos:{},prospecto:"",logo:null,tema:"azul",fecha:new Date().toISOString().slice(0,10),vendedor:"v1",
   portada:null,objetivos:[],activaciones:[],periodos:["p1","p13","p52"],
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
@@ -462,7 +476,7 @@ function nuevo(){return {
   incluir:{crv:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
-function normalizar(){const n=nuevo();if(!S.ver||S.ver<2){S.incluir=S.incluir||{};S.incluir.circ_vina=true;S.incluir.perf_vina=true;S.ver=2}S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul";S.fotos=S.fotos||{};
+function normalizar(){const n=nuevo();if(!S.ver||S.ver<2){S.incluir=S.incluir||{};S.incluir.circ_vina=true;S.incluir.perf_vina=true;S.ver=2}S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul";S.fotos=S.fotos||{};S.textos=S.textos||{};
   if(S.portada&&S.portada.data){S.imgs.portada=S.portada;S.fotos.portada="nueva"}delete S.portada;delete S._portadaPropia;
   if(S.crvFoto==="nueva"&&S.imgs.crv)S.fotos.crv="nueva";delete S.crvFoto;
   (S.activaciones||[]).forEach(a=>{if(a.foto&&a.foto.data){S.imgs["act_"+a.uid]=a.foto;S.fotos["act_"+a.uid]="nueva"}delete a.foto;delete a._propia});
@@ -710,7 +724,7 @@ async function dibujarModerno(R,sp,n,tot){
     R.rect(0,1.65,W,2.75,{fill:t.band});
     await R.image(fotoCRV(),8.2,1.65,W-8.2,2.75);
     R.text("“",0.55,1.55,0.8,0.9,{size:60,head:true,color:PC(1)});
-    R.text(CAT.crv.descripcion,1.35,1.85,6.55,2.35,{size:fitSize(CAT.crv.descripcion,13,[[460,12]]),italic:true,color:COL.wh,valign:"middle"});
+    R.text(txD("crv",CAT.crv.descripcion),1.35,1.85,6.55,2.35,{size:fitSize(txD("crv",CAT.crv.descripcion),13,[[460,12]]),italic:true,color:COL.wh,valign:"middle"});
     const st=CAT.crv.stats.slice(0,4),cw=(W-1.2)/st.length;
     for(let i=0;i<st.length;i++){const x=0.6+i*cw;
       await mSq(R,st[i].ic,x+cw/2-0.4,4.7,0.8,PC(i));
@@ -723,7 +737,7 @@ async function dibujarModerno(R,sp,n,tot){
     if(m)await R.image(m,0.6,1.6,6.2,5.15,{fit:"contain"});else await R.image(stdPhoto("mapa_"+sp.city,"Mapa del circuito",sp.city==="stgo"?"#179741":"#0b69b2"),0.6,1.6,6.2,5.15);
     R.rect(6.8,1.6,5.93,5.15,{fill:t.band});
     boton(R,"CIRCUITO",7.15,1.85,{w:1.4});
-    R.text(c.d,7.15,2.4,5.25,1.0,{size:12,color:t.bandMu});
+    R.text(txD("circ_"+sp.city,c.d),7.15,2.4,5.25,1.0,{size:12,color:t.bandMu});
     for(let i=0;i<Math.min(4,c.datos.length);i++){const d=c.datos[i],y=3.5+i*0.78;
       await mSq(R,d.ic,7.15,y,0.58,PC(i));
       R.text(d.n,7.95,y-0.04,2.0,0.66,{size:fitSize(d.n,22,[[7,18]]),head:true,color:COL.wh,valign:"middle"});
@@ -887,7 +901,7 @@ async function dibujarVisual(R,sp,n,tot){
     R.slide(t.bg);vNum(R,n);
     await R.image(fotoCRV(),0,0,6.4,H);vFrame(R,0.45,0.45,5.5,6.6,COL.wh);vPlus(R,5.95,0.45,0.5,COL.wh);
     vLabel(R,"Quiénes somos",7.0,0.75,5.7);vTitle(R,"Qué es CicloRecreoVía",7.0,1.05,5.8,0.8);
-    R.text(CAT.crv.descripcion,7.0,2.2,5.75,1.75,{size:fitSize(CAT.crv.descripcion,12,[[460,11]]),color:t.mu});
+    R.text(txD("crv",CAT.crv.descripcion),7.0,2.2,5.75,1.75,{size:fitSize(txD("crv",CAT.crv.descripcion),12,[[460,11]]),color:t.mu});
     for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++){const st=CAT.crv.stats[i],x=7.0+(i%2)*2.95,y=4.05+Math.floor(i/2)*1.45;
       await vIcon(R,st.ic,x,y+0.05,0.36);
       R.text(st.n,x+0.5,y,2.3,0.5,{size:fitSize(st.n,22,[[7,19],[9,16]]),head:true,color:t.tx,valign:"middle"});
@@ -900,7 +914,7 @@ async function dibujarVisual(R,sp,n,tot){
     await R.image(m,0,0,7.3,H);
     R.tri(6.5,0,0.8,H,{fill:t.bg,corner:"tr"});
     vLabel(R,"Circuito",7.6,0.75,5.1);vTitle(R,c.t,7.6,1.05,5.2,1.0);
-    R.text(c.d,7.6,2.1,5.13,1.0,{size:12.5,color:t.mu});
+    R.text(txD("circ_"+sp.city,c.d),7.6,2.1,5.13,1.0,{size:12.5,color:t.mu});
     for(let i=0;i<Math.min(4,c.datos.length);i++){const d=c.datos[i],y=3.3+i*0.88;
       await vIcon(R,d.ic,7.6,y+0.17,0.38);
       R.text(d.n,8.2,y,2.1,0.72,{size:fitSize(d.n,24,[[7,20]]),head:true,color:t.tx,valign:"middle"});
@@ -1086,7 +1100,7 @@ async function dibujarInvestor(R,sp,n,tot){
     R.text("QUÉ ES",8.9,1.35,4.1,0.45,{size:16,bold:true,cs:3,color:"D6E4F2"});
     R.text("CICLORECREOVÍA",8.9,1.8,4.2,0.7,{size:26,head:true,color:COL.wh,valign:"middle"});
     R.rect(8.9,2.65,0.7,0.05,{fill:COL.wh});
-    R.text(CAT.crv.descripcion,0.6,4.5,5.9,2.4,{size:fitSize(CAT.crv.descripcion,12.5,[[460,11.5]]),color:t.tx,valign:"middle"});
+    R.text(txD("crv",CAT.crv.descripcion),0.6,4.5,5.9,2.4,{size:fitSize(txD("crv",CAT.crv.descripcion),12.5,[[460,11.5]]),color:t.tx,valign:"middle"});
     const st=CAT.crv.stats.slice(0,4);
     for(let i=0;i<st.length;i++){const x=6.9+(i%2)*3.0,y=4.5+Math.floor(i/2)*1.2;
       await iSq(R,st[i].ic,x,y+0.08,0.7,IC(i));
@@ -1097,7 +1111,7 @@ async function dibujarInvestor(R,sp,n,tot){
     const c=CAT.circuitos[sp.city];R.slide(t.bg);iHead(R,c.t,n,tot);
     iCard(R,0.6,1.4,6.3,5.45);await R.image(mapaImg(sp.city),0.75,1.55,6.0,5.15,{fit:"contain"});
     boton(R,"CIRCUITO",7.3,1.45,{w:1.4,fill:IC(0)});
-    R.text(c.d,7.3,2.0,5.43,0.95,{size:12,color:t.mu});
+    R.text(txD("circ_"+sp.city,c.d),7.3,2.0,5.43,0.95,{size:12,color:t.mu});
     for(let i=0;i<Math.min(4,c.datos.length);i++){const d=c.datos[i],y=3.1+i*0.92;
       iCard(R,7.3,y,5.43,0.78);
       await iSq(R,d.ic,7.42,y+0.1,0.58,IC(i));
@@ -1372,14 +1386,14 @@ async function dibujar(R,sp,n,tot){
     R.slide(t.bg);cabecera(R,n,tot);
     await R.image(fotoCRV(),7.55,0,W-7.55,H);
     titulo(R,"Qué es CicloRecreoVía",0.6,0.6,6.7);
-    R.text(CAT.crv.descripcion,0.6,1.7,6.6,2.0,{size:fitSize(CAT.crv.descripcion,13,[[460,12],[620,11]]),color:t.mu});
+    R.text(txD("crv",CAT.crv.descripcion),0.6,1.7,6.6,2.0,{size:fitSize(txD("crv",CAT.crv.descripcion),13,[[460,12],[620,11]]),color:t.mu});
     for(let i=0;i<Math.min(4,CAT.crv.stats.length);i++)await tarjetaDato(R,CAT.crv.stats[i],0.6+(i%2)*3.4,3.65+Math.floor(i/2)*1.8,3.2,1.62,i===0);
     break;}
   case "circ":{
     const c=CAT.circuitos[sp.city];R.slide(t.bg);cabecera(R,n,tot);
     boton(R,"CIRCUITO",0.6,0.62,{w:1.4});
     R.text(c.t,0.6,1.05,6.1,1.1,{size:fitSize(c.t,32,[[26,28]]),head:true,valign:"middle"});
-    R.text(c.d,0.6,2.2,6.0,1.1,{size:14,bold:true,color:t.mu});
+    R.text(txD("circ_"+sp.city,c.d),0.6,2.2,6.0,1.1,{size:14,bold:true,color:t.mu});
     for(let i=0;i<Math.min(4,c.datos.length);i++)await tarjetaDato(R,c.datos[i],0.6+(i%2)*3.07,3.4+Math.floor(i/2)*1.8,2.95,1.62,i===0);
     const m=mapaImg(sp.city);
     R.rect(6.95,0.62,5.78,6.26,{fill:t.p1,radius:0.08});
@@ -1561,7 +1575,7 @@ function validar(){const f=[];if(!S.prospecto.trim())f.push("Nombre del prospect
    COMPONENTES DE INTERFAZ
    ===================================================================== */
 const layer=$("#layer");
-function closeLayer(){layer.innerHTML="";activeImg=null;closeSheet2()}
+function closeLayer(){layer.innerHTML="";activeImg=null;closeSheet2();PVREF=null}
 /* Hoja de galería sobre la vista previa (toca una foto o mapa en la vista previa) */
 let PVREF=null;
 function closeSheet2(){const l=document.getElementById("layer2");if(l)l.remove()}
@@ -1612,11 +1626,23 @@ const offMsg=`<div class="warn">Esta diapositiva no está incluida. Márcala arr
 function fotoSel(key,std,ph,propiaTxt){const img=S.imgs[key],prop=img||S["_p_"+key];return `<div class="seg">
   <button class="${!prop?"on":""}" onclick="A.setImg('${key}',null)">Estándar</button><button class="${prop?"on":""}" onclick="S['_p_${key}']=true;save();render()">${propiaTxt||"Nueva"}</button></div>`+
   (prop?imgZone(key,img,false,ph):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(std.data)}');background-size:cover"></div></div>`)}
-function mapaSelUI(city){const f=(S.mapaSel||{})[city]||1;
-  return `<div class="seg">${[1,2,3,4].map(i=>`<button class="${f===i?"on":""}" title="${MAPA_N[i-1]}" onclick="S.mapaSel=S.mapaSel||{};S.mapaSel.${city}=${i};save();render()">Mapa ${i}</button>`).join("")}<button class="${f==="nueva"?"on":""}" onclick="S.mapaSel=S.mapaSel||{};S.mapaSel.${city}='nueva';save();render()">Nuevo</button></div>`+
-  (f==="nueva"?imgZone("mapa_"+city,S.imgs["mapa_"+city],false,"Pega aquí el mapa (Ctrl+V)"):`<div class="imgz"><div class="prev" style="background-image:url('${objUrl(mapaImg(city).data)}');background-size:contain;background-color:#fff"></div><div class="hint" style="margin:6px 0 0">Mapa ${f} · ${MAPA_N[f-1]}</div></div>`)}
 const temaSel=()=>`<div class="seg">${Object.entries(TEMAS).map(([k,v])=>`<button class="${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';save();render()"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#${v.bg};border:2px solid #${v.acc};vertical-align:-2px;margin-right:6px"></span>${v.t.replace(" CicloRecreoVía","")}</button>`).join("")}</div>`;
-const datosLista=d=>`<div class="rows">${d.map(x=>`<div class="row" style="cursor:default"><div class="tx"><b>${esc(x.n)}</b><small>${esc(x.l)}</small></div></div>`).join("")}</div>`;
+const datosLista=d=>`<div class="dl">${d.map(x=>`<div class="dli" title="${esc(x.n+" "+x.l)}"><b>${esc(x.n)}</b> ${esc(x.l)}</div>`).join("")}</div>`;
+/* Textos editables (cada propuesta parte con el texto base) */
+function fitDl(){requestAnimationFrame(()=>document.querySelectorAll(".dl").forEach(g=>{const els=[...g.querySelectorAll(".dli")];let m=99;
+  els.forEach(el=>{let f=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+1&&f>11){f-=0.5;el.style.fontSize=f+"px"}m=Math.min(m,f)});
+}))}
+window.addEventListener("resize",()=>{document.querySelectorAll(".dli").forEach(el=>el.style.fontSize="");fitDl()});
+function txD(key,base){const v=(S.textos||{})[key];return v!=null&&v.trim()!==""?v:base}
+let EDK=null;
+function edTxt(key,base){const v=txD(key,base),mod=(S.textos||{})[key]!=null&&S.textos[key]!==base;
+  if(EDK===key)return `<div class="edt on"><textarea class="field" id="edta" style="min-height:96px" oninput="S.textos['${key}']=this.value;save()">${esc(v)}</textarea>
+    <div class="edb"><button class="b-pri sm" onclick="EDK=null;render()">✓ Listo</button>${mod?`<button class="b-sec sm" onclick="delete S.textos['${key}'];EDK=null;save();render()">↺ Volver al texto base</button>`:""}</div></div>`;
+  return `<div class="edt"><p>${esc(v)}</p><button class="pen" title="Editar texto" onclick="EDK='${key}';render();setTimeout(()=>{const t=document.getElementById('edta');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},30)">✏️</button>${mod?`<span class="edm">editado</span>`:""}</div>`}
+function mapaSelUI(city){const f=(S.mapaSel||{})[city]||1,im=S.imgs["mapa_"+city];
+  return `<div class="fgrid">${MAPAS[city].map((m,i)=>`<div class="ft map ${f===i+1?"on":""}" title="${MAPA_N[i]}" onclick="A.pickFoto('mapa_${city}',${i+1},'mapa')" style="background-image:url('${objUrl(m.data)}')"><i>${i+1}</i></div>`).join("")}
+    <div class="ft nueva ${f==="nueva"?"on":""}" onclick="A.pickFoto('mapa_${city}','nueva','mapa');closeSheet2()" ${im&&im.data?`style="background-image:url('${objUrl(im.data)}');background-size:contain"`:""}><span>＋ Nuevo</span></div></div>`+
+    (f==="nueva"?imgZone("mapa_"+city,im,false,"Pega aquí el mapa (Ctrl+V) o elígelo"):"")}
 
 function pPortada(){return `
   <div class="cols2"><div>
@@ -1625,8 +1651,8 @@ function pPortada(){return `
   </div><div>
   <div class="lbl" style="margin-top:0">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
   </div></div>`}
-function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`<p class="hint">Descripción y cifras principales de CicloRecreoVía.</p>${datosLista(CAT.crv.stats)}`:offMsg)}
-function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`<p class="hint">${esc(c.d)}</p>${datosLista(c.datos)}
+function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`${edTxt("crv",CAT.crv.descripcion)}${datosLista(CAT.crv.stats)}`:offMsg)}
+function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`${edTxt(k,c.d)}${datosLista(c.datos)}
   <div class="lbl">Mapa del circuito</div>${mapaSelUI(city)}`:offMsg)}
 function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
   <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
@@ -1796,6 +1822,7 @@ function render(){
   $("#prog").innerHTML=P.map((p,k)=>`<div class="pg ${k===i?"on":""}" title="${k+1}. ${esc(p.t)}" onclick="A.ir(${k})"><i class="${k===i?"on":k<i?"done":""}"></i><span class="l">${esc(p.s||p.t)}</span><span class="x">${esc(XS[p.s]||(p.s||"").replace("Act. ","A"))}</span><span class="nn">${k+1}</span></div>`).join("");
   progTier();
   $("#main").innerHTML=pn.r()+`<div id="fotosBox">${pn.final?"":(FCACHE[pn.id]||"")}</div>`;fillFotos(pn);
+  fitDl();
   $("#nav").innerHTML=`<button class="b-sec" ${i===0?"disabled style=opacity:.35":""} onclick="A.ir(${i-1})">← Atrás</button><button class="b-sec" onclick="A.preview(-1)">👁 Ver</button>`+
     (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
 }
