@@ -57,6 +57,11 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .ddi.one .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tog{width:24px;height:24px;border-radius:50%;border:none;flex:none;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
 .tog.g{background:#1FA64A}.tog.r{background:#D93025}.tog.fix{cursor:default;opacity:.55}
+.vars{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;max-width:980px}
+.vopt{border:3px solid var(--line);border-radius:12px;padding:6px;background:#fff;cursor:pointer}
+.vopt.on{border-color:var(--or);background:#fdf0e6}
+.vopt b{display:block;font-size:13px;margin-top:6px}
+.vopt .sw{border-radius:6px}
 .dnum{display:inline-block;background:var(--or);color:#fff;border-radius:8px;padding:2px 10px;font-size:.7em;margin-right:10px;vertical-align:3px}
 .dnum.off{background:var(--line);color:var(--mut);margin:0 0 0 8px}
 .row.incl{max-width:480px;margin-bottom:12px}
@@ -1211,7 +1216,121 @@ async function dibujarInvestor(R,sp,n,tot){
   R.end();
 }
 
+/* ===================== VARIANTES DE DISEÑO (B y C) PARA PERFIL Y ACTIVACIÓN ===================== */
+function K(){const t=T();
+  if(t.mod)return {fam:"mod",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.band,bandMu:t.bandMu,pal:t.pal,line:t.line};
+  if(t.inv)return {fam:"inv",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.navy,bandMu:"C9D3DE",pal:t.pal,line:t.line};
+  if(t.vis)return {fam:"vis",bg:t.bg,card:t.panel,tx:t.tx,mu:t.mu,band:t.light?"1F2933":"0B0F14",bandMu:"C9D3DE",pal:[t.acc,t.acc2,"0B69B2"],line:t.line};
+  return {fam:"for",bg:t.bg,card:t.p1,tx:t.tx,mu:t.mu,band:t.light?"0B2545":t.p2,bandMu:t.light?"C9D6E6":t.mu,pal:[t.acc,t.acc2||"179741","0B69B2"],line:t.p2};}
+const KP=i=>K().pal[i%K().pal.length];
+function famHead(R,title,n,tot){const k=K();
+  if(k.fam==="mod"){mHead(R,title,n,tot);return 1.55}
+  if(k.fam==="inv"){iHead(R,title,n,tot);return 1.4}
+  if(k.fam==="vis"){vNum(R,n);vTitle(R,title,0.6,0.45,10.8,0.8);return 1.45}
+  cabecera(R,n,tot);R.text(title,0.6,0.5,12.1,0.85,{size:fitSize(title,28,[[30,24],[44,20]]),head:true,valign:"middle"});return 1.5}
+async function famFoot(R,n){const k=K();if(k.fam==="mod")await mFoot(R);else if(k.fam==="inv")await iFoot(R,n);else if(k.fam==="vis")await vLogo(R)}
+async function kCirc(R,ic,x,y,d,col){R.rect(x,y,d,d,{fill:col,ellipse:true});const p=d*0.25;await R.image(await iconPng(ic||"sparkles",COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
+const ICON_REC=n=>/bici/i.test(n)?"bike":/pie|trote/i.test(n)?"users":/patin|scoot/i.test(n)?"route":"sparkles";
+
+async function perfB(R,sp,n,tot){
+  const pf=CAT.perfiles[sp.city],k=K();R.slide(k.bg);const y0=famHead(R,pf.t,n,tot);
+  R.rect(0,y0,W,1.15,{fill:k.band});
+  const kw=(W-1.2)/3;
+  for(let i=0;i<Math.min(3,pf.kpis.length);i++){const q=pf.kpis[i],x=0.6+i*kw;
+    await kCirc(R,q.ic,x,y0+0.22,0.7,KP(i));
+    R.text(q.n,x+0.85,y0+0.12,kw-1.0,0.5,{size:22,head:true,color:COL.wh,valign:"middle"});
+    R.text(q.l,x+0.85,y0+0.6,kw-1.0,0.45,{size:10.5,bold:true,color:k.bandMu});}
+  const gy=y0+1.4,g1=pf.grupos[0],g2=pf.grupos[1];
+  // Edad: columnas
+  R.text(g1.t.toUpperCase(),0.6,gy,6,0.32,{size:11,bold:true,cs:1.5,color:k.tx});
+  const cx=0.6,cw=6.1,chH=2.35,base=gy+0.45+chH,mx=Math.max(...g1.items.map(z=>z[1]),1),bw=cw/g1.items.length;
+  g1.items.forEach((z,i)=>{const h=chH*z[1]/mx,x=cx+i*bw+bw*0.18,w=bw*0.64;
+    R.rect(x,base-h,w,h,{fill:KP(i)});
+    R.text(z[1]+"%",x-0.2,base-h-0.32,w+0.4,0.3,{size:12,head:true,color:k.tx,align:"center"});
+    R.text(z[0],cx+i*bw,base+0.05,bw,0.45,{size:9.5,bold:true,color:k.mu,align:"center"});});
+  R.rect(cx,base,cw,0.015,{fill:k.line});
+  // Cómo recorren: íconos
+  const rx=7.2;R.text(g2.t.toUpperCase(),rx,gy,5.5,0.32,{size:11,bold:true,cs:1.5,color:k.tx});
+  for(let i=0;i<Math.min(4,g2.items.length);i++){const z=g2.items[i],x=rx+(i%2)*2.8,y=gy+0.5+Math.floor(i/2)*1.3;
+    await kCirc(R,ICON_REC(z[0]),x,y,0.8,KP(i));
+    R.text(z[1]+"%",x+0.95,y-0.05,1.8,0.55,{size:24,head:true,color:KP(i),valign:"middle"});
+    R.text(z[0],x+0.95,y+0.48,1.8,0.35,{size:10.5,bold:true,color:k.mu});}
+  // Género
+  const g0=pf.genero[0],gg=pf.genero[1],yy=6.28;
+  for(let i=0;i<2;i++){const z=[g0,gg][i],x=7.2+i*2.8;
+    await kCirc(R,"users",x,yy,0.5,KP(i+1));
+    R.text([{text:z[1]+"% ",o:{head:true,size:16,color:k.tx}},{text:z[0],o:{bold:true,size:11,color:k.mu}}],x+0.62,yy,2.1,0.5,{size:12,valign:"middle"});}
+  R.text("GÉNERO",5.6,yy,1.5,0.5,{size:11,bold:true,cs:1.5,color:k.tx,valign:"middle",align:"right"});
+  await famFoot(R,n);R.end();}
+
+async function perfC(R,sp,n,tot){
+  const pf=CAT.perfiles[sp.city],k=K();R.slide(k.bg);const y0=famHead(R,pf.t,n,tot);
+  const ph=6.85-y0;await R.image(sp.city==="stgo"?CRV_FOTOS[2]:CRV_FOTOS[3],0.6,y0,4.2,ph);R.rect(0.6,y0,4.2,ph,{fill:"0B0F14",transp:40});
+  for(let i=0;i<Math.min(3,pf.kpis.length);i++){const q=pf.kpis[i],y=y0+0.3+i*(ph-0.4)/3;
+    R.rect(0.85,y,3.7,(ph-0.4)/3-0.2,{fill:null,line:"FFFFFF",lw:1});
+    R.text(q.n,1.05,y+0.1,3.3,0.65,{size:28,head:true,color:COL.wh,valign:"middle"});
+    R.text(q.l.toUpperCase(),1.05,y+0.75,3.3,0.45,{size:9.5,bold:true,cs:1,color:"E5E7EB"});}
+  const x0=5.2,w=W-0.6-x0;let y=y0;
+  for(const g of pf.grupos.slice(0,2)){R.text(g.t.toUpperCase(),x0,y,w,0.32,{size:11,bold:true,cs:2,color:k.tx});y+=0.4;
+    const mx=Math.max(...g.items.map(z=>z[1]),1);
+    g.items.forEach((z,i)=>{R.text(z[0],x0,y,1.9,0.32,{size:10.5,bold:true,color:k.mu,valign:"middle"});
+      R.rect(x0+2.0,y+0.13,w-2.75,0.06,{fill:k.line});R.rect(x0+2.0,y+0.11,(w-2.75)*z[1]/mx,0.1,{fill:KP(i)});
+      R.text(z[1]+"%",x0+w-0.65,y,0.65,0.32,{size:12,head:true,color:k.tx,align:"right",valign:"middle"});y+=0.36;});
+    y+=0.25;}
+  const g0=pf.genero[0],g1=pf.genero[1];R.text("GÉNERO",x0,y,w,0.32,{size:11,bold:true,cs:2,color:k.tx});y+=0.42;
+  const w0=w*g0[1]/(g0[1]+g1[1]);R.rect(x0,y,w0,0.1,{fill:KP(0)});R.rect(x0+w0,y,w-w0,0.1,{fill:KP(1)});
+  R.text(g0[0]+" "+g0[1]+"%",x0,y+0.15,w0,0.3,{size:10.5,bold:true,color:k.tx});R.text(g1[0]+" "+g1[1]+"%",x0+w0,y+0.15,w-w0,0.3,{size:10.5,bold:true,color:k.tx,align:"right"});
+  await famFoot(R,n);R.end();}
+
+function elemsDe(a){return Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e)}
+async function actB(R,sp,n,tot){
+  const a=sp.a,k=K();R.slide(k.bg);const y0=famHead(R,"Activación "+(sp.i+1)+": "+(a.nombre||""),n,tot);
+  await R.image(fotoAct(a),0.6,y0,3.5,2.15);
+  R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),4.35,y0,8.4,0.3,{size:10.5,bold:true,cs:1,color:KP(0)});
+  const dt=dinTexto(a);R.text(dt,4.35,y0+0.3,8.4,0.85,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:k.tx});
+  const ks=kpisAct(a).slice(0,3),kw=8.4/3;
+  for(let i=0;i<ks.length;i++){const q=ks[i],x=4.35+i*kw;R.rect(x,y0+1.25,kw-0.15,0.9,{fill:k.card,radius:0.06});
+    await kCirc(R,(byId(CAT.kpis,q.id)||{}).ic,x+0.12,y0+1.42,0.56,KP(i));
+    R.text(fmt(q.v),x+0.8,y0+1.3,kw-0.95,0.45,{size:18,head:true,color:k.tx,valign:"middle"});
+    R.text(q.t+" / dom.",x+0.8,y0+1.72,kw-0.95,0.4,{size:9.5,bold:true,color:k.mu});}
+  const els=elemsDe(a),nE=els.length,top=y0+2.35,bot=6.2;
+  const cols=nE<=4?Math.max(nE,1):nE<=8?4:nE<=12?6:7,rows=Math.max(1,Math.ceil(nE/cols)),gap=0.12,tw=(W-1.2-gap*(cols-1))/cols,th=Math.min(1.35,(bot-top-gap*(rows-1))/rows);
+  const big=th>1.0;
+  els.forEach((z,i)=>{const x=0.6+(i%cols)*(tw+gap),y=top+Math.floor(i/cols)*(th+gap),c=KP(i);
+    R.rect(x,y,tw,th,{fill:k.card,radius:0.06});
+    R.text(String(z.q),x+0.2,y+0.04,0.7,th*0.5,{size:big?26:th>0.7?18:14,head:true,color:c,valign:"middle"});
+    R.text(z.e.t,x+0.2,y+th*0.48,tw-0.3,th*0.28,{size:big?11:9,bold:true,color:k.tx,valign:"middle"});
+    R.text(moneyIva(z.e.p*z.q),x+0.2,y+th*0.74,tw-0.3,th*0.24,{size:big?10:8,color:k.mu,valign:"middle"});});
+  R.rect(0.6,6.3,W-1.2,0.5,{fill:k.band,radius:0.05});
+  R.text([{text:"TOTAL POR DOMINGO   ",o:{bold:true,size:11,color:k.bandMu}},{text:moneyIva(subDomingo(a)),o:{head:true,size:16,color:COL.wh}}],0.8,6.3,W-1.6,0.5,{size:12,valign:"middle",align:"right"});
+  await famFoot(R,n);R.end();}
+
+async function actC(R,sp,n,tot){
+  const a=sp.a,k=K();R.slide(k.bg);const y0=famHead(R,"Activación "+(sp.i+1)+": "+(a.nombre||""),n,tot);
+  await R.image(fotoAct(a),0.6,y0,3.9,2.3);
+  R.rect(0.6,y0+2.45,3.9,1.75,{fill:k.card,radius:0.06});
+  R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,y0+2.52,3.6,0.3,{size:9.5,bold:true,cs:1,color:KP(0)});
+  const dt=dinTexto(a);R.text(dt,0.75,y0+2.82,3.6,1.3,{size:fitSize(dt,10.5,[[260,9.5],[360,8.5]]),color:k.tx});
+  const ks=kpisAct(a).slice(0,3);
+  for(let i=0;i<ks.length;i++){const q=ks[i],y=y0+4.35+i*0.38;
+    await kCirc(R,(byId(CAT.kpis,q.id)||{}).ic,0.6,y,0.32,KP(i));
+    R.text([{text:fmt(q.v)+"  ",o:{head:true,size:13,color:k.tx}},{text:q.t+" / domingo",o:{bold:true,size:9.5,color:k.mu}}],1.02,y-0.02,3.5,0.36,{size:11,valign:"middle"});}
+  const els=elemsDe(a),x=4.8,w=W-0.6-x,many=els.length>14;
+  const rowsData=els.map((z,i)=>[{t:z.e.t,fill:i%2?k.bg:k.card,color:k.tx,bold:true},{t:String(z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"center",bold:true},{t:money(z.e.p),fill:i%2?k.bg:k.card,color:k.mu,align:"right"},{t:moneyIva(z.e.p*z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"right"}]);
+  const head=["Elemento","Cant.","Valor unitario","Total"].map((h,i)=>({t:h.toUpperCase(),fill:KP(i),color:COL.wh,bold:true,align:i?(i===1?"center":"right"):"left",size:9.5}));
+  const totR=[{t:"TOTAL POR DOMINGO",fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(subDomingo(a)),fill:k.band,color:COL.wh,head:true,align:"right"}];
+  const nR=els.length+2,rh=Math.min(0.38,(6.85-y0)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
+  R.table([head,...rowsData,totR],x,y0,w,[w-4.4,0.8,1.6,2.0],{rowH:rh,size:fs,border:k.bg});
+  await famFoot(R,n);R.end();}
+
+const VARIANTES={perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
+
 async function dibujar(R,sp,n,tot){
+  const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
+  if(vk==="perf"&&vv==="B")return perfB(R,sp,n,tot);
+  if(vk==="perf"&&vv==="C")return perfC(R,sp,n,tot);
+  if(vk==="act"&&vv==="B")return actB(R,sp,n,tot);
+  if(vk==="act"&&vv==="C")return actC(R,sp,n,tot);
   if(T().mod)return dibujarModerno(R,sp,n,tot);
   if(T().vis)return dibujarVisual(R,sp,n,tot);
   if(T().inv)return dibujarInvestor(R,sp,n,tot);
@@ -1478,16 +1597,26 @@ function pPortada(){return `
 function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`<p class="hint">Descripción y cifras principales de CicloRecreoVía.</p>${datosLista(CAT.crv.stats)}<div class="lbl">Foto</div>${fotoCRVui()}`:offMsg)}
 function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`<p class="hint">${esc(c.d)}</p>${datosLista(c.datos)}
   <div class="lbl">Mapa del circuito</div>${mapaSelUI(city)}`:offMsg)}
-function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?`${datosLista(pf.kpis)}
+function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
   <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
 function pObjetivos(){return togIncl("objetivos")+`
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
+function varUI(kind,spec){const cur=(S.var||{})[kind]||"A",h=(S.hist||[]).length;
+  setTimeout(()=>drawVar(kind,spec),0);
+  return `<div class="lbl" style="margin-top:0">Diseño de esta diapositiva <span style="text-transform:none;letter-spacing:0;font-weight:700">· ${kind==="perf"?"se aplica a ambos perfiles":"se aplica a todas las activaciones"}</span></div>
+  <div class="vars" id="vars_${kind}">${["A","B","C"].map(v=>`<div class="vopt ${cur===v?"on":""}" onclick="A.setVar('${kind}','${v}')"><div class="sw"></div><b>${v} · ${VARIANTES[kind][v]}</b></div>`).join("")}</div>
+  <button class="hbtn" style="margin-top:8px" ${h?"":"disabled style='opacity:.4;margin-top:8px'"} onclick="A.undoVar()">↶ Deshacer cambio de diseño</button>`}
+async function drawVar(kind,spec){const box=document.getElementById("vars_"+kind);if(!box)return;const list=plan(),tot=list.length;
+  let n=list.findIndex(p=>p.k===spec.k&&(spec.city?p.city===spec.city:p.a&&spec.a&&p.a.uid===spec.a.uid))+1||1;
+  const opts=box.querySelectorAll(".vopt");const vs=["A","B","C"];
+  for(let i=0;i<3;i++){const R2=HtmlR();await dibujar(R2,Object.assign({},spec,{var:vs[i]}),n,tot);const sw=opts[i]&&opts[i].querySelector(".sw");if(sw){sw.innerHTML=R2.out[0];}}
+  scaleSlides(box)}
 function pActNueva(){return `<p class="hint">Todavía no hay activaciones. Crea la primera para definir su tipo, dinámica, elementos, foto y números.</p>
   <button class="addbtn" onclick="A.nuevaAct()">＋ Crear activación</button>`}
 function pAct(a){
   const t=byId(CAT.tipos,a.tipo);const dins=CAT.dinamicas;const ks=kpisAct(a);const idx=S.activaciones.indexOf(a);
-  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+  return varUI("act",{k:"act",a,i:idx})+`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px">
     ${S.activaciones.length<4&&idx===S.activaciones.length-1?`<button class="hbtn" onclick="A.nuevaAct()">＋ Agregar otra activación</button>`:""}
     <button class="hbtn" style="color:var(--red)" onclick="A.borrarAct('${a.uid}')">🗑 Quitar esta activación</button></div>
   <div class="cols2"><div>
@@ -1625,6 +1754,8 @@ function render(){
     (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
 }
 const A={
+  setVar(k,v){S.var=S.var||{};const prev=S.var[k]||"A";if(prev===v)return;S.hist=S.hist||[];S.hist.push({k,v:prev});S.var[k]=v;save();const y=window.scrollY;render();window.scrollTo(0,y)},
+  undoVar(){const h=(S.hist||[]).pop();if(!h)return;S.var=S.var||{};S.var[h.k]=h.v;save();const y=window.scrollY;render();window.scrollTo(0,y);toast("Diseño anterior restaurado")},
   dd(k){DD=DD===k?null:k;renderTools()},
   ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
   toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
