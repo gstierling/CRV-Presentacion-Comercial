@@ -394,9 +394,9 @@ const CAT = {
   },
   perfiles:{
     stgo:{t:"Perfil de asistentes · Santiago",tot:35000,kpis:[{ic:"users",n:"35.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"78%",l:"recorre en bicicleta"},{ic:"heart",n:"60%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad en años",items:[["1 a 10",6],["10 a 20",8],["20 a 30",28],["30 a 40",32],["40 a 50",16],["50 a 60",7],["60 y más",3]]},{t:"Cómo recorren",items:[["Bicicleta",78,"27.300"],["A pie",15,"5.250"],["Patines",6,"2.100"],["Otros",1,"350"]]}],genero:[["Hombres",68],["Mujeres",32]]},
+      grupos:[{t:"Edad",items:[["1 a 10 años",6],["10 a 20 años",8],["20 a 30 años",28],["30 a 40 años",32],["40 a 50 años",16],["50 a 60 años",7],["60 y más años",3]]},{t:"Cómo recorren",items:[["Bicicleta",78,"27.300"],["A pie",15,"5.250"],["Patines",6,"2.100"],["Otros",1,"350"]]}],genero:[["Hombres",68],["Mujeres",32]]},
     vina:{t:"Perfil de asistentes · Viña del Mar",tot:4000,kpis:[{ic:"users",n:"4.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"66%",l:"recorre en bicicleta"},{ic:"heart",n:"55%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad en años",items:[["1 a 10",8],["10 a 20",7],["20 a 30",29],["30 a 40",26],["40 a 50",18],["50 a 60",10],["60 y más",2]]},{t:"Cómo recorren",items:[["Bicicleta",66,"2.640"],["A pie",19,"760"],["Patines",14,"560"],["Otros",1,"40"]]}],genero:[["Hombres",59],["Mujeres",41]]}
+      grupos:[{t:"Edad",items:[["1 a 10 años",8],["10 a 20 años",7],["20 a 30 años",29],["30 a 40 años",26],["40 a 50 años",18],["50 a 60 años",10],["60 y más años",2]]},{t:"Cómo recorren",items:[["Bicicleta",66,"2.640"],["A pie",19,"760"],["Patines",14,"560"],["Otros",1,"40"]]}],genero:[["Hombres",59],["Mujeres",41]]}
   },
   rrss:[
     {red:"Instagram",user:"@ciclorecreovia",n:85000,ic:"instagram"},
@@ -540,7 +540,7 @@ const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","
 function mesAnio(){const d=S.fecha?new Date(S.fecha+"T12:00:00"):new Date();return MESES[d.getMonth()]+" "+d.getFullYear()}
 const rrssFecha=()=>"("+txD("rrss_fecha",mesAnio()).replace(/^\(|\)$/g,"")+")";
 function rrssList(){const o=S.rrssN||{};return CAT.rrss.map((r,i)=>Object.assign({},r,{n:o[i]!=null?o[i]:r.n}))}
-function subDomingo(a){return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
+function subDomingo(a){if(a&&a._base!=null)return a._base;return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
 function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100)/10000)*10000}
 /* Tarifas de una activación para todos los períodos elegidos (fuera de las fotos) */
 function tarStrip(R,a,x,y,w,h,o){o=o||{};let ps=periodosSel();if(!ps.length)ps=[{t:"1 domingo",dom:1,desc:0}];
@@ -594,7 +594,7 @@ function plan(){
   if(I.objcat)P.push({k:"objcat",name:"Objetivos posibles"});
   if(I.objetivos&&S.objetivos.length)P.push({k:"objetivos",name:"Objetivos"});
   lib("obj");
-  S.activaciones.forEach((a,i)=>P.push({k:"act",a,i,name:"Activación "+(i+1)}));
+  S.activaciones.forEach((a,i)=>{P.push({k:"act",a,i,name:"Activación "+(i+1)});if(kpisAct(a).length)P.push({k:"res",a,i,name:"Resultados "+(i+1)})});
   lib("act");
   SOPORTES.forEach(s=>{if(I["sop_"+s.n])P.push({k:"sop",s,name:"Soporte "+s.n+": "+s.t})});
   if(I.numeros&&kpisTotales().length)P.push({k:"numeros",name:"Números proyectados"});
@@ -691,9 +691,9 @@ function HtmlR(){
       const lx=x+d+0.25,lw=w-d-0.3,rh=Math.min(0.42,h/items.length);
       items.forEach((z,i)=>{const yy=y+(h-rh*items.length)/2+i*rh;
         html+=`<div style="position:absolute;left:${px(lx)};top:${px(yy+rh/2-0.07)};width:${px(.14)};height:${px(.14)};border-radius:3px;background:#${cols[i%cols.length]}"></div>`;
-        {const fs=11;this.text(z[0],lx+0.22,z[2]?yy+rh*0.08:yy,lw-0.85,z[2]?rh*0.5:rh,{size:fs,bold:true,valign:z[2]?"bottom":"middle",noEnf:1});
+        {const fs=10.5;this.text(z[0],lx+0.22,z[2]?yy+rh*0.08:yy,lw-0.75,z[2]?rh*0.5:rh,{size:fs,bold:true,valign:z[2]?"bottom":"middle",noEnf:1});
          if(z[2])this.text(z[2]+" personas",lx+0.22,yy+rh*0.58,lw-0.85,rh*0.36,{size:9.5,color:T().mu,valign:"top",noEnf:1});
-         this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.6,yy,0.6,rh,{size:12,head:true,align:"right",valign:"middle",noEnf:1});}
+         this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.5,yy,0.5,rh,{size:11.5,head:true,align:"right",valign:"middle",noEnf:1});}
       });},
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
@@ -857,7 +857,7 @@ async function dibujarModerno(R,sp,n,tot){
     await R.image(fotoAct(a),0.6,1.55,3.9,2.65);
     R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),4.85,1.9,7.9,0.3,{size:10.5,bold:true,color:PC(1),cs:1});
     const dt=dinTexto(a);R.text(dt,4.85,2.2,7.9,0.9,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:COL.wh});
-    const ks=kpisAct(a).slice(0,3),kw=7.9/3;
+    const ks=[].slice(0,3),kw=7.9/3;
     for(let i=0;i<ks.length;i++){const k=ks[i],kx=4.85+i*kw;
       await mCirc(R,(byId(CAT.kpis,k.id)||{}).ic,kx,3.2,0.6,PC(i));
       R.text(fmt(k.v),kx+0.72,3.13,kw-0.8,0.4,{size:18,head:true,color:COL.wh,valign:"middle"});
@@ -1051,7 +1051,7 @@ async function dibujarVisual(R,sp,n,tot){
        if(vw)R.text(moneyIva(v),x+cw-vw,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
        vLine(R,x,y+rh-0.01,cw);});}
     tarStrip(R,a,0.6,VB+0.02,LW,5.94-VB-0.02,{fill:t.acc});
-    const ks=kpisAct(a).slice(0,3),kw=LW/3;
+    const ks=[].slice(0,3),kw=LW/3;
     for(let i=0;i<ks.length;i++){const k=ks[i],x=0.6+i*kw;
       R.rect(x,6.0,kw-0.2,0.02,{fill:t.acc});
       await vIcon(R,(byId(CAT.kpis,k.id)||{}).ic,x,6.15,0.3);
@@ -1233,15 +1233,15 @@ async function dibujarInvestor(R,sp,n,tot){
     iCard(R,0.6,4.3,4.2,2.55);R.rect(0.6,4.3,4.2,0.42,{fill:IC(0)});
     R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,4.3,3.9,0.42,{size:10,bold:true,cs:1,color:COL.wh,valign:"middle"});
     const dt=dinTexto(a);R.text(dt,0.8,4.85,3.8,1.9,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
-    const ks=kpisAct(a).slice(0,3),kx0=5.1,kwT=W-0.6-kx0,kw=(kwT-0.2*(Math.max(ks.length,1)-1))/Math.max(ks.length,1);
+    const ks=[].slice(0,3),kx0=5.1,kwT=W-0.6-kx0,kw=(kwT-0.2*(Math.max(ks.length,1)-1))/Math.max(ks.length,1);
     for(let i=0;i<ks.length;i++){const k=ks[i],x=kx0+i*(kw+0.2);
       R.rect(x,1.4,kw,1.05,{fill:IC(i+1),radius:0.05});
       await R.image(await iconPng((byId(CAT.kpis,k.id)||{}).ic,COL.wh),x+0.18,1.6,0.42,0.42,{fit:"contain"});
       R.text(fmt(k.v),x+0.72,1.47,kw-0.8,0.5,{size:19,head:true,color:COL.wh,valign:"middle"});
       R.text(k.t+" / domingo",x+0.72,1.95,kw-0.8,0.42,{size:9.5,bold:true,color:COL.wh});}
     const els=Object.entries(a.elementos||{}).filter(([,q])=>q>0).map(([id,q])=>({e:byId(CAT.elementos,id),q})).filter(z=>z.e);
-    iCard(R,kx0,2.6,kwT,3.45);R.text(ELH(),kx0+0.2,2.68,kwT-0.4,0.3,{size:10,bold:true,cs:1,color:t.tx});
-    {const LW=kwT-0.4,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.15,cw=(LW-gx*(cols-1))/cols,top=3.02,rh=Math.min(0.34,(5.95-top)/Math.max(rows,1));
+    iCard(R,kx0,1.4,kwT,4.65);R.text(ELH(),kx0+0.2,1.48,kwT-0.4,0.3,{size:10,bold:true,cs:1,color:t.tx});
+    {const LW=kwT-0.4,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.15,cw=(LW-gx*(cols-1))/cols,top=1.82,rh=Math.min(0.4,(5.95-top)/Math.max(rows,1));
      const fs=rh>=0.3?10.5:rh>=0.24?9.5:8.5,qw=cols===3?0.4:0.48,vw=!DET()?0:cols===3?1.15:1.45;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+0.2+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        if(r%2===0)R.rect(xx,y,cw,rh,{fill:t.bg});
@@ -1439,15 +1439,15 @@ async function dibujarCajas(R,sp,n,tot){
     R.rect(0.6,4.55,4.6,0.45,{fill:CJ(0)});
     R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,4.55,4.3,0.45,{size:10,bold:true,cs:1,color:COL.wh,valign:"middle"});
     const dt=dinTexto(a);R.rect(0.6,5.0,4.6,1.9,{fill:t.card});R.text(dt,0.78,5.1,4.25,1.7,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
-    const ks=kpisAct(a).slice(0,3),kx0=5.5,kwT=W-0.6-kx0,kw=kwT/Math.max(ks.length,1);
+    const ks=[].slice(0,3),kx0=5.5,kwT=W-0.6-kx0,kw=kwT/Math.max(ks.length,1);
     for(let i=0;i<ks.length;i++){const k=ks[i],x=kx0+i*kw;
       R.rect(x,1.55,kw,1.15,{fill:CJ(i+1)});
       await R.image(await iconPng((byId(CAT.kpis,k.id)||{}).ic,COL.wh),x+0.2,1.85,0.5,0.5,{fit:"contain"});
       R.text(fmt(k.v),x+0.85,1.6,kw-0.95,0.55,{size:20,head:true,color:COL.wh,valign:"middle"});
       R.text(k.t+" / domingo",x+0.85,2.12,kw-0.95,0.5,{size:9.5,bold:true,color:COL.wh});}
     const els=elemsDe(a);
-    R.text(ELH(),kx0,2.9,kwT,0.32,{size:11,head:true,cs:1.5,color:t.tx,valign:"middle"});R.rect(kx0+0.02,3.25,0.5,0.05,{fill:CJ(0)});
-    {const LW=kwT,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=3.4,rh=Math.min(0.36,(6.05-top)/Math.max(rows,1));
+    R.text(ELH(),kx0,1.55,kwT,0.32,{size:11,head:true,cs:1.5,color:t.tx,valign:"middle"});R.rect(kx0+0.02,1.9,0.5,0.05,{fill:CJ(0)});
+    {const LW=kwT,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=2.05,rh=Math.min(0.42,(6.05-top)/Math.max(rows,1));
      const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=cols===3?0.4:0.5,vw=!DET()?0:cols===3?1.15:1.5;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        R.rect(xx,y+rh*0.12,qw,rh*0.76,{fill:CJ(c)});
@@ -1623,11 +1623,11 @@ async function dibujarPotion(R,sp,n,tot){
     R.rect(0.6,4.35,4.5,0.42,{fill:PO(0)});
     R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,4.35,4.2,0.42,{size:10,bold:true,cs:1,color:COL.wh,valign:"middle"});
     const dt=dinTexto(a);R.rect(0.6,4.77,4.5,2.13,{fill:t.card});R.text(dt,0.78,4.88,4.15,1.9,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
-    const ks=kpisAct(a).slice(0,3),kx0=5.4,kwT=W-0.6-kx0;
+    const ks=[].slice(0,3),kx0=5.4,kwT=W-0.6-kx0;
     if(ks.length)await pBand(R,ks.map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,big:fmt(k.v),small:k.t+" / domingo"})),kx0,1.45,kwT,1.55,{bs:18,ss:9});
     const els=elemsDe(a);
-    R.text(ELH(),kx0,3.1,kwT,0.32,{size:11,head:true,cs:1,color:t.tx,valign:"middle"});
-    {const LW=kwT,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=3.48,rh=Math.min(0.34,(6.05-top)/Math.max(rows,1));
+    R.text(ELH(),kx0,1.45,kwT,0.32,{size:11,head:true,cs:1,color:t.tx,valign:"middle"});
+    {const LW=kwT,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=1.85,rh=Math.min(0.42,(6.05-top)/Math.max(rows,1));
      const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=rh*0.8,vw=!DET()?0:cols===3?1.15:1.5;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        R.rect(xx,y+rh*0.1,qw,rh*0.8,{fill:PO(c),ellipse:true});
@@ -1805,14 +1805,14 @@ async function dibujarEstaciones(R,sp,n,tot){
     eCard(R,0.6,4.55,4.5,2.35,t.card);
     R.text("Dinámica · "+dinNombre(a),0.8,4.65,4.1,0.38,{size:13,color:t.acc,valign:"middle"});
     const dt=dinTexto(a);R.text(dt,0.8,5.05,4.1,1.75,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
-    const ks=kpisAct(a).slice(0,3),kx0=5.4,kwT=W-0.6-kx0,g=0.15,kw=(kwT-g*(ks.length-1))/Math.max(ks.length,1);
+    const ks=[].slice(0,3),kx0=5.4,kwT=W-0.6-kx0,g=0.15,kw=(kwT-g*(ks.length-1))/Math.max(ks.length,1);
     for(let i=0;i<ks.length;i++){const k=ks[i],x=kx0+i*(kw+g);eCard(R,x,1.45,kw,1.1,ES(i));
       R.text(fmt(k.v),x+0.1,1.5,kw-0.2,0.55,{size:20,head:true,color:COL.wh,align:"center",valign:"middle"});
       R.text(k.t+" / domingo",x+0.1,2.03,kw-0.2,0.45,{size:9.5,color:COL.wh,align:"center"});}
     const els=elemsDe(a);
-    eCard(R,kx0,2.7,kwT,3.3,t.card);
-    R.text(DET()?"Elementos · valor por domingo":"Elementos",kx0+0.2,2.75,kwT-0.4,0.36,{size:13,color:t.acc,valign:"middle"});
-    {const LW=kwT-0.4,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=3.15,rh=Math.min(0.34,(5.9-top)/Math.max(rows,1));
+    eCard(R,kx0,1.45,kwT,4.55,t.card);
+    R.text(DET()?"Elementos · valor por domingo":"Elementos",kx0+0.2,1.5,kwT-0.4,0.36,{size:13,color:t.acc,valign:"middle"});
+    {const LW=kwT-0.4,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=1.9,rh=Math.min(0.42,(5.9-top)/Math.max(rows,1));
      const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=0.45,vw=!DET()?0:cols===3?1.15:1.5;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+0.2+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        R.text(String(z.q).padStart(2,"0"),xx,y,qw,rh,{size:fs+1,color:ES(c),valign:"middle"});
@@ -1906,10 +1906,10 @@ async function dibujarEstaciones(R,sp,n,tot){
 
 /* ===================== SOPORTES Y CICLORECREOVÍA NOCTURNA (todos los estilos) ===================== */
 const SOPORTES=[
-  {n:1,t:"Arco",foto:13,d:"*Arco inflable de gran formato* con la marca, ubicado en un punto de *alto flujo* del circuito. Es el ícono de la activación: todos pasan por debajo y queda en *las fotos de la jornada*."},
-  {n:2,t:"Vallas",foto:15,d:"Vallas con lienzo impreso *a lo largo del circuito*, a la altura de la vista de quienes pedalean, caminan y patinan. *Presencia continua* de la marca durante toda la jornada."},
-  {n:3,t:"Barreras",foto:18,d:"Barreras de cierre de calle intervenidas con la marca en los *accesos y cruces* del circuito, los puntos donde las personas *se detienen y esperan*."},
-  {n:4,t:"Banderas",foto:16,d:"Banderas tipo vela que marcan el espacio de la activación y *se ven a distancia*, dando *altura y color* a la presencia de la marca."}];
+  {n:1,t:"Arco",foto:13,p:350000,d:"*Arco inflable de gran formato* con la marca, ubicado en un punto de *alto flujo* del circuito. Es el ícono de la activación: todos pasan por debajo y queda en *las fotos de la jornada*."},
+  {n:2,t:"Vallas",foto:15,p:250000,d:"Vallas con lienzo impreso *a lo largo del circuito*, a la altura de la vista de quienes pedalean, caminan y patinan. *Presencia continua* de la marca durante toda la jornada."},
+  {n:3,t:"Barreras",foto:18,p:200000,d:"Barreras de cierre de calle intervenidas con la marca en los *accesos y cruces* del circuito, los puntos donde las personas *se detienen y esperan*."},
+  {n:4,t:"Banderas",foto:16,p:150000,d:"Banderas tipo vela que marcan el espacio de la activación y *se ven a distancia*, dando *altura y color* a la presencia de la marca."}];
 const CLAVES=[
   {ic:"route",t:"Recuperamos la ciudad",d:"Iniciativa de recuperación de espacios públicos."},
   {ic:"bike",t:"Calles sin autos",d:"Habilitamos kilómetros de calles para el paseo y el esparcimiento."},
@@ -1964,7 +1964,7 @@ async function dibujarDivProp(R,sp,n,tot){const k=K(),P=S.prospecto||"Prospecto"
   R.text(txD("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+P+" en CicloRecreoVía."),0.7,4.8,5.0,1.4,{size:17,color:k.mu,valign:"top"});
   R.text(String(n).padStart(2,"0"),0.7,6.85,1,0.35,{size:10,bold:true,color:k.mu});R.end();}
 async function dibujarObjCat(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="est")eSnow(R);
-  const y0=famHead(R,txD("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía"),n,tot),ob=CAT.objetivos,cols=5,rows=Math.ceil(ob.length/cols),g=0.18;
+  const y0=famHead(R,txD("objcat_tit","Objetivos que se pueden lograr en CicloRecreoVía"),n,tot),ob=CAT.objetivos,cols=5,rows=Math.ceil(ob.length/cols),g=0.18;
   const cw=(W-1.2-g*(cols-1))/cols,top=y0+0.2,ch=(6.85-top-g*(rows-1))/rows;
   for(let i=0;i<ob.length;i++){const o=ob[i],x=0.6+(i%cols)*(cw+g),y=top+Math.floor(i/cols)*(ch+g),col=KP(i);
     R.rect(x,y,cw,ch,{fill:k.card,radius:k.fam==="caj"?undefined:0.1});R.rect(x,y,cw,0.08,{fill:col});
@@ -1973,9 +1973,23 @@ async function dibujarObjCat(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="e
     R.text(o.t,x+0.12,y+1.12,cw-0.24,0.55,{size:fitSize(o.t,14,[[16,13],[22,12]]),head:true,color:k.tx,align:"center",valign:"middle"});
     R.text(o.d,x+0.15,y+1.7,cw-0.3,ch-1.8,{size:10,color:k.mu,align:"center",valign:"top"});}
   await famFoot(R,n);R.end();}
-const NOCT_TXT="*Tres o cuatro sábados al año*, de *18.00 a 24.00 hrs*, desarrollamos la CicloRecreoVía Nocturna en circuitos de *4 a 8 kilómetros*, con una *asistencia espectacular* en un ambiente de *luces, neón y música*.";
+async function dibujarRes(R,sp,n,tot){const a=sp.a,ks=kpisAct(a);R.slide("000000");await R.image(fotoAct(a),0,0,W,H);
+  const tt="Resultados esperados por domingo",sub="Activación "+(sp.i+1)+(a.nombre?": "+a.nombre:"");
+  const cw0=Math.max(tt.length*0.19,sub.length*0.11)+0.8;R.rect(0.5,0.45,cw0,1.05,{fill:"10142A",radius:0.08});
+  R.text(tt,0.75,0.5,cw0-0.4,0.55,{size:20,head:true,color:COL.wh,valign:"middle"});
+  R.text(sub,0.75,1.0,cw0-0.4,0.4,{size:12,bold:true,color:"FFD56A",valign:"middle"});
+  const c=Math.max(ks.length,1),g=0.18,bw=Math.min(3.6,(W-1.0-g*(c-1))/c),bh=1.75,x0=(W-(bw*c+g*(c-1)))/2,top=H-0.45-bh;
+  for(let i=0;i<ks.length;i++){const q=ks[i],x=x0+i*(bw+g),col=KP(i),num=fmt(q.v);
+    R.rect(x,top,bw,bh,{fill:col,radius:0.1});
+    const d=0.62;R.rect(x+0.22,top+0.22,d,d,{fill:"FFFFFF",ellipse:true});
+    await R.image(await iconPng((byId(CAT.kpis,q.id)||{}).ic||"sparkles",col),x+0.22+d*0.2,top+0.22+d*0.2,d*0.6,d*0.6,{fit:"contain"});
+    R.text(num,x+0.2,top+0.85,bw-0.4,0.55,{size:Math.min(30,(bw-0.4)*72/(num.length*0.7)),head:true,color:COL.wh,valign:"middle"});
+    R.text(q.t+" / domingo",x+0.2,top+1.36,bw-0.4,0.32,{size:11,bold:true,color:COL.wh,valign:"middle"});}
+  R.text(String(n).padStart(2,"0"),12.0,0.5,0.75,0.35,{size:10,bold:true,color:"FFFFFF",align:"right"});R.end();}
+const NOCT_TXT="*Tres o cuatro sábados al año*, de *18.00 a 24.00 hrs*, desarrollamos la *CicloRecreoVía Nocturna* en circuitos de *4 a 8 kilómetros*, con una *asistencia espectacular* en un ambiente de *luces, neón y música*.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
 const NOCT_TIT="CicloRecreoVía Nocturna";
+const sopPrecio=s=>{const v=(S.sopP||{})[s.n];return v!=null?v:s.p};
 async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
   const y0=famHead(R,"Soporte "+s.n+": "+s.t,n,tot),bot=6.85;
   const px=0.6,pw=7.4;await R.image(foto("sop_"+s.n,s.foto),px,y0,pw,bot-y0);
@@ -1983,8 +1997,10 @@ async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
   R.rect(x,y0,w,1.25,{fill:KP(0)});
   R.text("SOPORTE "+s.n,x+0.3,y0+0.12,w-0.6,0.35,{size:11,bold:true,cs:2,color:COL.wh,valign:"middle"});
   R.text(s.t.toUpperCase(),x+0.3,y0+0.45,w-0.6,0.7,{size:28,head:true,color:COL.wh,valign:"middle"});
-  const d=txD("sop_"+s.n,s.d);
-  R.text(d,x,y0+1.5,w,bot-y0-1.5,{size:fitSize(d,15,[[260,13.5],[420,12],[600,10.5]]),color:k.tx});
+  const d=txD("sop_"+s.n,s.d),nP=Math.max(1,periodosSel().length),tH=Math.min(2.4,0.38+nP*0.4),ty=bot-tH;
+  R.text(d,x,y0+1.5,w,ty-0.45-(y0+1.5),{size:fitSize(d,15,[[260,13.5],[420,12],[600,10.5]]),color:k.tx});
+  R.text("INVERSIÓN",x,ty-0.38,w,0.3,{size:10.5,bold:true,cs:1.5,color:k.tx,valign:"middle"});
+  tarStrip(R,{_base:sopPrecio(s)},x,ty,w,tH,{fills:[KP(0),KP(1),KP(2)],radius:k.fam==="caj"?undefined:0.06,max:14});
   await famFoot(R,n);R.end();}
 async function dibujarNoct1(R,sp,n,tot){const k=K();R.slide(k.bg);
   const y0=famHead(R,NOCT_TIT,n,tot),ph=5.6-y0;
@@ -2093,7 +2109,7 @@ async function actB(R,sp,n,tot){
   await R.image(fotoAct(a),0.6,y0,3.5,2.15);
   R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),4.35,y0,8.4,0.3,{size:10.5,bold:true,cs:1,color:KP(0)});
   const dt=dinTexto(a);R.text(dt,4.35,y0+0.3,8.4,0.85,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:k.tx});
-  const ks=kpisAct(a).slice(0,3),kw=8.4/3;
+  const ks=[].slice(0,3),kw=8.4/3;
   for(let i=0;i<ks.length;i++){const q=ks[i],x=4.35+i*kw;R.rect(x,y0+1.25,kw-0.15,0.9,{fill:k.card,radius:0.06});
     await kCirc(R,(byId(CAT.kpis,q.id)||{}).ic,x+0.12,y0+1.42,0.56,KP(i));
     R.text(fmt(q.v),x+0.8,y0+1.3,kw-0.95,0.45,{size:18,head:true,color:k.tx,valign:"middle"});
@@ -2115,18 +2131,25 @@ async function actC(R,sp,n,tot){
   R.rect(0.6,y0+2.45,3.9,1.75,{fill:k.card,radius:0.06});
   R.text("DINÁMICA · "+dinNombre(a).toUpperCase(),0.75,y0+2.52,3.6,0.3,{size:9.5,bold:true,cs:1,color:KP(0)});
   const dt=dinTexto(a);R.text(dt,0.75,y0+2.82,3.6,1.3,{size:fitSize(dt,10.5,[[260,9.5],[360,8.5]]),color:k.tx});
-  const ks=kpisAct(a).slice(0,3);
+  const ks=[].slice(0,3);
   for(let i=0;i<ks.length;i++){const q=ks[i],y=y0+4.35+i*0.38;
     await kCirc(R,(byId(CAT.kpis,q.id)||{}).ic,0.6,y,0.32,KP(i));
     R.text([{text:fmt(q.v)+"  ",o:{head:true,size:13,color:k.tx}},{text:q.t+" / domingo",o:{bold:true,size:9.5,color:k.mu}}],1.02,y-0.02,3.5,0.36,{size:11,valign:"middle"});}
-  const els=elemsDe(a),x=4.8,w=W-0.6-x,many=els.length>14;
-  const rowsData=els.map((z,i)=>[{t:z.e.t,fill:i%2?k.bg:k.card,color:k.tx,bold:true},{t:String(z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"center",bold:true},{t:money(z.e.p),fill:i%2?k.bg:k.card,color:k.mu,align:"right"},{t:moneyIva(z.e.p*z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"right"}]);
-  const head=["Elemento","Cant.","Valor unitario","Total"].map((h,i)=>({t:h.toUpperCase(),fill:KP(i),color:COL.wh,bold:true,align:i?(i===1?"center":"right"):"left",size:9.5}));
+  const els=elemsDe(a),x=4.8,w=W-0.6-x;
+  const zf=i=>i%2?k.bg:k.card;
   const psC=periodosSel().length?periodosSel():[{t:"1 domingo",dom:1,desc:0}];
-  const totRs=psC.map(p=>[{t:"TOTAL "+p.t.toUpperCase()+"",fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(precioPeriodo(a,p)),fill:k.band,color:COL.wh,head:true,align:"right"}]);
-  const nR=els.length+1+totRs.length,rh=Math.min(0.38,(6.85-y0)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
-  if(DET())R.table([head,...rowsData,...totRs],x,y0,w,[w-4.4,0.8,1.6,2.0],{rowH:rh,size:fs,border:k.bg});
-  else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),...totRs.map(t=>[t[0],Object.assign({},t[3],{align:"center"})])],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
+  const totRs=psC.map(p=>[{t:"Total "+p.t,fill:k.band,color:COL.wh,bold:true},{t:moneyIva(precioPeriodo(a,p)),fill:k.band,color:COL.wh,head:true,align:"right"}]);
+  const hd=(t,i,al)=>({t,fill:KP(i),color:COL.wh,bold:true,align:al||"left",size:9.5});
+  let rows,colW;
+  if(DET()){rows=[[hd("Cant.",0,"center"),hd("Elemento",1),hd("Valor unitario",2,"right"),hd("Total",3,"right")],
+      ...els.map((z,i)=>[{t:String(z.q),fill:zf(i),color:k.tx,align:"center",bold:true},{t:z.e.t,fill:zf(i),color:k.tx,bold:true},{t:money(z.e.p),fill:zf(i),color:k.mu,align:"right"},{t:moneyIva(z.e.p*z.q),fill:zf(i),color:k.tx,align:"right"}])];
+    colW=[0.75,w-4.35,1.6,2.0];}
+  else if(els.length<=10){rows=[[hd("Cant.",0,"center"),hd("Elemento",1)],...els.map((z,i)=>[{t:String(z.q),fill:zf(i),color:k.tx,align:"center",bold:true},{t:z.e.t,fill:zf(i),color:k.tx,bold:true}])];colW=[0.9,w-0.9];}
+  else{const h2=Math.ceil(els.length/2),cw=(w-1.8)/2,e=(z,i)=>z?[{t:String(z.q),fill:zf(i),color:k.tx,align:"center",bold:true},{t:z.e.t,fill:zf(i),color:k.tx,bold:true}]:[{t:"",fill:zf(i)},{t:"",fill:zf(i)}];
+    rows=[[hd("Cant.",0,"center"),hd("Elemento",1),hd("Cant.",0,"center"),hd("Elemento",1)],...Array.from({length:h2},(_,i)=>[...e(els[i],i),...e(els[i+h2],i)])];colW=[0.9,cw,0.9,cw];}
+  const nR=rows.length+totRs.length,rh=Math.min(0.38,(6.85-y0-0.08)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
+  R.table(rows,x,y0,w,colW,{rowH:rh,size:fs,border:k.bg});
+  R.table(totRs,x,y0+rows.length*rh+0.08,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
   await famFoot(R,n);R.end();}
 
 const VARIANTES={noct2:{A:"Cajas de color",B:"Sobre foto completa"},pub:{A:"Bloque de color",B:"Foto completa"},perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
@@ -2148,7 +2171,7 @@ function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t
   const estW=(k,sz)=>[...k].reduce((a,c)=>a+(/[0-9]/.test(c)?0.67:/[.,:]/.test(c)?0.33:c===" "?0.3:/[mw]/i.test(c)?1.0:0.72),0)*sz/72;let LASTF=null;
   W2.text=(tx,x,y,w,h,o)=>{if(o&&o.noEnf)return R.text(tx,x,y,w,h,o);o=Object.assign({},o||{});
     if(typeof tx==="string"){const key=tx.trim();
-      if(d.F.has(key)){const att=d.F.get(key),base=o.size||14,want=base*(att?1.55:1.28),maxW=w*72/(Math.max(key.length,3)*0.66);
+      if(d.F.has(key)){const att=d.F.get(key),base=o.size||14,want=base*(att?1.55:1.28),maxW=w*72/(Math.max(key.length,3)*(/[a-zA-Z]/.test(key)?0.8:0.66));
         o.size=Math.max(base,Math.min(want,maxW));o.head=true;const white=isW(o.color);LASTF={x,y,h,w,size:o.size,key,align:o.align||"left",valign:o.valign};
         if(mode==="C"&&!white)o.color=att?attC:acc;
         if(mode==="D"&&att){const tw=Math.min(w,key.length*o.size*0.64/72+0.35),th=o.size/72*1.3;
@@ -2180,6 +2203,7 @@ async function dibujar(R,sp,n,tot){
   const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
+  if(sp.k==="res")return dibujarRes(R,sp,n,tot);
   if(sp.k==="claves")return dibujarClaves(R,sp,n,tot);
   if(sp.k==="divprop")return dibujarDivProp(R,sp,n,tot);
   if(sp.k==="objcat")return dibujarObjCat(R,sp,n,tot);
@@ -2270,7 +2294,7 @@ async function dibujar(R,sp,n,tot){
     const dt=dinTexto(a);R.text(dt,0.6,2.5,LW,many?0.6:0.85,{size:fitSize(dt,12.5,[[260,11],[360,10]]),color:t.mu});
     const hy=many?3.12:3.42;
     R.text(ELH(),0.6,hy,LW,0.28,{size:10.5,bold:true,color:t.acc,cs:1});
-    {const n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.15,cw=(LW-gx*(cols-1))/cols,top=hy+0.33,avail=5.55-top,rh=Math.min(0.36,avail/Math.max(rows,1));
+    {const n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.15,cw=(LW-gx*(cols-1))/cols,top=hy+0.33,avail=6.85-top,rh=Math.min(0.36,avail/Math.max(rows,1));
      const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=cols===3?0.42:0.5,vw=!DET()?0:cols===3?1.2:1.5;
      els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,x=0.6+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
        if(r%2===0)R.rect(x,y,cw,rh,{fill:t.p1});
@@ -2278,10 +2302,10 @@ async function dibujar(R,sp,n,tot){
        R.text(String(z.q),x+0.06,y+rh*0.15,qw,rh*0.7,{size:fs,bold:true,color:COL.wh,align:"center",valign:"middle"});
        R.text(z.e.t,x+qw+0.14,y,cw-qw-0.24-vw,rh,{size:fs,bold:true,valign:"middle"});
        if(vw)R.text(moneyIva(v),x+cw-vw-0.06,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});});}
-    const px=many?10.1:9.0,pw=W-0.6-px,nPs=Math.max(1,periodosSel().length),stH=Math.max(0.75,nPs*0.4),ph=Math.min(many?3.25:3.9,5.62-0.74-stH);
+    const px=many?10.1:9.0,pw=W-0.6-px,nPs=Math.max(1,periodosSel().length),stH=Math.max(0.75,nPs*0.4),ph=Math.min(many?4.2:4.9,6.85-0.74-stH);
     await R.image(fotoAct(a),px,0.62,pw,ph);
-    tarStrip(R,a,px,0.62+ph+0.12,pw,5.62-(0.62+ph+0.12),{fill:t.acc,radius:0.05,max:13});
-    const ks=kpisAct(a).slice(0,3).map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,l:k.t+" / domingo",v:fmt(k.v)}));
+    tarStrip(R,a,px,0.62+ph+0.12,pw,6.85-(0.62+ph+0.12),{fill:t.acc,radius:0.05,max:13});
+    const ks=[].slice(0,3).map(k=>({ic:(byId(CAT.kpis,k.id)||{}).ic,l:k.t+" / domingo",v:fmt(k.v)}));
     if(ks.length)await banda(R,5.75,1.75,ks);
     break;}
   case "numeros":{
@@ -2529,11 +2553,12 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
   const box=$("#fotosBox");if(!box||curId!==pn.id)return;
   const h=[...seen].map(([s,d])=>fotoGrid(s,d)).join("");FCACHE[pn.id]=h;if(box.innerHTML!==h)box.innerHTML=h;
   if(keepY!=null){window.scrollTo(0,keepY);keepY=null}}
-function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
+function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}
+  <div class="lbl">Valor por domingo</div><div class="dl"><div class="dlp"><div class="dli"><b>${money(sopPrecio(s))}</b> + IVA por domingo · las tarifas por período se calculan solas</div><button class="pen" title="Editar valor" onclick="A.sopP(${s.n})">✏️</button></div></div>`:offMsg)}
 function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("claves_tit",CLAVES_TIT)}`+CLAVES.map((c,i)=>`<div class="lbl">Clave ${i+1}</div>${edTxt("clave_t"+(i+1),c.t)}${edTxt("clave_d"+(i+1),c.d)}`).join(""):""}
 function pPublico(){return S.incluir.publico?varUI("pub",{k:"publico"})+`<div class="lbl">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Cifra</div>${edTxt("pub_n","39.000")}<div class="lbl">Texto</div>${edTxt("pub_l","participantes por domingo")}${edTxt("pub_c","Santiago + Viña del Mar")}`:""}
 function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
-function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
+function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que se pueden lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
 function pNoctPub(){return S.incluir.noctpub?`<p class="hint">Usa el mismo diseño elegido en "Personas cada domingo".</p><div class="lbl">Título</div>${edTxt("npub_tit","CicloRecreoVía Nocturna")}<div class="lbl">Cifra</div>${edTxt("npub_n","35.000")}<div class="lbl">Texto</div>${edTxt("npub_l","asistentes por jornada")}${edTxt("npub_c","CicloRecreoVía Nocturna")}`:""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?varUI("noct2",{k:"noct2"})+NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
@@ -2629,11 +2654,11 @@ function PANELS(){
   P.push({id:"noct2",s:"Nocturna 2",t:"CicloRecreoVía Nocturna 2",r:pNoct2,m:p=>p.k==="noct2"});
   P.push({id:"noctpub",s:"Nocturna 3",t:"CicloRecreoVía Nocturna 3 · asistentes",r:pNoctPub,m:p=>p.k==="noctpub"});
   P.push({id:"divprop",s:"Propuesta",t:"Propuesta "+(S.prospecto||"(prospecto)"),r:pDivProp,m:p=>p.k==="divprop"});
-  P.push({id:"objcat",s:"Obj. posibles",t:"Objetivos que puedes lograr",r:pObjCat,m:p=>p.k==="objcat"});
+  P.push({id:"objcat",s:"Obj. posibles",t:"Objetivos que se pueden lograr",r:pObjCat,m:p=>p.k==="objcat"});
   P.push({id:"objetivos",s:"Objetivos",t:"Objetivos",r:pObjetivos,m:p=>p.k==="objetivos"});
   lib("obj");
   if(!S.activaciones.length)P.push({id:"act_new",s:"Act. 1",t:"Activación 1",r:pActNueva,m:()=>false});
-  S.activaciones.forEach((a,i)=>P.push({id:"act_"+a.uid,s:"Act. "+(i+1),t:"Activación "+(i+1)+(a.nombre?": "+a.nombre:""),r:()=>pAct(a),m:p=>p.k==="act"&&p.a.uid===a.uid}));
+  S.activaciones.forEach((a,i)=>P.push({id:"act_"+a.uid,s:"Act. "+(i+1),t:"Activación "+(i+1)+(a.nombre?": "+a.nombre:""),r:()=>pAct(a),m:p=>(p.k==="act"||p.k==="res")&&p.a.uid===a.uid}));
   lib("act");
   SOPORTES.forEach(s=>P.push({id:"sop_"+s.n,s:"Soporte "+s.n,t:"Soporte "+s.n+": "+s.t,r:()=>pSop(s),m:p=>p.k==="sop"&&p.s.n===s.n}));
   P.push({id:"numeros",s:"Números",t:"Números proyectados",r:pNumeros,m:p=>p.k==="numeros"});
@@ -2724,6 +2749,7 @@ const A={
     save();const y=window.scrollY;render();window.scrollTo(0,y);
     const im=(S.imgs||{})[slot];if(v==="nueva"&&!(im&&im.data))fotoSheet(slot,SHDEF,kind);else closeSheet2();
     if(PVREF)await PVREF()},
+  sopP(n){const s=SOPORTES.find(x=>x.n===n);keypad("Soporte "+n+": "+s.t+" · valor por domingo",sopPrecio(s),v=>{S.sopP=S.sopP||{};S.sopP[n]=Math.round(v);save();render()})},
   rrssN(i){const r=rrssList()[i];keypad(r.red+" · "+(r.u||"seguidores"),r.n,v=>{S.rrssN=S.rrssN||{};S.rrssN[i]=Math.round(v);save();render()})},
   setFoto(slot,v){S.fotos=S.fotos||{};S.fotos[slot]=v;save();keepY=window.scrollY;render();window.scrollTo(0,keepY)},
   setImg(key,img){
