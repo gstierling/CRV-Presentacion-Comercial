@@ -1913,16 +1913,27 @@ async function dibujarClaves(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="e
     R.text(dd,x+0.32,y+1.86,cw-0.6,ch-2.0,{size:fitSize(dd,12.5,[[70,11.5]]),color:hi?COL.wh:k.mu,valign:"top"});}
   await famFoot(R,n);R.end();}
 const PUBLICO=[{city:"Santiago",n:"35.000",foto:1},{city:"Viña del Mar",n:"4.000",foto:10}];
-async function dibujarPublico(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="est")eSnow(R);
-  const y0=famHead(R,txD("pub_tit","Personas cada domingo"),n,tot),g=0.3,cw=(W-1.2-g)/2,top=y0+0.25,ch=6.85-top;
-  for(let i=0;i<2;i++){const p=PUBLICO[i],x=0.6+i*(cw+g),col=KP(i),num=txD("pub_n"+(i+1),p.n);
-    await R.image(foto("pub_"+(i+1),p.foto),x,top,cw,ch*0.5);
-    R.rect(x,top+ch*0.5,cw,ch*0.5,{fill:col});
-    const d=0.9;R.rect(x+cw/2-d/2,top+ch*0.5-d/2,d,d,{fill:col,ellipse:true,line:"FFFFFF",lw:3});
-    await R.image(await iconPng("users",COL.wh),x+cw/2-0.27,top+ch*0.5-0.27,0.54,0.54,{fit:"contain"});
-    R.text(num,x+0.2,top+ch*0.5+0.5,cw-0.4,1.15,{size:Math.min(72,(cw-0.4)*72/(num.length*0.7)),head:true,color:COL.wh,align:"center",valign:"middle"});
-    R.text(txD("pub_l","personas por domingo"),x+0.2,top+ch*0.5+1.62,cw-0.4,0.4,{size:16,color:COL.wh,align:"center",valign:"middle"});
-    R.text(p.city.toUpperCase(),x+0.2,top+ch*0.5+2.05,cw-0.4,0.45,{size:18,head:true,cs:2,color:COL.wh,align:"center",valign:"middle"});}
+async function dibujarPublico(R,sp,n,tot){const k=K(),v=sp.var||(S.var||{}).pub||"A";
+  const num=txD("pub_n","39.000"),l1=txD("pub_l","participantes por domingo"),l2=txD("pub_c","Santiago + Viña del Mar"),img=foto("pub_1",1);
+  if(v==="B"){R.slide("0B1420");await R.image(img,0,0,W,H);
+    R.rect(0,0,W,H,{fill:"0B1420",transp:62});for(let i=0;i<10;i++)R.rect(0,0,5.2+i*0.45,H,{fill:"0B1420",transp:93});
+    R.text(txD("pub_tit","Personas cada domingo").toUpperCase(),0.8,0.75,8,0.4,{size:12,bold:true,cs:4,color:"FFFFFF"});
+    R.rect(0.82,1.25,0.9,0.05,{fill:KP(0)});
+    R.text(num,0.7,2.0,11,2.2,{size:Math.min(150,11*72/(num.length*0.7)),head:true,color:COL.wh,valign:"middle"});
+    R.text(l1,0.82,4.25,10,0.6,{size:28,color:COL.wh,valign:"middle"});
+    R.rect(0.82,5.05,0.06,0.5,{fill:KP(0)});
+    R.text(l2.toUpperCase(),1.05,5.05,10,0.5,{size:16,bold:true,cs:3,color:COL.wh,valign:"middle"});
+    R.text(String(n).padStart(2,"0"),12.0,6.9,0.75,0.35,{size:10,bold:true,color:"FFFFFF",align:"right"});
+    R.end();return}
+  R.slide(k.bg);if(k.fam==="est")eSnow(R);
+  const y0=famHead(R,txD("pub_tit","Personas cada domingo"),n,tot),x=0.6,cw=W-1.2,top=y0+0.25,ch=6.85-top,ph=ch*0.42,col=KP(0);
+  await R.image(img,x,top,cw,ph);R.rect(x,top+ph,cw,ch-ph,{fill:col});
+  const d=0.95;R.rect(x+cw/2-d/2,top+ph-d/2,d,d,{fill:col,ellipse:true,line:"FFFFFF",lw:3});
+  await R.image(await iconPng("users",COL.wh),x+cw/2-0.28,top+ph-0.28,0.56,0.56,{fit:"contain"});
+  const rest=ch-ph;
+  R.text(num,x+0.3,top+ph+0.5,cw-0.6,rest*0.5,{size:Math.min(100,rest*0.5*72*0.85),head:true,color:COL.wh,align:"center",valign:"middle"});
+  R.text(l1,x+0.3,top+ph+0.5+rest*0.5,cw-0.6,0.45,{size:20,color:COL.wh,align:"center",valign:"middle"});
+  R.text(l2.toUpperCase(),x+0.3,top+ph+0.98+rest*0.5,cw-0.6,0.45,{size:18,head:true,cs:2,color:COL.wh,align:"center",valign:"middle"});
   await famFoot(R,n);R.end();}
 const NOCT_TXT="Una noche al año abrimos las calles de Santiago para recorrerlas en bicicleta, a pie y en patines bajo luces, neón y música.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
@@ -2069,7 +2080,7 @@ async function actC(R,sp,n,tot){
   else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),...totRs.map(t=>[t[0],Object.assign({},t[3],{align:"center"})])],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
   await famFoot(R,n);R.end();}
 
-const VARIANTES={perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
+const VARIANTES={pub:{A:"Bloque de color",B:"Foto completa"},perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
 
 /* ===================== RESALTE DE CIFRAS (capa común a todos los estilos) ===================== */
 const ENFS={A:"Actual",B:"Cifras grandes",C:"Grandes y en color",D:"Grandes con destacado"};
@@ -2411,13 +2422,13 @@ function pObjetivos(){return togIncl("objetivos")+`
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
 function varUI(kind,spec){const cur=(S.var||{})[kind]||"A",h=(S.hist||[]).length;
   setTimeout(()=>drawVar(kind,spec),0);
-  return `<div class="lbl" style="margin-top:0">Diseño de esta diapositiva <span style="text-transform:none;letter-spacing:0;font-weight:700">· ${kind==="perf"?"se aplica a ambos perfiles":"se aplica a todas las activaciones"}</span></div>
-  <div class="vars" id="vars_${kind}">${["A","B","C"].map(v=>`<div class="vopt ${cur===v?"on":""}" onclick="A.setVar('${kind}','${v}')"><div class="sw"></div><b>${v} · ${VARIANTES[kind][v]}</b></div>`).join("")}</div>
+  return `<div class="lbl" style="margin-top:0">Diseño de esta diapositiva <span style="text-transform:none;letter-spacing:0;font-weight:700">· ${kind==="perf"?"se aplica a ambos perfiles":kind==="act"?"se aplica a todas las activaciones":"elige una"}</span></div>
+  <div class="vars" id="vars_${kind}">${Object.keys(VARIANTES[kind]).map(v=>`<div class="vopt ${cur===v?"on":""}" onclick="A.setVar('${kind}','${v}')"><div class="sw"></div><b>${v} · ${VARIANTES[kind][v]}</b></div>`).join("")}</div>
   <button class="hbtn" style="margin-top:8px" ${h?"":"disabled style='opacity:.4;margin-top:8px'"} onclick="A.undoVar()">↶ Deshacer cambio de diseño</button>`}
 async function drawVar(kind,spec){const box=document.getElementById("vars_"+kind);if(!box)return;const list=plan(),tot=list.length;
   let n=list.findIndex(p=>p.k===spec.k&&(spec.city?p.city===spec.city:p.a&&spec.a&&p.a.uid===spec.a.uid))+1||1;
-  const opts=box.querySelectorAll(".vopt");const vs=["A","B","C"];
-  for(let i=0;i<3;i++){const R2=HtmlR();await dibujar(R2,Object.assign({},spec,{var:vs[i]}),n,tot);const sw=opts[i]&&opts[i].querySelector(".sw");if(sw){sw.innerHTML=R2.out[0];}}
+  const opts=box.querySelectorAll(".vopt");const vs=Object.keys(VARIANTES[kind]);
+  for(let i=0;i<vs.length;i++){const R2=HtmlR();await dibujar(R2,Object.assign({},spec,{var:vs[i]}),n,tot);const sw=opts[i]&&opts[i].querySelector(".sw");if(sw){sw.innerHTML=R2.out[0];}}
   scaleSlides(box)}
 /* Selector común de fotos: la misma biblioteca en cada diapositiva con foto */
 const FCACHE={};let keepY=null;
@@ -2449,7 +2460,7 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
   if(keepY!=null){window.scrollTo(0,keepY);keepY=null}}
 function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
 function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("claves_tit",CLAVES_TIT)}`+CLAVES.map((c,i)=>`<div class="lbl">Clave ${i+1}</div>${edTxt("clave_t"+(i+1),c.t)}${edTxt("clave_d"+(i+1),c.d)}`).join(""):""}
-function pPublico(){return S.incluir.publico?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Santiago</div>${edTxt("pub_n1","35.000")}<div class="lbl">Viña del Mar</div>${edTxt("pub_n2","4.000")}<div class="lbl">Texto bajo las cifras</div>${edTxt("pub_l","personas por domingo")}`:""}
+function pPublico(){return S.incluir.publico?varUI("pub",{k:"publico"})+`<div class="lbl">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Cifra</div>${edTxt("pub_n","39.000")}<div class="lbl">Texto</div>${edTxt("pub_l","participantes por domingo")}${edTxt("pub_c","Santiago + Viña del Mar")}`:""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
 function enfUI(spec){return "";}
