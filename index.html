@@ -77,6 +77,9 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .pen:hover{border-color:var(--or)}
 .edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
 .edb{display:flex;gap:8px;margin-top:8px}
+.chip .prin{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px 3px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font-size:12px;font-weight:800;color:var(--mut);width:max-content}
+.chip .prin i{width:14px;height:14px;border-radius:4px;border:2px solid #b9c3cf;display:inline-block;box-sizing:border-box}
+.chip .prin.on{border-color:var(--or);color:var(--or)}.chip .prin.on i{background:var(--or);border-color:var(--or);box-shadow:inset 0 0 0 2px #fff}
 mark.hi{background:none;color:var(--or);font-weight:900}
 .dlp{flex:1 1 auto;min-width:0;display:flex;gap:6px;align-items:center;position:relative}.dlp .dli{flex:1 1 auto}
 .edm2{position:absolute;right:46px;top:-9px;font-size:9.5px;font-weight:800;color:var(--or);text-transform:uppercase;background:var(--bg);padding:0 4px}
@@ -839,7 +842,7 @@ async function dibujarModerno(R,sp,n,tot){
     await mFoot(R);break;}
   case "objetivos":{
     R.slide(t.bg);mHead(R,"Objetivos de "+P,n,tot,"Lo que buscamos lograr juntos");
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     const cols=c<=5?Math.max(c,1):Math.ceil(c/2),rows=c<=5?1:2,cw=(W-1.2)/cols,ch=rows===1?4.6:2.45;
     for(let i=0;i<c;i++){const o=ob[i],x=0.6+(i%cols)*cw,y=1.85+Math.floor(i/cols)*ch,d=rows===1?1.1:0.8;
       await mSq(R,o.ic,x+cw/2-d/2,y+0.3,d,PC(i));
@@ -1019,7 +1022,7 @@ async function dibujarVisual(R,sp,n,tot){
     await R.image(foto("objetivos",3),0,0,W,2.5);R.rect(0,0,W,2.5,{fill:"0B0F14",transp:45});vNum(R,n);
     vFrame(R,3.0,0.7,7.33,1.1,COL.wh,1.5);vPlus(R,10.33,0.7,0.45,COL.wh);
     R.text(("Objetivos de "+P).toUpperCase(),3.0,0.7,7.33,1.1,{size:fitSize(P,22,[[14,19],[22,16]]),head:true,cs:4,color:COL.wh,align:"center",valign:"middle"});
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     const cols=c<=5?Math.max(c,1):Math.ceil(c/2),rows=c<=5?1:2,cw=(W-1.2)/cols,ch=rows===1?3.9:2.0;
     for(let i=0;i<c;i++){const o=ob[i],col=i%cols,row=Math.floor(i/cols),x=0.6+col*cw,y=2.95+row*(ch+0.15);
       if(col>0)R.rect(x,y+0.1,0.012,ch-0.2,{fill:t.line});
@@ -1214,7 +1217,7 @@ async function dibujarInvestor(R,sp,n,tot){
     await iFoot(R,n);break;}
   case "objetivos":{
     R.slide(t.bg);iHead(R,"Objetivos de "+P,n,tot);
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     const cols=c<=6?Math.max(c,1):Math.ceil(c/2),rows=c<=6?1:2,cw=(W-1.2)/cols,ch=rows===1?4.9:2.55;
     if(rows===1)R.rect(0.6+cw/2,2.05,W-1.2-cw,0.03,{fill:t.line});
     for(let i=0;i<c;i++){const o=ob[i],x=0.6+(i%cols)*cw,y=1.55+Math.floor(i/cols)*ch,d=rows===1?1.0:0.78;
@@ -1413,7 +1416,7 @@ async function dibujarCajas(R,sp,n,tot){
     await cFoot(R,n);break;}
   case "objetivos":{
     R.slide(t.bg);cHead(R,"Objetivos de "+P,n,tot);
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     // Mosaico: cajas de color con cada objetivo, intercaladas con fotos
     const cells=Math.max(8,c<=4?8:c<=6?12:Math.ceil(c*1.5/4)*4),cols=4,rows=Math.ceil(cells/cols);
     const gx=0,top=1.55,cw=(W-1.2)/cols,ch=(6.9-top)/rows;
@@ -1604,7 +1607,7 @@ async function dibujarPotion(R,sp,n,tot){
     await pFoot(R,n);break;}
   case "objetivos":{
     R.slide(t.bg);pHead(R,"Objetivos de "+P,n,tot);
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     const cols=c<=4?Math.max(c,1):Math.ceil(c/2),rows=c<=4?1:2,cw=(W-1.2)/cols,ch=rows===1?5.2:2.65;
     for(let i=0;i<c;i++){const o=ob[i],x=0.6+(i%cols)*cw,y=1.55+Math.floor(i/cols)*ch,d=rows===1?1.3:0.95;
       await pRing(R,o.ic,x+cw/2-d/2,y+(rows===1?0.4:0),d,PO(i),i%2===0);
@@ -1785,7 +1788,7 @@ async function dibujarEstaciones(R,sp,n,tot){
     await eFoot(R,n);break;}
   case "objetivos":{
     eSlide(R);eHead(R,"Objetivos de "+P,n,tot);
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     await eFrame(R,foto("objetivos",3),0.6,1.45,4.2,5.45);
     const x0=5.1,rw=W-0.6-x0,rh=Math.min(1.3,5.45/Math.max(c,1));
     for(let i=0;i<c;i++){const o=ob[i],y=1.45+i*rh;
@@ -2223,7 +2226,7 @@ async function dibujar(R,sp,n,tot){
     break;}
   case "objetivos":{
     R.slide(t.bg);
-    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    const ob=objSel();const c=ob.length;
     const cols=c<=4?c:c<=6?3:c<=8?4:5,rows=Math.ceil(c/cols),bh=rows>1?2.0:2.6;
     await R.image(foto("objetivos",3),0,0,W,bh);R.rect(0,0,W,bh,{fill:t.bg,transp:35});
     cabecera(R,n,tot);
@@ -2460,9 +2463,13 @@ function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k
   <div class="lbl">Mapa del circuito</div>${mapaSelUI(city)}`:offMsg)}
 function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?enfUI({k:"perf",city})+varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
   <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
+/* Objetivos elegidos: los principales (máx. 2) van primero y marcados */
+function objSel(){const pr=(S.objPrin||[]).filter(id=>S.objetivos.includes(id));
+  return [...pr,...S.objetivos.filter(id=>!pr.includes(id))].map(id=>{const o=byId(CAT.objetivos,id);if(!o)return null;
+    return pr.includes(id)?Object.assign({},o,{t:"★ "+o.t,d:"*Objetivo principal.* "+o.d,prin:true}):o}).filter(Boolean)}
 function pObjetivos(){return togIncl("objetivos")+`
-  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
-  <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small></button>`).join("")}</div>`}
+  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Marca <b>Principal</b> en uno o dos de ellos: aparecerán primero y destacados en la presentación. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
+  <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small>${S.objetivos.includes(o.id)?`<span class="prin ${(S.objPrin||[]).includes(o.id)?"on":""}" onclick="event.stopPropagation();A.prin('${o.id}')"><i></i>Principal</span>`:""}</button>`).join("")}</div>`}
 function varUI(kind,spec){const cur=(S.var||{})[kind]||"A",h=(S.hist||[]).length;
   setTimeout(()=>drawVar(kind,spec),0);
   return `<div class="lbl" style="margin-top:0">Diseño de esta diapositiva <span style="text-transform:none;letter-spacing:0;font-weight:700">· ${kind==="perf"?"se aplica a ambos perfiles":kind==="act"?"se aplica a todas las activaciones":"elige una"}</span></div>
@@ -2679,6 +2686,8 @@ const A={
   undoVar(){const h=(S.hist||[]).pop();if(!h)return;S.var=S.var||{};S.var[h.k]=h.v;save();const y=window.scrollY;render();window.scrollTo(0,y);toast("Diseño anterior restaurado")},
   dd(k){DD=DD===k?null:k;if(DD==='tema')FAMOPEN=famOf(TEMAS[S.tema||'azul']);renderTools()},
   ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
+  prin(id){S.objPrin=(S.objPrin||[]).filter(x=>S.objetivos.includes(x));const i=S.objPrin.indexOf(id);
+    if(i>=0)S.objPrin.splice(i,1);else{if(S.objPrin.length>=2){toast("Máximo 2 objetivos principales");return}S.objPrin.push(id)}save();const y=window.scrollY;render();window.scrollTo(0,y)},
   toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
     if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
     if(k==="objetivos"&&i>=0) S.activaciones.forEach(x=>x.objetivos=x.objetivos.filter(o=>o!==id));
