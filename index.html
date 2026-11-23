@@ -1610,7 +1610,7 @@ async function dibujarPotion(R,sp,n,tot){
     const ob=objSel();const c=ob.length;
     const cols=c<=4?Math.max(c,1):Math.ceil(c/2),rows=c<=4?1:2,cw=(W-1.2)/cols,ch=rows===1?5.2:2.65;
     for(let i=0;i<c;i++){const o=ob[i],x=0.6+(i%cols)*cw,y=1.55+Math.floor(i/cols)*ch,d=rows===1?1.3:0.95;
-      await pRing(R,o.ic,x+cw/2-d/2,y+(rows===1?0.4:0),d,PO(i),i%2===0);
+      await pRing(R,o.ic,x+cw/2-d/2,y+(rows===1?0.4:0),d,PO(i),ob.some(z=>z.prin)?!!o.prin:i%2===0);
       const ty=y+(rows===1?0.4:0)+d+0.15;
       R.text(o.t.toUpperCase(),x+0.1,ty,cw-0.2,0.45,{size:rows===1?14:12,head:true,color:t.tx,align:"center",valign:"middle"});
       R.text(o.d,x+0.25,ty+0.48,cw-0.5,ch-(ty-y)-0.55,{size:rows===1?11.5:10,color:t.mu,align:"center"});}
@@ -2150,6 +2150,14 @@ function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t
     return R.text(tx,x,y,w,h,o)};
   return W2}
 async function dibujar(R,sp,n,tot){
+  if(sp.k==="objetivos"&&!R._obj&&objSel().some(o=>o.prin)){const R0=R,rects=[];R=Object.assign({},R0,{_obj:1});
+    R.rect=(x,y,w,h,o)=>{if(w*h>0.8&&!(o&&o.ellipse))rects.push({x,y,w,h});return R0.rect(x,y,w,h,o)};
+    R.text=(tx,x,y,w,h,o)=>{const r=R0.text(tx,x,y,w,h,o);
+      if(typeof tx==="string"&&tx.startsWith("★ ")){const cx=x+0.05,cy=y+0.05;
+        const c=rects.filter(q=>cx>=q.x&&cx<=q.x+q.w&&cy>=q.y&&cy<=q.y+q.h).sort((a,b)=>a.w*a.h-b.w*b.h)[0];
+        const d=0.42,bx=c?c.x+c.w-d-0.1:x+w-d,by=c?c.y+0.1:y-d-0.05,col=(o&&o.color===COL.wh)?"FFFFFF":(T().acc||"E87115");
+        R0.rect(bx,by,d,d,{fill:col,ellipse:true});R0.text("★",bx,by,d,d,{size:15,bold:true,color:col==="FFFFFF"?(T().acc||"E87115"):COL.wh,align:"center",valign:"middle"});}
+      return r};}
   const SUBT=sp.k==="crv"?txD("crv",CAT.crv.descripcion):sp.k==="circ"?txD("circ_"+sp.city,CAT.circuitos[sp.city].d):sp.k==="sop"?txD("sop_"+sp.s.n,sp.s.d):sp.k==="noct1"?txD("noct_txt",NOCT_TXT):
     sp.k==="rrss"?"Una *audiencia activa* que sigue y comparte lo que pasa *cada domingo* en CicloRecreoVía.":sp.k==="divprop"?txD("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía."):sp.k==="libre"?(sp.l.texto||""):null;
   if(SUBT&&!R._crvd){const d0=SUBT,R0=R;R=Object.assign({},R0,{_crvd:1,_enf:R0._enf});
@@ -2233,7 +2241,7 @@ async function dibujar(R,sp,n,tot){
     R.text("Objetivos de "+P,0.6,0.45,W-1.2,bh-0.6,{size:fitSize(P,34,[[16,30],[26,26]]),head:true,align:"center",valign:"middle"});
     const gap=0.25,cw=(W-1.2-gap*(cols-1))/cols,top=bh+0.35,ch=Math.min(3.6,(H-top-0.45-gap*(rows-1))/rows);const hiI=Math.floor((Math.min(c,cols)-1)/2);
     const big=cols<=3;
-    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=top+Math.floor(i/cols)*(ch+gap);const hi=i===hiI;
+    for(let i=0;i<c;i++){const o=ob[i];const x=0.6+(i%cols)*(cw+gap),y=top+Math.floor(i/cols)*(ch+gap);const hi=!!o.prin;
       R.rect(x,y,cw,ch,{fill:hi?t.acc:t.p1,radius:0.08});
       await icono(R,o.ic||"target",x+0.25,y+0.25,big?0.7:0.55,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
       R.text(o.t,x+0.25,y+(big?1.1:0.9),cw-0.5,0.55,{size:big?18:cols>=5?12.5:14,head:true,color:hi?COL.wh:t.tx});
@@ -2466,7 +2474,7 @@ function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k
 /* Objetivos elegidos: los principales (máx. 2) van primero y marcados */
 function objSel(){const pr=(S.objPrin||[]).filter(id=>S.objetivos.includes(id));
   return [...pr,...S.objetivos.filter(id=>!pr.includes(id))].map(id=>{const o=byId(CAT.objetivos,id);if(!o)return null;
-    return pr.includes(id)?Object.assign({},o,{t:"★ "+o.t,d:"*Objetivo principal.* "+o.d,prin:true}):o}).filter(Boolean)}
+    return pr.includes(id)?Object.assign({},o,{t:"★ "+o.t,d:"*Objetivo principal.* "+o.d,prin:true}):pr.length?Object.assign({},o,{d:"*Objetivo secundario.* "+o.d}):o}).filter(Boolean)}
 function pObjetivos(){return togIncl("objetivos")+`
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Marca <b>Principal</b> en uno o dos de ellos: aparecerán primero y destacados en la presentación. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
   <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small>${S.objetivos.includes(o.id)?`<span class="prin ${(S.objPrin||[]).includes(o.id)?"on":""}" onclick="event.stopPropagation();A.prin('${o.id}')"><i></i>Principal</span>`:""}</button>`).join("")}</div>`}
