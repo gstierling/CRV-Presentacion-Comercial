@@ -618,6 +618,9 @@ const TEMAS={
   pclaro:{t:"Potion Clara",pot:true,light:true,bg:"FFFFFF",card:"F1F7F9",line:"DCE6EB",tx:"1E2B37",mu:"6A7884",acc:"2AACB8",pal:["2AACB8","1F8FB5","1D5C99","4DBFC9"]},
   pmedio:{t:"Potion Media",pot:true,light:true,bg:"E4EDF1",card:"F7FAFB",line:"C8D6DD",tx:"1E2B37",mu:"52616D",acc:"2AACB8",pal:["2AACB8","1F8FB5","1D5C99","4DBFC9"]},
   poscuro:{t:"Potion Oscuro",pot:true,bg:"0F1C26",card:"182833",line:"2A3B48",tx:"FFFFFF",mu:"A5B4C0",acc:"33BFCB",pal:["33BFCB","2A9FD0","3C7BC4","5FD0D8"]},
+  eclaro:{t:"Estaciones Claro",est:true,light:true,bg:"F4F7FB",card:"FFFFFF",line:"E1E8F0",tx:"26354A",mu:"6B7A8C",acc:"3E5F8A",snow:"DCE6F2",shadow:"C9D5E3",pal:["3E5F8A","5B7DA8","2C4766"]},
+  emedio:{t:"Estaciones Medio",est:true,light:true,bg:"DCE5EF",card:"F7F9FC",line:"D3DDE8",tx:"26354A",mu:"5D6C7E",acc:"3E5F8A",snow:"FFFFFF",shadow:"B4C3D4",pal:["3E5F8A","5B7DA8","2C4766"]},
+  eoscuro:{t:"Estaciones Oscuro",est:true,bg:"18222F",card:"223041",line:"324155",tx:"F2F5F9",mu:"A9B6C6",acc:"8FB0D9",snow:"FFFFFF",shadow:"0B1118",pal:["4E73A3","6B8FBF","3A5A85"]},
   vclaro:{t:"Visual Claro",vis:true,light:true,bg:"FFFFFF",panel:"F2F4F6",p1:"F2F4F6",line:"D9DEE4",tx:"1F2933",mu:"6B7785",acc:"E87115",acc2:"179741"},
   vmedio:{t:"Visual Medio",vis:true,light:true,bg:"E3E7EC",panel:"EEF1F4",p1:"EEF1F4",line:"C3CBD4",tx:"1F2933",mu:"55616F",acc:"E87115",acc2:"179741"},
   voscuro:{t:"Visual Oscuro",vis:true,bg:"1A1F26",panel:"242B34",p1:"242B34",line:"39424E",tx:"FFFFFF",mu:"A3ADB9",acc:"F07F23",acc2:"1FAE55"},
@@ -1693,6 +1696,194 @@ async function dibujarPotion(R,sp,n,tot){
   R.end();
 }
 
+/* ===================== ESTILO ESTACIONES ===================== */
+const ES=i=>T().pal[i%T().pal.length];
+function eSnow(R){const t=T();let sd=11;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280};
+  for(let i=0;i<26;i++){const d=0.05+rnd()*0.14;R.rect(rnd()*W,rnd()*H,d,d,{fill:t.snow,ellipse:true,transp:t.light?10:82})}}
+function eSlide(R){R.slide(T().bg);eSnow(R)}
+function eHead(R,title,n,tot){const t=T();
+  R.text(title,0.6,0.42,10.8,0.75,{size:fitSize(title,30,[[30,26],[44,22]]),color:t.acc,valign:"middle"});
+  R.rect(0.62,1.2,0.9,0.03,{fill:t.acc});
+  R.text(String(n).padStart(2,"0"),11.9,0.5,0.85,0.5,{size:11,color:t.mu,align:"right",valign:"middle"});}
+async function eFoot(R,n){const t=T();
+  R.text([{text:"CicloRecreoVía",o:{bold:true}},{text:"  ·  Propuesta para "+(S.prospecto||"—"),o:{}}],0.6,7.05,8,0.28,{size:9,color:t.mu});}
+function eCard(R,x,y,w,h,fill){const t=T();R.rect(x+0.03,y+0.05,w,h,{fill:t.shadow,radius:0.12,transp:t.light?40:30});R.rect(x,y,w,h,{fill:fill||t.card,radius:0.12})}
+async function eFrame(R,img,x,y,w,h){eCard(R,x,y,w,h,T().card);await R.image(img,x+0.1,y+0.1,w-0.2,h-0.2)}
+async function eIcon(R,ic,x,y,d,fill,col){R.rect(x,y,d,d,{fill,radius:d*0.3});const p=d*0.24;await R.image(await iconPng(ic||"sparkles",col||COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
+/* Tarjeta "plan": encabezado con título, cifra grande y texto, al estilo de las tarjetas de precios */
+async function ePlan(R,x,y,w,h,col,ic,big,small,o){o=o||{};eCard(R,x,y,w,h,col);
+  if(ic)await eIcon(R,ic,x+w/2-0.32,y+0.25,0.64,"FFFFFF",col);
+  const by=y+(ic?1.0:0.3);
+  if(big)R.text(big,x+0.15,by,w-0.3,0.65,{size:o.bs||fitSize(big,30,[[7,26],[10,22],[13,18]]),head:true,color:COL.wh,align:"center",valign:"middle"});
+  R.rect(x+w/2-0.3,by+0.72,0.6,0.025,{fill:"FFFFFF",transp:40});
+  if(small)R.text(small,x+0.2,by+0.82,w-0.4,h-(by-y)-0.95,{size:o.ss||(small.length>60?10:11.5),color:COL.wh,align:"center",valign:"top"});}
+
+async function dibujarEstaciones(R,sp,n,tot){
+  const P=S.prospecto||"Prospecto",t=T();
+  switch(sp.k){
+  case "portada":{
+    eSlide(R);
+    await eFrame(R,fotoPortada(),6.4,0.55,6.35,6.4);
+    eCard(R,0.6,0.55,5.5,6.4,t.card);
+    await tarjetaLogo(R,LOGO_CRV,0.95,0.9,1.5,0.92);if(S.logo)await tarjetaLogo(R,S.logo,2.65,0.9,1.5,0.92);
+    R.text(P,0.95,2.1,4.9,1.0,{size:fitSize(P,40,[[10,34],[16,28],[24,22]]),color:t.acc,valign:"middle"});
+    R.text("en CicloRecreoVía",0.95,3.05,4.9,0.45,{size:18,color:t.tx});
+    R.rect(0.97,3.62,0.9,0.03,{fill:t.acc});
+    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.95,3.85,4.85,2.9,{size:18,color:t.mu,valign:"top"});
+    break;}
+  case "crv":{
+    eSlide(R);eHead(R,"Qué es CicloRecreoVía",n,tot);
+    const d=txD("crv",CAT.crv.descripcion);
+    eCard(R,0.6,1.45,6.1,3.0,t.card);
+    R.text(d,0.85,1.6,5.65,2.7,{size:fitSize(d,12.5,[[460,11.5],[620,10.5]]),color:t.tx,valign:"middle"});
+    await eFrame(R,fotoCRV(),6.95,1.45,5.78,3.0);
+    const st=CAT.crv.stats.slice(0,4),g=0.2,bw=(W-1.2-g*3)/4;
+    for(let i=0;i<st.length;i++)await ePlan(R,0.6+i*(bw+g),4.65,bw,2.25,ES(i),st[i].ic,st[i].n,st[i].l,{ss:10});
+    await eFoot(R,n);break;}
+  case "circ":{
+    const c=CAT.circuitos[sp.city];eSlide(R);eHead(R,c.t,n,tot);
+    eCard(R,0.6,1.45,6.2,5.45,t.card);await R.image(mapaImg(sp.city),0.75,1.6,5.9,5.15,{fit:"contain"});
+    const dd=txD("circ_"+sp.city,c.d);R.text(dd,7.15,1.45,5.58,1.05,{size:12.5,color:t.mu});
+    for(let i=0;i<Math.min(4,c.datos.length);i++){const z=c.datos[i],y=2.65+i*1.07;
+      eCard(R,7.15,y,5.58,0.92,t.card);
+      R.text(String(i+1).padStart(2,"0"),7.3,y,0.75,0.92,{size:22,color:ES(i),valign:"middle"});
+      await eIcon(R,z.ic,8.05,y+0.17,0.58,ES(i));
+      R.text(z.n,8.8,y,1.9,0.92,{size:fitSize(z.n,22,[[7,18]]),head:true,color:t.tx,valign:"middle"});
+      R.text(z.l,10.75,y,1.9,0.92,{size:10.5,color:t.mu,valign:"middle"});}
+    await eFoot(R,n);break;}
+  case "perf":{
+    const pf=CAT.perfiles[sp.city];eSlide(R);eHead(R,pf.t,n,tot);
+    const kw=(W-1.2-0.4)/3;
+    for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],x=0.6+i*(kw+0.2);
+      eCard(R,x,1.45,kw,1.2,ES(i));await eIcon(R,k.ic,x+0.25,1.73,0.64,"FFFFFF",ES(i));
+      R.text(k.n,x+1.05,1.5,kw-1.15,0.6,{size:24,head:true,color:COL.wh,valign:"middle"});
+      R.text(k.l,x+1.05,2.07,kw-1.15,0.5,{size:10,color:COL.wh});}
+    const gw=(W-1.2-0.25)/2;
+    pf.grupos.slice(0,2).forEach((g,gi)=>{const x=0.6+gi*(gw+0.25),y=2.85;eCard(R,x,y,gw,3.25,t.card);
+      R.text(g.t,x+0.3,y+0.12,gw-0.6,0.42,{size:15,color:t.acc,valign:"middle"});
+      R.donut(g.items,x+0.2,y+0.6,gw-0.4,2.5,DONA);});
+    const y=6.3,g0=pf.genero[0],g1=pf.genero[1];R.text("Género",0.6,y,1.4,0.46,{size:13,color:t.acc,valign:"middle"});
+    const bx=2.0,bw=W-0.6-bx,w0=bw*g0[1]/(g0[1]+g1[1]);
+    R.rect(bx,y,w0,0.46,{fill:ES(0),radius:0.08});R.rect(bx+w0,y,bw-w0,0.46,{fill:ES(2),radius:0.08});
+    R.text(g0[0]+" "+g0[1]+"%",bx+0.15,y,w0-0.2,0.46,{size:11,bold:true,color:COL.wh,valign:"middle"});
+    R.text(g1[0]+" "+g1[1]+"%",bx+w0+0.15,y,bw-w0-0.3,0.46,{size:11,bold:true,color:COL.wh,valign:"middle",align:"right"});
+    await eFoot(R,n);break;}
+  case "objetivos":{
+    eSlide(R);eHead(R,"Objetivos de "+P,n,tot);
+    const ob=S.objetivos.map(id=>byId(CAT.objetivos,id)).filter(Boolean);const c=ob.length;
+    await eFrame(R,foto("objetivos",3),0.6,1.45,4.2,5.45);
+    const x0=5.1,rw=W-0.6-x0,rh=Math.min(1.3,5.45/Math.max(c,1));
+    for(let i=0;i<c;i++){const o=ob[i],y=1.45+i*rh;
+      R.text(String(i+1).padStart(2,"0"),x0,y,0.9,rh-0.12,{size:rh>1?32:24,color:ES(i),valign:"middle"});
+      R.text(o.t,x0+1.0,y+0.04,rw-1.0,0.45,{size:rh>1?17:14,color:t.acc,valign:"middle"});
+      R.text(o.d,x0+1.0,y+0.48,rw-1.0,rh-0.62,{size:rh>1?11.5:10,color:t.mu});
+      if(i<c-1)R.rect(x0+1.0,y+rh-0.06,rw-1.0,0.01,{fill:t.line});}
+    await eFoot(R,n);break;}
+  case "act":{
+    const a=sp.a;eSlide(R);eHead(R,"Activación "+(sp.i+1)+": "+(a.nombre||""),n,tot);
+    await eFrame(R,fotoAct(a),0.6,1.45,4.5,2.95);
+    eCard(R,0.6,4.55,4.5,2.35,t.card);
+    R.text("Dinámica · "+dinNombre(a),0.8,4.65,4.1,0.38,{size:13,color:t.acc,valign:"middle"});
+    const dt=dinTexto(a);R.text(dt,0.8,5.05,4.1,1.75,{size:fitSize(dt,11.5,[[260,10.5],[360,9.5]]),color:t.tx});
+    const ks=kpisAct(a).slice(0,3),kx0=5.4,kwT=W-0.6-kx0,g=0.15,kw=(kwT-g*(ks.length-1))/Math.max(ks.length,1);
+    for(let i=0;i<ks.length;i++){const k=ks[i],x=kx0+i*(kw+g);eCard(R,x,1.45,kw,1.1,ES(i));
+      R.text(fmt(k.v),x+0.1,1.5,kw-0.2,0.55,{size:20,head:true,color:COL.wh,align:"center",valign:"middle"});
+      R.text(k.t+" / domingo",x+0.1,2.03,kw-0.2,0.45,{size:9.5,color:COL.wh,align:"center"});}
+    const els=elemsDe(a);
+    eCard(R,kx0,2.7,kwT,3.3,t.card);
+    R.text(DET()?"Elementos · valor por domingo":"Elementos",kx0+0.2,2.75,kwT-0.4,0.36,{size:13,color:t.acc,valign:"middle"});
+    {const LW=kwT-0.4,n2=els.length,cols=n2<=6?1:n2<=14?2:3,rows=Math.ceil(n2/cols),gx=0.2,cw=(LW-gx*(cols-1))/cols,top=3.15,rh=Math.min(0.34,(5.9-top)/Math.max(rows,1));
+     const fs=rh>=0.3?11:rh>=0.24?9.5:8.5,qw=0.45,vw=!DET()?0:cols===3?1.15:1.5;
+     els.forEach((z,i)=>{const c=Math.floor(i/rows),r=i%rows,xx=kx0+0.2+c*(cw+gx),y=top+r*rh,v=z.e.p*z.q;
+       R.text(String(z.q).padStart(2,"0"),xx,y,qw,rh,{size:fs+1,color:ES(c),valign:"middle"});
+       R.text(z.e.t,xx+qw+0.05,y,cw-qw-0.1-vw,rh,{size:fs,bold:true,color:t.tx,valign:"middle"});
+       if(vw)R.text(moneyIva(v),xx+cw-vw,y,vw,rh,{size:fs,color:t.mu,align:"right",valign:"middle"});
+       R.rect(xx,y+rh-0.01,cw,0.01,{fill:t.line});});}
+    tarStrip(R,a,kx0,6.15,kwT,0.75,{fills:[ES(0),ES(1),ES(2)],radius:0.1});
+    await eFoot(R,n);break;}
+  case "numeros":{
+    eSlide(R);eHead(R,"Lo que lograremos cada domingo",n,tot);
+    const ks=kpisTotales(),pl=periodosSel().slice(-1)[0],c=ks.length;
+    await eFrame(R,foto("numeros",3),0.6,1.45,W-1.2,2.0);
+    const g=0.2,bw=(W-1.2-g*(c-1))/Math.max(c,1);
+    for(let i=0;i<c;i++){const k=ks[i];await ePlan(R,0.6+i*(bw+g),3.65,bw,3.25,ES(i),(byId(CAT.kpis,k.id)||{}).ic,fmt(k.v),k.t+(pl&&pl.dom>1?"\nEn "+pl.t+": "+fmt(k.v*pl.dom):""),{ss:10.5});}
+    await eFoot(R,n);break;}
+  case "tarifas":{
+    eSlide(R);eHead(R,"Inversión",n,tot);
+    const ps=periodosSel(),acts=S.activaciones,c=ps.length;
+    if(c<=4&&acts.length<=3){const g=0.25,bw=(W-1.2-g*(c-1))/Math.max(c,1);
+      for(let i=0;i<c;i++){const p=ps[i],x=0.6+i*(bw+g),col=ES(i);eCard(R,x,1.5,bw,5.35,t.card);
+        R.text(p.t,x+0.2,1.65,bw-0.4,0.45,{size:16,color:t.acc,align:"center",valign:"middle"});
+        R.text(p.dom>1?p.dom+" domingos":"jornada única",x+0.2,2.1,bw-0.4,0.3,{size:10.5,color:t.mu,align:"center"});
+        const tot=acts.reduce((s,a)=>s+precioPeriodo(a,p),0);
+        R.rect(x+0.25,2.55,bw-0.5,1.0,{fill:col,radius:0.1});
+        R.text(money(tot),x+0.3,2.55,bw-0.6,0.68,{size:Math.min(24,(bw-0.6)*72/(money(tot).length*0.66)),head:true,color:COL.wh,align:"center",valign:"middle"});
+        R.text("+ IVA",x+0.3,3.15,bw-0.6,0.32,{size:10,color:COL.wh,align:"center"});
+        acts.forEach((a,j)=>{const y=3.8+j*0.85;R.text((j+1)+". "+(a.nombre||""),x+0.3,y,bw-0.6,0.36,{size:10.5,bold:true,color:t.tx});
+          R.text(moneyIva(precioPeriodo(a,p)),x+0.3,y+0.34,bw-0.6,0.36,{size:10.5,color:t.mu});
+          R.rect(x+0.3,y+0.76,bw-0.6,0.01,{fill:t.line});});}}
+    else{const head=[{t:"Activación",fill:t.acc,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única"),fill:ES(i),color:COL.wh,bold:true,align:"center",size:10})));
+      const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:c>=5?11.5:13,fill:t.card,color:t.tx}))));
+      const totRow=[{t:"Total",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:c>=5?11:12.5})));
+      const first=3.0,cw=(W-1.2-first)/c;R.table([head,...body,totRow],0.6,1.5,W-1.2,[first,...ps.map(()=>cw)],{rowH:acts.length>3?0.68:0.82,size:13,border:t.bg});}
+    await eFoot(R,n);break;}
+  case "comunicacion":{
+    eSlide(R);eHead(R,"Plan comunicacional",n,tot);
+    const it=S.comunicacion.map(id=>byId(CAT.comunicacion,id)).filter(Boolean);const rows=Math.ceil(it.length/2),gap=0.3,cw=(W-1.2-gap)/2,rh=Math.min(1.35,(S.comNota?4.9:5.4)/Math.max(rows,1));
+    for(let i=0;i<it.length;i++){const z=it[i],x=0.6+(i%2)*(cw+gap),y=1.45+Math.floor(i/2)*rh,bh=rh-0.15;
+      eCard(R,x,y,cw,bh,t.card);await eIcon(R,z.ic,x+0.2,y+bh/2-0.32,0.64,ES(i));
+      R.text(z.t,x+1.05,y+0.06,cw-1.2,0.42,{size:14,color:t.acc,valign:"middle"});
+      R.text(z.d,x+1.05,y+0.48,cw-1.2,bh-0.55,{size:10.5,color:t.mu});}
+    if(S.comNota)R.text(S.comNota,0.6,6.55,W-1.2,0.4,{size:11,italic:true,color:t.mu,align:"center"});
+    await eFoot(R,n);break;}
+  case "rrss":{
+    eSlide(R);eHead(R,"Nuestra comunidad digital",n,tot);R.text(rrssFecha(),7.5,0.55,4.3,0.5,{size:13,color:t.mu,align:"right",valign:"middle"});
+    const r=rrssList(),c=r.length,g=0.2,bw=(W-1.2-g*(c-1))/c;
+    for(let i=0;i<c;i++){const z=r[i];await ePlan(R,0.6+i*(bw+g),1.45,bw,3.5,ES(i),z.ic,fmt(z.n),z.red+"\n"+z.user+" · "+(z.u||"seguidores"),{ss:11});}
+    eCard(R,0.6,5.15,W-1.2,1.75,t.card);
+    R.text([{text:"Total comunidad   ",o:{size:16,color:t.acc}},{text:fmt(r.filter(z=>!z.u).reduce((s,z)=>s+z.n,0))+" seguidores",o:{head:true,size:26,color:t.tx}}],0.8,5.15,W-1.6,1.75,{size:14,valign:"middle",align:"center"});
+    await eFoot(R,n);break;}
+  case "condiciones":{
+    eSlide(R);eHead(R,"Condiciones del auspicio",n,tot);
+    const it=S.condiciones.map(id=>byId(CAT.condiciones,id)).filter(Boolean).map(c=>({t:c.t}));if(S.condExtra)it.push({t:S.condExtra});
+    const rows=Math.ceil(it.length/2),gap=0.3,cw=(W-1.2-gap)/2,rh=Math.min(1.3,5.4/Math.max(rows,1));
+    for(let i=0;i<it.length;i++){const z=it[i],x=0.6+(i%2)*(cw+gap),y=1.45+Math.floor(i/2)*rh,bh=rh-0.15;
+      eCard(R,x,y,cw,bh,t.card);
+      R.text(String(i+1).padStart(2,"0"),x+0.2,y,0.85,bh,{size:26,color:ES(i),valign:"middle"});
+      R.text(z.t,x+1.1,y+0.05,cw-1.25,bh-0.1,{size:z.t.length>110?10.5:11.5,color:t.tx,valign:"middle"});}
+    await eFoot(R,n);break;}
+  case "enlaces":{
+    eSlide(R);eHead(R,"Fotos y videos",n,tot);
+    const it=S.enlaces.map(id=>byId(CAT.enlaces,id)).filter(Boolean);const c=it.length,g=0.25,cw=(W-1.2-g*(c-1))/Math.max(c,1);
+    for(let i=0;i<c;i++){const l=it[i],x=0.6+i*(cw+g);eCard(R,x,1.45,cw,5.45,t.card);
+      await R.image(foto("enl_"+l.id,i+1),x+0.12,1.57,cw-0.24,3.2);
+      await eIcon(R,l.ic,x+cw/2-0.32,5.0,0.64,ES(i));
+      R.text(l.t,x+0.15,5.72,cw-0.3,0.45,{size:15,color:t.acc,align:"center",valign:"middle"});
+      R.text([{text:"Ver enlace ↗",o:{link:l.url,color:ES(i)}}],x+0.15,6.2,cw-0.3,0.4,{size:11,bold:true,color:ES(i),align:"center",valign:"middle"});}
+    await eFoot(R,n);break;}
+  case "libre":{
+    const l=sp.l,lf=fotoLibre(l);eSlide(R);eHead(R,l.titulo||"",n,tot);const tx=l.texto||"";
+    if(lf){await eFrame(R,lf,7.4,1.45,W-0.6-7.4,5.45);eCard(R,0.6,1.45,6.55,5.45,t.card);
+      R.text(tx,0.85,1.65,6.05,5.05,{size:fitSize(tx,15,[[350,13.5],[600,12],[900,10.5]]),color:t.tx})}
+    else{eCard(R,0.6,1.45,W-1.2,5.45,t.card);R.text(tx,1.0,1.75,W-2.0,4.85,{size:fitSize(tx,17,[[500,15],[900,13],[1400,11.5]]),color:t.tx})}
+    await eFoot(R,n);break;}
+  case "cierre":{
+    eSlide(R);const v=vendedor();
+    await eFrame(R,fotoCierre(),0.6,0.55,5.9,6.4);
+    eCard(R,6.8,0.55,5.93,6.4,t.card);
+    await tarjetaLogo(R,LOGO_CRV,7.15,0.85,1.5,0.92);
+    R.text("¡Gracias!",7.15,1.9,5.3,0.8,{size:38,color:t.acc,valign:"middle"});
+    R.text("Conversemos cómo llevar a "+P+" a CicloRecreoVía.",7.15,2.7,5.3,0.6,{size:13.5,color:t.mu});
+    const rows=[["handshake",v.n,"Ejecutivo/a"],["badge",v.c,"Cargo"],["mail",v.m,"Correo"],["smartphone",v.t,"Teléfono"],["globe","ciclorecreovia.cl","Sitio web"]];
+    for(let i=0;i<rows.length;i++){const y=3.45+i*0.68;
+      await eIcon(R,rows[i][0],7.15,y,0.52,ES(i));
+      R.text(rows[i][2],7.85,y-0.04,4.7,0.24,{size:9,color:t.mu});
+      R.text(rows[i][1],7.85,y+0.17,4.7,0.38,{size:13.5,bold:true,color:t.tx,valign:"middle"});}
+    break;}
+  }
+  R.end();
+}
+
 /* ===================== SOPORTES Y CICLORECREOVÍA NOCTURNA (todos los estilos) ===================== */
 const SOPORTES=[
   {n:1,t:"Arco",foto:13,d:"Arco inflable de gran formato con la marca, ubicado en un punto de alto flujo del circuito. Es el ícono de la activación: todos pasan por debajo y queda en las fotos de la jornada."},
@@ -1732,6 +1923,7 @@ async function dibujarNoct2(R,sp,n,tot){const k=K();R.slide(k.bg);
 /* ===================== VARIANTES DE DISEÑO (B y C) PARA PERFIL Y ACTIVACIÓN ===================== */
 function K(){const t=T();
   if(t.mod)return {fam:"mod",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.band,bandMu:t.bandMu,pal:t.pal,line:t.line};
+  if(t.est)return {fam:"est",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.pal[2],bandMu:"D6E1EE",pal:t.pal,line:t.line};
   if(t.pot)return {fam:"pot",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.pal[2],bandMu:"D6EEF2",pal:t.pal,line:t.line};
   if(t.caj)return {fam:"caj",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.light?"1D3247":"0A121B",bandMu:"C9D3DE",pal:t.pal,line:t.line};
   if(t.inv)return {fam:"inv",bg:t.bg,card:t.card,tx:t.tx,mu:t.mu,band:t.navy,bandMu:"C9D3DE",pal:t.pal,line:t.line};
@@ -1743,9 +1935,10 @@ function famHead(R,title,n,tot){const k=K();
   if(k.fam==="inv"){iHead(R,title,n,tot);return 1.4}
   if(k.fam==="caj"){cHead(R,title,n,tot);return 1.55}
   if(k.fam==="pot"){pHead(R,title,n,tot);return 1.45}
+  if(k.fam==="est"){eSnow(R);eHead(R,title,n,tot);return 1.45}
   if(k.fam==="vis"){vNum(R,n);vTitle(R,title,0.6,0.45,10.8,0.8);return 1.45}
   cabecera(R,n,tot);R.text(title,0.6,0.5,12.1,0.85,{size:fitSize(title,28,[[30,24],[44,20]]),head:true,valign:"middle"});return 1.5}
-async function famFoot(R,n){const k=K();if(k.fam==="mod")await mFoot(R);else if(k.fam==="inv")await iFoot(R,n);else if(k.fam==="caj")await cFoot(R,n);else if(k.fam==="pot")await pFoot(R,n);else if(k.fam==="vis")await vLogo(R)}
+async function famFoot(R,n){const k=K();if(k.fam==="mod")await mFoot(R);else if(k.fam==="inv")await iFoot(R,n);else if(k.fam==="caj")await cFoot(R,n);else if(k.fam==="pot")await pFoot(R,n);else if(k.fam==="est")await eFoot(R,n);else if(k.fam==="vis")await vLogo(R)}
 async function kCirc(R,ic,x,y,d,col){R.rect(x,y,d,d,{fill:col,ellipse:true});const p=d*0.25;await R.image(await iconPng(ic||"sparkles",COL.wh),x+p,y+p,d-2*p,d-2*p,{fit:"contain"})}
 const ICON_REC=n=>/bici/i.test(n)?"bike":/pie|trote/i.test(n)?"users":/patin|scoot/i.test(n)?"route":"sparkles";
 
@@ -1890,6 +2083,7 @@ async function dibujar(R,sp,n,tot){
   if(T().inv)return dibujarInvestor(R,sp,n,tot);
   if(T().caj)return dibujarCajas(R,sp,n,tot);
   if(T().pot)return dibujarPotion(R,sp,n,tot);
+  if(T().est)return dibujarEstaciones(R,sp,n,tot);
   const P=S.prospecto||"Prospecto",t=T();
   switch(sp.k){
   case "portada":{
@@ -2342,7 +2536,7 @@ let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 let DD=null;
 const INCL={crv:"crv",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
 function totalPeriodo(p){return S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0)}
-const famOf=v=>v.mod?"Moderno":v.caj?"Cajas":v.pot?"Potion":v.vis?"Visual":v.inv?"Investor":"Formal";
+const famOf=v=>v.mod?"Moderno":v.caj?"Cajas":v.pot?"Potion":v.est?"Estaciones":v.vis?"Visual":v.inv?"Investor":"Formal";
 function famList(){const m=[];Object.entries(TEMAS).forEach(([k,v])=>{const n=famOf(v);let f=m.find(x=>x.n===n);if(!f){f={n,ks:[]};m.push(f)}f.ks.push(k)});return m}
 let FAMOPEN=null;
 function renderTools(){
