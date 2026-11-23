@@ -1961,7 +1961,7 @@ async function dibujarObjCat(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="e
     R.text(o.t,x+0.12,y+1.12,cw-0.24,0.55,{size:fitSize(o.t,14,[[16,13],[22,12]]),head:true,color:k.tx,align:"center",valign:"middle"});
     R.text(o.d,x+0.15,y+1.7,cw-0.3,ch-1.8,{size:10,color:k.mu,align:"center",valign:"top"});}
   await famFoot(R,n);R.end();}
-const NOCT_TXT="*Una noche al año* abrimos las calles de Santiago para recorrerlas en bicicleta, a pie y en patines bajo *luces, neón y música*.";
+const NOCT_TXT="*Tres o cuatro sábados al año*, de *18.00 a 24.00 hrs*, desarrollamos la CicloRecreoVía Nocturna en circuitos de *4 a 8 kilómetros*, con una *asistencia espectacular* en un ambiente de *luces, neón y música*.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
 const NOCT_TIT="CicloRecreoVía Nocturna";
 async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
@@ -1975,7 +1975,7 @@ async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
   R.text(d,x,y0+1.5,w,bot-y0-1.5,{size:fitSize(d,15,[[260,13.5],[420,12],[600,10.5]]),color:k.tx});
   await famFoot(R,n);R.end();}
 async function dibujarNoct1(R,sp,n,tot){const k=K();R.slide(k.bg);
-  const y0=famHead(R,NOCT_TIT,n,tot),ph=5.75-y0;
+  const y0=famHead(R,NOCT_TIT,n,tot),ph=5.15-y0;
   await R.image(foto("noct1",FOTOS.findIndex(f=>f.noc)+1),0,y0,W,ph);
   R.rect(0,y0+ph,W,0.07,{fill:KP(0)});
   const tx=txD("noct_txt",NOCT_TXT);
@@ -2497,7 +2497,7 @@ function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4
 function pPublico(){return S.incluir.publico?varUI("pub",{k:"publico"})+`<div class="lbl">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Cifra</div>${edTxt("pub_n","39.000")}<div class="lbl">Texto</div>${edTxt("pub_l","participantes por domingo")}${edTxt("pub_c","Santiago + Viña del Mar")}`:""}
 function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
-function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
+function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
 function enfUI(spec){return "";}
 function enfUIOld(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
