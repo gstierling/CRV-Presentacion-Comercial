@@ -393,9 +393,9 @@ const CAT = {
       datos:[{ic:"route",n:"3 km",l:"de calles habilitadas"},{ic:"mappin",n:"Borde costero",l:""},{ic:"clock",n:"9 a 13 hrs",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
   },
   perfiles:{
-    stgo:{t:"Perfil de asistentes · Santiago",tot:35000,kpis:[{ic:"users",n:"35.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"78%",l:"recorre en bicicleta"},{ic:"heart",n:"60%",l:"tiene entre 20 y 40 años"}],
+    stgo:{t:"CicloRecreoVía Santiago · Perfil de asistentes",tot:35000,kpis:[{ic:"users",n:"35.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"78%",l:"recorre en bicicleta"},{ic:"heart",n:"60%",l:"tiene entre 20 y 40 años"}],
       grupos:[{t:"Edad",items:[["1 a 10 años",6],["10 a 20 años",8],["20 a 30 años",28],["30 a 40 años",32],["40 a 50 años",16],["50 a 60 años",7],["60 y más años",3]]},{t:"Cómo recorren",items:[["Bicicleta",78,"27.300"],["A pie",15,"5.250"],["Patines",6,"2.100"],["Otros",1,"350"]]}],genero:[["Hombres",68],["Mujeres",32]]},
-    vina:{t:"Perfil de asistentes · Viña del Mar",tot:4000,kpis:[{ic:"users",n:"4.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"66%",l:"recorre en bicicleta"},{ic:"heart",n:"55%",l:"tiene entre 20 y 40 años"}],
+    vina:{t:"CicloRecreoVía Viña del Mar · Perfil de asistentes",tot:4000,kpis:[{ic:"users",n:"4.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"66%",l:"recorre en bicicleta"},{ic:"heart",n:"55%",l:"tiene entre 20 y 40 años"}],
       grupos:[{t:"Edad",items:[["1 a 10 años",8],["10 a 20 años",7],["20 a 30 años",29],["30 a 40 años",26],["40 a 50 años",18],["50 a 60 años",10],["60 y más años",2]]},{t:"Cómo recorren",items:[["Bicicleta",66,"2.640"],["A pie",19,"760"],["Patines",14,"560"],["Otros",1,"40"]]}],genero:[["Hombres",59],["Mujeres",41]]}
   },
   rrss:[
@@ -542,23 +542,28 @@ function mesAnio(){const d=S.fecha?new Date(S.fecha+"T12:00:00"):new Date();retu
 const rrssFecha=()=>{const v=txD("rrss_fecha",mesAnio()).replace(/^\(|\)$/g,"");return "("+v.charAt(0).toUpperCase()+v.slice(1)+")"};
 function rrssList(){const o=S.rrssN||{};return CAT.rrss.map((r,i)=>Object.assign({},r,{n:o[i]!=null?o[i]:r.n}))}
 function subDomingo(a){if(a&&a._base!=null)return a._base;return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
+/* Encabezado de la tabla resumen: minúsculas y más grande */
+function HEADF(h){const cap=x=>/^\d/.test(x)?x:x.charAt(0).toUpperCase()+x.slice(1);
+  return h.map(c=>{const L=String(c.t).split("\n"),f=cap(L[0].toLowerCase());return Object.assign({},c,{t:[f,...L.slice(1)].join("\n"),size:Math.min(16,Math.round((c.size||11)*1.35)),head:true})})}
 function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100)/10000)*10000}
 /* Tarifas de una activación para todos los períodos elegidos (fuera de las fotos) */
 function tarStrip(R,a,x,y,w,h,o){o=o||{};let ps=periodosSel();if(!ps.length)ps=[{t:"1 domingo",dom:1,desc:0}];
   const n=ps.length,g=0.06,fill=i=>o.fills?o.fills[i%o.fills.length]:o.fill,tc=o.color||COL.wh;
-  const lab=p=>p.t.toUpperCase()+"",amt=p=>moneyIva(precioPeriodo(a,p));
+  const lab=p=>p.t+"",amt=p=>moneyIva(precioPeriodo(a,p));
   const fitA=(txt,wd,mx,f)=>Math.max(7,Math.min(mx,wd*72/(txt.length*(f||0.74))));
   const two=w/n<1.35&&h/n<0.3&&h>=0.95&&w/Math.ceil(n/2)>=1.3;
   if(w/n>=1.35||two){const pc=two?Math.ceil(n/2):n,cw=(w-g*(pc-1))/pc,bh=two?(h-g)/2:h;
     ps.forEach((p,i)=>{const xx=x+(i%pc)*(cw+g),y0=y+Math.floor(i/pc)*(bh+g);{const y=y0,h=bh;R.rect(xx,y,cw,h,{fill:fill(i),radius:o.radius||undefined});
-      if(h>=0.46){R.text(lab(p),xx+0.08,y+0.03,cw-0.16,h*0.38,{size:Math.min(h*72*0.3,fitA(lab(p),cw-0.16,9.5,0.62)),bold:true,cs:0.5,color:tc,align:"center",valign:"bottom"});
-        R.text(amt(p),xx+0.06,y+h*0.42,cw-0.12,h*0.52,{size:Math.min(h*72*0.4,fitA(amt(p),cw-0.12,o.max||16)),head:true,color:tc,align:"center",valign:"middle"})}
-      else R.text([{text:lab(p)+"  ",o:{bold:true,size:Math.min(8.5,fitA(lab(p)+amt(p),cw-0.1,8.5))}},{text:amt(p),o:{head:true,size:fitA(lab(p)+amt(p),cw-0.1,12)}}],xx+0.05,y,cw-0.1,h,{size:10,color:tc,align:"center",valign:"middle"});}});return}
+      if(h>=0.46){const sz=Math.min(h*72*0.34,fitA(amt(p),cw-0.12,o.max||16));
+        R.text(lab(p),xx+0.06,y+0.03,cw-0.12,h*0.42,{size:sz,head:true,color:tc,align:"center",valign:"bottom"});
+        R.text(amt(p),xx+0.06,y+h*0.46,cw-0.12,h*0.48,{size:sz,head:true,color:tc,align:"center",valign:"top"})}
+      else{const sz=fitA(lab(p)+"  "+amt(p),cw-0.1,12);R.text([{text:lab(p)+"  ",o:{head:true,size:sz}},{text:amt(p),o:{head:true,size:sz}}],xx+0.05,y,cw-0.1,h,{size:sz,color:tc,align:"center",valign:"middle"});}}});return}
   const cols=h/n<0.26&&w>=3.2?2:1,rows=Math.ceil(n/cols),cw=(w-g*(cols-1))/cols,rh=(h-g*(rows-1))/rows;
   ps.forEach((p,i)=>{const xx=x+(i%cols)*(cw+g),yy=y+Math.floor(i/cols)*(rh+g);R.rect(xx,yy,cw,rh,{fill:fill(i),radius:o.radius||undefined});
     const fs=Math.min(o.max||14,rh*72*0.5);
-    R.text(lab(p),xx+0.1,yy,cw*0.42,rh,{size:Math.min(fs*0.72,fitA(lab(p),cw*0.42-0.1,10,0.62)),bold:true,color:tc,valign:"middle"});
-    R.text(amt(p),xx+cw*0.43,yy,cw*0.57-0.1,rh,{size:Math.min(fs,fitA(amt(p),cw*0.57-0.1,fs)),head:true,color:tc,align:"right",valign:"middle"});});}
+    const sz=Math.min(fs,fitA(amt(p),cw*0.6-0.1,fs),fitA(lab(p),cw*0.38-0.1,fs));
+    R.text(lab(p),xx+0.12,yy,cw*0.4,rh,{size:sz,head:true,color:tc,valign:"middle"});
+    R.text(amt(p),xx+cw*0.4,yy,cw*0.6-0.12,rh,{size:sz,head:true,color:tc,align:"right",valign:"middle"});});}
 function kpisAct(a){
   const ids=[...new Set((a.objetivos||[]).map(o=>(byId(CAT.objetivos,o)||{}).kpi).filter(Boolean))];
   return ids.map(id=>{
@@ -894,7 +899,7 @@ async function dibujarModerno(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.band,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.band,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
-    R.table([head,...body,totRow],0.6,1.75,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,1.75,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await mFoot(R);break;}
   case "comunicacion":{
     R.slide(t.bg);mHead(R,"Plan comunicacional",n,tot,"Así amplificamos la presencia de "+P);
@@ -1006,7 +1011,7 @@ async function dibujarVisual(R,sp,n,tot){
     break;}
   case "perf":{
     const pf=CAT.perfiles[sp.city];R.slide(t.bg);vNum(R,n);
-    vLabel(R,"Perfil de asistentes",0.6,0.55,8);vTitle(R,pf.t.replace("Perfil de asistentes · ",""),0.6,0.85,9,0.8);
+    vLabel(R,"Perfil de asistentes",0.6,0.55,8);vTitle(R,pf.t.replace(" · Perfil de asistentes",""),0.6,0.85,9,0.8);
     for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],x=0.6+i*4.15;
       await vIcon(R,k.ic,x,1.95,0.42);
       R.text(k.n,x+0.6,1.85,3.4,0.62,{size:28,head:true,color:t.tx,valign:"middle"});
@@ -1083,7 +1088,7 @@ async function dibujarVisual(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.panel,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.panel,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.8;
-    R.table([head,...body,totRow],0.6,2.3,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,2.3,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await vLogo(R);break;}
   case "comunicacion":{
     R.slide(t.bg);vNum(R,n);
@@ -1272,7 +1277,7 @@ async function dibujarInvestor(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.navy,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.navy,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
-    R.table([head,...body,totRow],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await iFoot(R,n);break;}
   case "comunicacion":{
     R.slide(t.bg);iHead(R,"Plan comunicacional",n,tot);
@@ -1482,7 +1487,7 @@ async function dibujarCajas(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:CJ(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:CJ(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
-    R.table([head,...body,totRow],0.6,1.6,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,1.6,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     R.tri(W-1.9,5.9,1.3,1.0,{fill:CJ(1),corner:"br"});
     await cFoot(R,n);break;}
   case "comunicacion":{
@@ -1654,7 +1659,7 @@ async function dibujarPotion(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:PO(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:PO(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
-    R.table([head,...body,totRow],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await pFoot(R,n);break;}
   case "comunicacion":{
     R.slide(t.bg);pHead(R,"Plan comunicacional",n,tot);
@@ -1848,7 +1853,7 @@ async function dibujarEstaciones(R,sp,n,tot){
     else{const head=[{t:"Activación",fill:t.acc,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única"),fill:ES(i),color:COL.wh,bold:true,align:"center",size:10})));
       const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:c>=5?11.5:13,fill:t.card,color:t.tx}))));
       const totRow=[{t:"Total",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:c>=5?11:12.5})));
-      const first=3.0,cw=(W-1.2-first)/c;R.table([head,...body,totRow],0.6,1.5,W-1.2,[first,...ps.map(()=>cw)],{rowH:acts.length>3?0.68:0.82,size:13,border:t.bg});}
+      const first=3.0,cw=(W-1.2-first)/c;R.table([HEADF(head),...body],0.6,1.5,W-1.2,[first,...ps.map(()=>cw)],{rowH:acts.length>3?0.68:0.82,size:13,border:t.bg});}
     await eFoot(R,n);break;}
   case "comunicacion":{
     eSlide(R);eHead(R,"Plan comunicacional",n,tot);
@@ -2347,7 +2352,7 @@ async function dibujar(R,sp,n,tot){
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.p2:t.p1}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.p2:t.p1}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
-    R.table([head,...body,totRow],0.6,2.35,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
+    R.table([HEADF(head),...body],0.6,2.35,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     break;}
   case "comunicacion":{
     R.slide(t.bg);cabecera(R,n,tot);
