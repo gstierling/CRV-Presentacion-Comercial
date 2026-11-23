@@ -301,7 +301,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
    ===================================================================== */
 const CAT = {
   crv:{
-    descripcion:"• Iniciativa de recuperación de espacios públicos.\n• Habilitamos kilómetros de calles sin autos para el paseo y el esparcimiento.\n• Todos los domingos del año en la mañana.\n• Somos el mayor y más masivo evento de recreación y actividad física de Chile.\n• Uno de los eventos más queridos y valorados por la ciudadanía y autoridades.\n• Desarrollado por la Fundación CicloRecreoVía.",
+    descripcion:"Cada domingo abrimos las calles para que miles de personas caminen, pedaleen, patinen y compartan en familia: el espacio recreativo más masivo de Chile.",
     stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"25 km",l:"de calles habilitadas todos los domingos",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
@@ -502,7 +502,7 @@ function nuevo(){return {
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
   imgs:{},
-  incluir:{crv:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true,noct1:true,noct2:true,sop_1:true,sop_2:true,sop_3:true,sop_4:true}
+  incluir:{crv:true,claves:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true,noct1:true,noct2:true,sop_1:true,sop_2:true,sop_3:true,sop_4:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
 function normalizar(){const n=nuevo();if(!S.ver||S.ver<2){S.incluir=S.incluir||{};S.incluir.circ_vina=true;S.incluir.perf_vina=true;S.ver=2}S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul";S.fotos=S.fotos||{};S.textos=S.textos||{};
@@ -577,6 +577,7 @@ function plan(){
   const P=[],I=S.incluir,lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({k:"libre",l,name:"Lámina libre: "+(l.titulo||"sin título")}));
   P.push({k:"portada",name:"Portada"});
   if(I.crv)P.push({k:"crv",name:"Qué es CicloRecreoVía"});
+  if(I.claves)P.push({k:"claves",name:"CicloRecreoVía en 6 claves"});
   if(I.circ_stgo)P.push({k:"circ",city:"stgo",name:"Circuito Santiago"});
   if(I.circ_vina)P.push({k:"circ",city:"vina",name:"Circuito Viña del Mar"});
   if(I.perf_stgo)P.push({k:"perf",city:"stgo",name:"Perfil asistentes Santiago"});
@@ -1890,6 +1891,26 @@ const SOPORTES=[
   {n:2,t:"Vallas",foto:15,d:"Vallas con lienzo impreso a lo largo del circuito, a la altura de la vista de quienes pedalean, caminan y patinan. Presencia continua de la marca durante toda la jornada."},
   {n:3,t:"Barreras",foto:18,d:"Barreras de cierre de calle intervenidas con la marca en los accesos y cruces del circuito, los puntos donde las personas se detienen y esperan."},
   {n:4,t:"Banderas",foto:16,d:"Banderas tipo vela que marcan el espacio de la activación y se ven a distancia, dando altura y color a la presencia de la marca."}];
+const CLAVES=[
+  {ic:"route",t:"Recuperamos la ciudad",d:"Iniciativa de recuperación de espacios públicos."},
+  {ic:"bike",t:"Calles sin autos",d:"Habilitamos kilómetros de calles para el paseo y el esparcimiento."},
+  {ic:"calendar",t:"Todos los domingos",d:"Todos los domingos del año, en la mañana."},
+  {ic:"award",t:"El más masivo de Chile",d:"El mayor evento de recreación y actividad física del país."},
+  {ic:"heart",t:"Querido y valorado",d:"Uno de los eventos más valorados por la ciudadanía y las autoridades."},
+  {ic:"handshake",t:"Fundación CicloRecreoVía",d:"Desarrollado por la Fundación CicloRecreoVía."}];
+const CLAVES_TIT="CicloRecreoVía en 6 claves";
+async function dibujarClaves(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="est")eSnow(R);
+  const y0=famHead(R,txD("claves_tit",CLAVES_TIT),n,tot),g=0.22,cw=(W-1.2-g*2)/3,top=y0+0.25,ch=(6.85-top-g)/2;
+  for(let i=0;i<6;i++){const c=CLAVES[i],x=0.6+(i%3)*(cw+g),y=top+Math.floor(i/3)*(ch+g),col=KP(i),hi=i===3;
+    const tt=txD("clave_t"+(i+1),c.t),dd=txD("clave_d"+(i+1),c.d);
+    R.rect(x,y,cw,ch,{fill:hi?col:k.card,radius:k.fam==="caj"?undefined:0.1});
+    if(!hi)R.rect(x,y,0.09,ch,{fill:col});
+    const d=0.78;R.rect(x+0.32,y+0.3,d,d,{fill:hi?"FFFFFF":col,ellipse:true});
+    await R.image(await iconPng(c.ic,hi?col:COL.wh),x+0.32+d*0.22,y+0.3+d*0.22,d*0.56,d*0.56,{fit:"contain"});
+    R.text(String(i+1).padStart(2,"0"),x+cw-1.0,y+0.25,0.75,0.6,{size:24,head:true,color:hi?"FFFFFF":col,align:"right",valign:"middle"});
+    R.text(tt,x+0.32,y+1.22,cw-0.6,0.62,{size:fitSize(tt,19,[[20,17],[26,15]]),head:true,color:hi?COL.wh:k.tx,valign:"middle"});
+    R.text(dd,x+0.32,y+1.86,cw-0.6,ch-2.0,{size:fitSize(dd,12.5,[[70,11.5]]),color:hi?COL.wh:k.mu,valign:"top"});}
+  await famFoot(R,n);R.end();}
 const NOCT_TXT="Una noche al año abrimos las calles de Santiago para recorrerlas en bicicleta, a pie y en patines bajo luces, neón y música.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
 const NOCT_TIT="CicloRecreoVía Nocturna";
@@ -2073,6 +2094,7 @@ async function dibujar(R,sp,n,tot){
   const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
+  if(sp.k==="claves")return dibujarClaves(R,sp,n,tot);
   if(sp.k==="noct2")return dibujarNoct2(R,sp,n,tot);
   if(vk==="perf"&&vv==="B")return perfB(R,sp,n,tot);
   if(vk==="perf"&&vv==="C")return perfC(R,sp,n,tot);
@@ -2412,6 +2434,7 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
   const h=[...seen].map(([s,d])=>fotoGrid(s,d)).join("");FCACHE[pn.id]=h;if(box.innerHTML!==h)box.innerHTML=h;
   if(keepY!=null){window.scrollTo(0,keepY);keepY=null}}
 function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
+function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("claves_tit",CLAVES_TIT)}`+CLAVES.map((c,i)=>`<div class="lbl">Clave ${i+1}</div>${edTxt("clave_t"+(i+1),c.t)}${edTxt("clave_d"+(i+1),c.d)}`).join(""):""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
 function enfUI(spec){return "";}
@@ -2491,11 +2514,12 @@ function pRevisar(){
   <div class="lbl">Diapositivas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>`}
 
-const XS={"Portada": "Port.", "Qué es": "CRV", "Circ. Stgo": "Stgo", "Circ. Viña": "Viña", "Perfil Stgo": "Perf. S", "Perfil Viña": "Perf. V", "Objetivos": "Obj.", "Act. 1": "A1", "Números": "Núm.", "Tarifas": "Tarif.", "Comunic.": "Com.", "RRSS": "RRSS", "Condic.": "Cond.", "Fotos": "Fotos", "Despedida": "Desp.", "Descargar": "Fin", "Libre": "Libre", "Nocturna 1": "Noc. 1", "Nocturna 2": "Noc. 2", "Soporte 1": "Sop. 1", "Soporte 2": "Sop. 2", "Soporte 3": "Sop. 3", "Soporte 4": "Sop. 4"};
+const XS={"Portada": "Port.", "Qué es": "CRV", "Circ. Stgo": "Stgo", "Circ. Viña": "Viña", "Perfil Stgo": "Perf. S", "Perfil Viña": "Perf. V", "Objetivos": "Obj.", "Act. 1": "A1", "Números": "Núm.", "Tarifas": "Tarif.", "Comunic.": "Com.", "RRSS": "RRSS", "Condic.": "Cond.", "Fotos": "Fotos", "Despedida": "Desp.", "Descargar": "Fin", "Libre": "Libre", "Claves": "Claves", "Nocturna 1": "Noc. 1", "Nocturna 2": "Noc. 2", "Soporte 1": "Sop. 1", "Soporte 2": "Sop. 2", "Soporte 3": "Sop. 3", "Soporte 4": "Sop. 4"};
 function PANELS(){
   const P=[],lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({id:"lib_"+l.uid,s:"Libre",t:"Diapositiva libre"+(l.titulo?": "+l.titulo:""),r:()=>pLibre(l),m:p=>p.k==="libre"&&p.l.uid===l.uid}));
   P.push({id:"portada",s:"Portada",t:"Portada",r:pPortada,m:p=>p.k==="portada"});
   P.push({id:"crv",s:"Qué es",t:"Qué es CicloRecreoVía",r:pCRV,m:p=>p.k==="crv"});
+  P.push({id:"claves",s:"Claves",t:"CicloRecreoVía en 6 claves",r:pClaves,m:p=>p.k==="claves"});
   P.push({id:"circ_stgo",s:"Circ. Stgo",t:"Circuito Santiago",r:()=>pCirc("stgo"),m:p=>p.k==="circ"&&p.city==="stgo"});
   P.push({id:"circ_vina",s:"Circ. Viña",t:"Circuito Viña del Mar",r:()=>pCirc("vina"),m:p=>p.k==="circ"&&p.city==="vina"});
   P.push({id:"perf_stgo",s:"Perfil Stgo",t:"Perfil asistentes Santiago",r:()=>pPerf("stgo"),m:p=>p.k==="perf"&&p.city==="stgo"});
@@ -2534,7 +2558,7 @@ let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
    RENDER Y ACCIONES
    ===================================================================== */
 let DD=null;
-const INCL={crv:"crv",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
+const INCL={crv:"crv",claves:"claves",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
 function totalPeriodo(p){return S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0)}
 const famOf=v=>v.mod?"Moderno":v.caj?"Cajas":v.pot?"Potion":v.est?"Estaciones":v.vis?"Visual":v.inv?"Investor":"Formal";
 function famList(){const m=[];Object.entries(TEMAS).forEach(([k,v])=>{const n=famOf(v);let f=m.find(x=>x.n===n);if(!f){f={n,ks:[]};m.push(f)}f.ks.push(k)});return m}
