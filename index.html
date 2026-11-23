@@ -780,7 +780,7 @@ async function dibujarModerno(R,sp,n,tot){
     R.text("en CicloRecreoVía",1.25,3.25,4.1,0.4,{size:15,bold:true,color:COL.wh});
     for(let i=0;i<4;i++)R.rect(1.25+i*0.42,3.95,0.34,0.08,{fill:[COL.wh,PC(1),PC(2),COL.wh][i]});
     R.rect(0.9,4.95,7.6,1.85,{fill:t.light?COL.wh:t.band});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",1.2,5.05,7.0,1.65,{size:19,color:t.light?t.tx:COL.wh,valign:"middle"});
+    R.text(COVTXT(T().light?T().acc:"F7A541"),1.2,5.05,7.0,1.65,{size:19,color:t.light?t.tx:COL.wh,valign:"middle"});
     break;}
   case "crv":{
     R.slide(t.bg);mHead(R,"Qué es CicloRecreoVía",n,tot,"20 años abriendo las calles de Santiago y Viña del Mar");
@@ -958,7 +958,7 @@ async function dibujarVisual(R,sp,n,tot){
     R.text(P.toUpperCase(),2.67,2.55,8.0,1.55,{size:fitSize(P,40,[[12,34],[18,28],[26,22]]),head:true,cs:8,color:COL.wh,align:"center",valign:"middle"});
     vPlus(R,10.67,2.55,0.55,COL.wh);
     R.text("EN CICLORECREOVÍA",2.67,4.25,8.0,0.4,{size:15,bold:true,cs:6,color:COL.wh,align:"center"});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",1.9,5.0,9.53,1.6,{size:21,color:"E5E7EB",align:"center"});
+    R.text(COVTXT("F7A541"),1.9,5.0,9.53,1.6,{size:21,color:"E5E7EB",align:"center"});
     break;}
   case "crv":{
     R.slide(t.bg);vNum(R,n);
@@ -1155,7 +1155,7 @@ async function dibujarInvestor(R,sp,n,tot){
     R.text(P.toUpperCase(),0.8,2.2,W-1.6,1.25,{size:fitSize(P,54,[[10,46],[16,38],[24,30]]),head:true,cs:2,color:COL.wh,align:"center",valign:"middle"});
     R.text("EN CICLORECREOVÍA",0.8,3.45,W-1.6,0.4,{size:14,bold:true,cs:5,color:"D6E4F2",align:"center"});
     R.rect(W/2-0.9,4.05,0.6,0.06,{fill:IC(0)});R.rect(W/2-0.3,4.05,0.6,0.06,{fill:IC(1)});R.rect(W/2+0.3,4.05,0.6,0.06,{fill:IC(2)});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",1.6,4.45,W-3.2,1.7,{size:21,color:COL.wh,align:"center"});
+    R.text(COVTXT("F7A541"),1.6,4.45,W-3.2,1.7,{size:21,color:COL.wh,align:"center"});
     break;}
   case "crv":{
     R.slide(t.bg);
@@ -1356,7 +1356,7 @@ async function dibujarCajas(R,sp,n,tot){
     if(S.logo)await tarjetaLogo(R,S.logo,2.4,0.7,1.6,0.98);
     R.text("PROPUESTA DE AUSPICIO",0.6,2.05,3.9,0.35,{size:11,bold:true,cs:2.5,color:CJ(0)});
     R.rect(0.62,2.45,0.75,0.06,{fill:CJ(0)});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.6,2.7,3.95,3.9,{size:21,color:t.tx,valign:"top"});
+    R.text(COVTXT(T().acc||"E87115"),0.6,2.7,3.95,3.9,{size:21,color:t.tx,valign:"top"});
     break;}
   case "crv":{
     R.slide(t.bg);cHead(R,"Qué es CicloRecreoVía",n,tot);
@@ -1558,7 +1558,7 @@ async function dibujarPotion(R,sp,n,tot){
     R.text(P.toUpperCase(),0.7,2.0,5.4,1.1,{size:fitSize(P,44,[[10,38],[16,32],[24,26]]),head:true,color:t.tx,valign:"middle"});
     R.text("EN CICLORECREOVÍA",0.7,3.1,5.4,0.4,{size:14,bold:true,cs:4,color:PO(0)});
     R.rect(0.72,3.6,0.7,0.05,{fill:PO(0)});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,3.85,5.2,2.9,{size:21,color:t.mu,valign:"top"});
+    R.text(COVTXT(T().acc||"E87115"),0.7,3.85,5.2,2.9,{size:21,color:t.mu,valign:"top"});
     break;}
   case "crv":{
     R.slide(t.bg);pHead(R,"Qué es CicloRecreoVía",n,tot);
@@ -1720,6 +1720,7 @@ async function ePlan(R,x,y,w,h,col,ic,big,small,o){o=o||{};eCard(R,x,y,w,h,col);
   R.rect(x+w/2-0.3,by+0.72,0.6,0.025,{fill:"FFFFFF",transp:40});
   if(small)R.text(small,x+0.2,by+0.82,w-0.4,h-(by-y)-0.95,{size:o.ss||(small.length>60?10:11.5),color:COL.wh,align:"center",valign:"top"});}
 
+function COVTXT(c){return [{text:"Activa tu marca y logra tus "},{text:"OBJETIVOS",o:{head:true,color:c||"E87115"}},{text:" en el espacio recreativo, familiar y de actividad física más masivo de Chile."}]}
 async function dibujarEstaciones(R,sp,n,tot){
   const P=S.prospecto||"Prospecto",t=T();
   switch(sp.k){
@@ -1731,7 +1732,7 @@ async function dibujarEstaciones(R,sp,n,tot){
     R.text(P,0.95,2.1,4.9,1.0,{size:fitSize(P,40,[[10,34],[16,28],[24,22]]),color:t.acc,valign:"middle"});
     R.text("en CicloRecreoVía",0.95,3.05,4.9,0.45,{size:18,color:t.tx});
     R.rect(0.97,3.62,0.9,0.03,{fill:t.acc});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.95,3.85,4.85,2.9,{size:18,color:t.mu,valign:"top"});
+    R.text(COVTXT(T().acc||"E87115"),0.95,3.85,4.85,2.9,{size:18,color:t.mu,valign:"top"});
     break;}
   case "crv":{
     eSlide(R);eHead(R,"Qué es CicloRecreoVía",n,tot);
@@ -2139,7 +2140,7 @@ async function dibujar(R,sp,n,tot){
     await tarjetaLogo(R,LOGO_CRV,0.7,0.7,1.75,1.08);
     if(S.logo){R.text("+",2.5,0.7,0.5,1.08,{size:22,head:true,color:t.acc,align:"center",valign:"middle"});await tarjetaLogo(R,S.logo,3.05,0.7,1.75,1.08)}
     R.text([{text:P,o:{color:t.acc,br:true}},{text:"en CicloRecreoVía",o:{}}],0.7,2.15,7.4,2.1,{size:fitSize(P,44,[[12,40],[18,34],[26,28]]),head:true,valign:"middle"});
-    R.text("Propuesta de auspicio para activar tu marca y lograr tus OBJETIVOS en el espacio recreativo, familiar y de actividad física más masivo de Santiago.",0.7,4.35,7.3,1.9,{size:21,color:t.mu});
+    R.text(COVTXT(T().acc||"E87115"),0.7,4.35,7.3,1.9,{size:21,color:t.mu});
     break;}
   case "crv":{
     R.slide(t.bg);cabecera(R,n,tot);
