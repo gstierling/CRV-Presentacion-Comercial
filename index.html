@@ -71,7 +71,7 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .dli b{color:var(--txt);font-weight:900}
 @media(max-width:700px){.dl{flex-direction:column;gap:6px}.dli{font-size:13px;padding:8px 10px}}
 .edt{position:relative;display:flex;align-items:flex-start;gap:10px;max-width:1100px;margin:0 0 12px}
-.edt p{margin:0;color:var(--mut);font-size:15px;line-height:1.45;flex:1}
+.edt p{white-space:pre-line;margin:0;color:var(--mut);font-size:15px;line-height:1.45;flex:1}
 .edt.on{display:block}
 .pen{flex:none;border:2px solid var(--line);background:var(--panel);border-radius:10px;width:38px;height:38px;font-size:17px;cursor:pointer}
 .pen:hover{border-color:var(--or)}
@@ -301,7 +301,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
    ===================================================================== */
 const CAT = {
   crv:{
-    descripcion:"CicloRecreoVía abre las calles de Santiago cada domingo para que miles de personas caminen, pedaleen, patinen y compartan en familia. Es el espacio público recreativo más masivo de la ciudad: un punto de encuentro con alto tiempo de permanencia y un público activo, diverso y receptivo a las marcas que aportan a su experiencia.",
+    descripcion:"• Iniciativa de recuperación de espacios públicos.\n• Habilitamos kilómetros de calles sin autos para el paseo y el esparcimiento.\n• Todos los domingos del año en la mañana.\n• Somos el mayor y más masivo evento de recreación y actividad física de Chile.\n• Uno de los eventos más queridos y valorados por la ciudadanía y autoridades.\n• Desarrollado por la Fundación CicloRecreoVía.",
     stats:[{n:"+30.000",l:"personas cada domingo",ic:"users"},{n:"25 km",l:"de calles habilitadas todos los domingos",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
@@ -1558,7 +1558,7 @@ async function dibujarPotion(R,sp,n,tot){
   case "crv":{
     R.slide(t.bg);pHead(R,"Qué es CicloRecreoVía",n,tot);
     const d=txD("crv",CAT.crv.descripcion);
-    R.text(d,1.0,1.3,W-2.0,1.05,{size:fitSize(d,12.5,[[460,11.5],[620,10.5]]),color:t.mu,align:"center",valign:"middle"});
+    R.text(d,2.4,1.3,W-4.8,1.1,{size:fitSize(d,12.5,[[460,11.5],[620,10.5]]),color:t.mu,align:/\n/.test(d)?"left":"center",valign:"middle"});
     await pBand(R,CAT.crv.stats.slice(0,4).map(s=>({ic:s.ic,big:s.n,small:s.l})),0,2.5,W,2.0,{ss:10});
     const fw=(W-1.2-0.3)/3;for(let i=0;i<3;i++)await R.image(i===0?fotoCRV():foto("crv_"+(i+1),[0,5,7][i]),0.6+i*(fw+0.15),4.7,fw,2.2);
     await pFoot(R,n);break;}
