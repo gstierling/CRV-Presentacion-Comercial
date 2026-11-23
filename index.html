@@ -1846,7 +1846,7 @@ const VARIANTES={perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"
 
 /* ===================== RESALTE DE CIFRAS (capa común a todos los estilos) ===================== */
 const ENFS={A:"Actual",B:"Cifras grandes",C:"Grandes y en color",D:"Grandes con destacado"};
-let ENF_OVR=null;const enfMode=()=>ENF_OVR||(S.var||{}).enf||"C";
+let ENF_OVR=null;const enfMode=()=>"B";
 const ATT_RX=/personas|asistentes|usuarios|participantes/i;
 function enfData(sp){const F=new Map(),L=new Set();const add=(n,l)=>{if(n==null)return;F.set(String(n).trim(),ATT_RX.test(l||""));if(l){L.add(String(l).trim());L.add(String(l).trim().toUpperCase())}};
   if(sp.k==="crv")CAT.crv.stats.forEach(z=>add(z.n,z.l));
@@ -2215,7 +2215,8 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
 function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
-function enfUI(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
+function enfUI(spec){return "";}
+function enfUIOld(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
   return `<div class="lbl" style="margin-top:0">Resalte de cifras <span style="text-transform:none;letter-spacing:0;font-weight:700">· se aplica a todas las diapositivas con cifras</span></div>
   <div class="vars" id="vars_enf">${Object.entries(ENFS).map(([v,tt])=>`<div class="vopt ${cur===v?"on":""}" onclick="A.setVar('enf','${v}')"><div class="sw"></div><b>${v} · ${tt}</b></div>`).join("")}</div>
   <button class="hbtn" style="margin:8px 0 6px" ${h?"":"disabled style='opacity:.4;margin:8px 0 6px'"} onclick="A.undoVar()">↶ Deshacer cambio</button>`}
