@@ -1858,15 +1858,20 @@ function enfData(sp){const F=new Map(),L=new Set();const add=(n,l)=>{if(n==null)
 function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t.acc||(t.pal&&t.pal[0])||"E87115";
   const attC=acc==="E87115"?(t.acc2||"179741"):"E87115";const isW=c=>!!c&&(c===COL.wh||/^(FFFFFF|FFF)$/i.test(c));
   const W2=Object.assign({},R);
+  const estW=(k,sz)=>[...k].reduce((a,c)=>a+(/[0-9]/.test(c)?0.67:/[.,:]/.test(c)?0.33:c===" "?0.3:/[mw]/i.test(c)?1.0:0.72),0)*sz/72;let LASTF=null;
   W2.text=(tx,x,y,w,h,o)=>{o=Object.assign({},o||{});
     if(typeof tx==="string"){const key=tx.trim();
       if(d.F.has(key)){const att=d.F.get(key),base=o.size||14,want=base*(att?1.55:1.28),maxW=w*72/(Math.max(key.length,3)*0.66);
-        o.size=Math.max(base,Math.min(want,maxW));o.head=true;const white=isW(o.color);
+        o.size=Math.max(base,Math.min(want,maxW));o.head=true;const white=isW(o.color);LASTF={x,y,h,w,size:o.size,key,align:o.align||"left",valign:o.valign};
         if(mode==="C"&&!white)o.color=att?attC:acc;
         if(mode==="D"&&att){const tw=Math.min(w,key.length*o.size*0.64/72+0.35),th=o.size/72*1.3;
           const px=o.align==="center"?x+(w-tw)/2:o.align==="right"?x+w-tw:x-0.12,py=o.valign==="middle"?y+(h-th)/2:o.valign==="bottom"?y+h-th:y-0.02;
           if(white)R.rect(px,py,tw,th,{fill:"FFFFFF",transp:78,radius:0.08});else{R.rect(px,py,tw,th,{fill:attC,radius:0.08});o.color=COL.wh}
           if(o.align!=="center"&&o.align!=="right")x+=0.05;}}
+      else if(d.L.has(key)&&LASTF&&LASTF.align==="left"&&x>LASTF.x+0.3&&y+h/2>LASTF.y&&y+h/2<LASTF.y+LASTF.h){
+        /* Texto a la derecha de la cifra: va pegado a ella, alineado y con tamaño proporcional */
+        const nx=LASTF.x+estW(LASTF.key,LASTF.size)+0.16,right=x+w;
+        if(nx<right-0.9){x=nx;w=right-nx;y=LASTF.y;h=LASTF.h;o.valign=LASTF.valign||"middle";o.size=Math.max(o.size||10,Math.min(15,LASTF.size*0.42));o.bold=false}}
       else if(d.L.has(key)){o.size=(o.size||12)*0.9;if(mode!=="B"&&(!o.color||o.color===t.tx))o.color=t.mu||o.color}}
     return R.text(tx,x,y,w,h,o)};
   return W2}
