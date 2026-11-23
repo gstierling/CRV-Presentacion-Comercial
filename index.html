@@ -391,9 +391,9 @@ const CAT = {
   },
   perfiles:{
     stgo:{t:"Perfil de asistentes · Santiago",tot:35000,kpis:[{ic:"users",n:"35.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"78%",l:"recorre en bicicleta"},{ic:"heart",n:"60%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad",items:[["1 a 10 años",6],["10 a 20 años",8],["20 a 30 años",28],["30 a 40 años",32],["40 a 50 años",16],["50 a 60 años",7],["60 y más",3]]},{t:"Cómo recorren",items:[["Bicicleta · 27.300",78],["A pie · 5.250",15],["Patines · 2.100",6],["Otros · 350",1]]}],genero:[["Hombres",68],["Mujeres",32]]},
+      grupos:[{t:"Edad en años",items:[["1 a 10",6],["10 a 20",8],["20 a 30",28],["30 a 40",32],["40 a 50",16],["50 a 60",7],["60 y más",3]]},{t:"Cómo recorren",items:[["Bicicleta · 27.300",78],["A pie · 5.250",15],["Patines · 2.100",6],["Otros · 350",1]]}],genero:[["Hombres",68],["Mujeres",32]]},
     vina:{t:"Perfil de asistentes · Viña del Mar",tot:4000,kpis:[{ic:"users",n:"4.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"66%",l:"recorre en bicicleta"},{ic:"heart",n:"55%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad",items:[["1 a 10 años",8],["10 a 20 años",7],["20 a 30 años",29],["30 a 40 años",26],["40 a 50 años",18],["50 a 60 años",10],["60 y más",2]]},{t:"Cómo recorren",items:[["Bicicleta · 2.640",66],["A pie · 760",19],["Patines · 560",14],["Otros · 40",1]]}],genero:[["Hombres",59],["Mujeres",41]]}
+      grupos:[{t:"Edad en años",items:[["1 a 10",8],["10 a 20",7],["20 a 30",29],["30 a 40",26],["40 a 50",18],["50 a 60",10],["60 y más",2]]},{t:"Cómo recorren",items:[["Bicicleta · 2.640",66],["A pie · 760",19],["Patines · 560",14],["Otros · 40",1]]}],genero:[["Hombres",59],["Mujeres",41]]}
   },
   rrss:[
     {red:"Instagram",user:"@ciclorecreovia",n:85000,ic:"instagram"},
@@ -683,13 +683,13 @@ function HtmlR(){
     },
     donut(items,x,y,w,h,cols){const tot=items.reduce((s,z)=>s+z[1],0)||1;let acc=0;
       const grad=items.map((z,i)=>{const a0=acc/tot*360;acc+=z[1];return `#${cols[i%cols.length]} ${a0}deg ${acc/tot*360}deg`}).join(",");
-      const d=Math.min(h,w*0.48);
+      const d=Math.min(h,w*0.42);
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y+(h-d)/2)};width:${px(d)};height:${px(d)};border-radius:50%;background:conic-gradient(${grad});-webkit-mask:radial-gradient(circle,transparent 34%,#000 35%);mask:radial-gradient(circle,transparent 34%,#000 35%)"></div>`;
       const lx=x+d+0.25,lw=w-d-0.3,rh=Math.min(0.42,h/items.length);
       items.forEach((z,i)=>{const yy=y+(h-rh*items.length)/2+i*rh;
         html+=`<div style="position:absolute;left:${px(lx)};top:${px(yy+rh/2-0.07)};width:${px(.14)};height:${px(.14)};border-radius:3px;background:#${cols[i%cols.length]}"></div>`;
-        this.text(z[0],lx+0.22,yy,lw-0.8,rh,{size:10.5,bold:true,valign:"middle"});
-        this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.6,yy,0.6,rh,{size:11,head:true,align:"right",valign:"middle"});});},
+        {const lwT=lw-0.85,fs=Math.max(7.5,Math.min(10.5,lwT*72/(z[0].length*0.56)));this.text(z[0],lx+0.22,yy,lwT+0.1,rh,{size:fs,bold:true,valign:"middle"});}
+        this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.55,yy,0.55,rh,{size:11,head:true,align:"right",valign:"middle"});});},
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
@@ -719,7 +719,7 @@ function PptxR(pptx){
     },
     donut(items,x,y,w,h,cols){const t=T();
       s.addChart(pptx.ChartType.doughnut,[{name:"Distribución",labels:items.map(z=>z[0]),values:items.map(z=>z[1])}],
-        {x,y,w,h,holeSize:32,chartColors:cols.slice(0,items.length),showLegend:true,legendPos:"r",legendFontFace:FB,legendFontSize:10.5,legendColor:t.tx,
+        {x,y,w,h,holeSize:32,chartColors:cols.slice(0,items.length),showLegend:true,legendPos:"r",legendFontFace:FB,legendFontSize:9.5,legendColor:t.tx,
          showPercent:true,showValue:false,showLabel:false,showTitle:false,dataLabelColor:"FFFFFF",dataLabelFontSize:10,dataLabelFontFace:FB,dataLabelFontBold:true,
          dataBorder:{pt:1.5,color:t.p1}});},
     table(rows,x,y,w,colW,o){
@@ -2203,11 +2203,12 @@ async function dibujar(R,sp,n,tot){
     const pf=CAT.perfiles[sp.city];R.slide(t.bg);cabecera(R,n,tot);
     boton(R,"PERFIL DE ASISTENTES",0.6,0.62,{w:2.4});
     titulo(R,pf.t,0.6,1.0,12,fitSize(pf.t,28,[[34,25]]));
-    for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],y=2.2+i*1.6;const hi=i===0;
-      R.rect(0.6,y,3.6,1.42,{fill:hi?t.acc:t.p1,radius:0.08});
-      await icono(R,k.ic||"users",0.82,y+0.25,0.5,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
-      R.text(k.n,1.45,y+0.15,2.6,0.62,{size:24,head:true,color:hi?COL.wh:t.tx,valign:"middle"});
-      R.text(k.l,1.45,y+0.78,2.6,0.5,{size:11,bold:true,color:hi?COL.wh:t.mu});}
+    await R.image(foto("perf_"+sp.city,sp.city==="stgo"?3:10),0.6,2.2,3.6,1.6);
+    for(let i=0;i<Math.min(3,pf.kpis.length);i++){const k=pf.kpis[i],y=3.95+i*0.98;const hi=i===0;
+      R.rect(0.6,y,3.6,0.88,{fill:hi?t.acc:t.p1,radius:0.08});
+      await icono(R,k.ic||"users",0.78,y+0.2,0.48,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
+      R.text(k.n,1.42,y+0.04,2.7,0.5,{size:22,head:true,color:hi?COL.wh:t.tx,valign:"middle"});
+      R.text(k.l,1.42,y+0.52,2.7,0.3,{size:10,bold:true,color:hi?COL.wh:t.mu,valign:"middle"});}
     const gx=4.45,gw=(W-0.6-gx-0.22)/2;
     pf.grupos.slice(0,2).forEach((g,gi)=>{const x=gx+gi*(gw+0.22),y=2.2;
       R.rect(x,y,gw,3.55,{fill:t.p1,radius:0.08});
