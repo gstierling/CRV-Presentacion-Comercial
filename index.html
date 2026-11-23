@@ -2563,8 +2563,8 @@ const FLBL=i=>{const g=FOTOS[i].g;if(!g)return String(i+1);const G=GRUPOS.find(x
 function fotoTiles(cur,onc,extra){const curG=typeof cur==="number"&&FOTOS[cur-1]?FOTOS[cur-1].g:null;
   const tile=(p,i)=>`<div class="ft ${cur===i+1?"on":""}" onclick="${onc(i+1)}" style="background-image:url('${objUrl(p.th)}')"><i>${FLBL(i)}</i></div>`;
   let h=FOTOS.map((p,i)=>p.g?"":tile(p,i)).join("");
-  GRUPOS.forEach(G=>{const show=!!VERG[G.k]||curG===G.k;
-    h+=`<div class="ft noc ${show?"on":""}" style="background:${G.bg};${show?"":"border-color:"+G.bg}" onclick="event.stopPropagation();VERG['${G.k}']=${!show};${extra}"><span>${G.t} ${show?"▴":"▾"}</span></div>`+
+  GRUPOS.forEach(G=>{const show=!!VERG[G.k],has=curG===G.k;
+    h+=`<div class="ft noc ${show?"on":""}" style="background:${G.bg};border-color:${show||has?"#e87115":G.bg}" onclick="event.stopPropagation();VERG['${G.k}']=${!show};${extra}"><span>${G.t} ${show?"▴":"▾"}${has?`<br><small style="font-size:10px;opacity:.9">elegida: ${FLBL(cur-1)}</small>`:""}</span></div>`+
       (show?FOTOS.map((p,i)=>p.g===G.k?tile(p,i):"").join(""):"")});
   return h}
 function fotoGrid(slot,def){const f=(S.fotos||{})[slot],im=(S.imgs||{})[slot];let cur=f==null?(def||"sin"):f;if(cur==="nueva"&&!(im&&im.data)&&!S["_p_"+slot]){}
