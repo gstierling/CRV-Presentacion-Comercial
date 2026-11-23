@@ -306,7 +306,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
 const CAT = {
   crv:{
     descripcion:"Cada domingo del año habilitamos *kilómetros de calles* para que *decenas de miles de personas* paseen, se recreen y tengan un *Fin de semana maravilloso*.",
-    stats:[{n:"52",l:"domingos al año",ic:"calendar"},{n:"25 km",l:"de calles habilitadas todos los domingos",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
+    stats:[{n:"52",l:"domingos al año",ic:"calendar"},{n:"30 km",l:"de calles habilitadas",ic:"route"},{n:"2 Ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
     {id:"branding",t:"Branding",d:"Presencia visible de la marca en los puntos de mayor flujo del circuito.",kpi:"visualizaciones",ic:"flag"},
@@ -388,15 +388,15 @@ const CAT = {
   ],
   circuitos:{
     stgo:{t:"CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de *varias comunas de Santiago* para caminar, pedalear, patinar y compartir, conectando *parques, plazas y barrios*.",
-      datos:[{ic:"route",n:"26 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"35.000",l:"asistentes por domingo"}]},
+      datos:[{ic:"route",n:"26 km",l:"de calles habilitadas"},{ic:"mappin",n:"5",l:"comunas"},{ic:"clock",n:"9 a 14 hrs",l:"todos los domingos"},{ic:"users",n:"35.000",l:"asistentes por domingo"}]},
     vina:{t:"CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al *borde costero*, con un público *familiar, deportivo y turístico*.",
-      datos:[{ic:"route",n:"3 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 13 h",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
+      datos:[{ic:"route",n:"3 km",l:"de calles habilitadas"},{ic:"mappin",n:"Borde costero",l:""},{ic:"clock",n:"9 a 13 hrs",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
   },
   perfiles:{
     stgo:{t:"Perfil de asistentes · Santiago",tot:35000,kpis:[{ic:"users",n:"35.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"78%",l:"recorre en bicicleta"},{ic:"heart",n:"60%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad en años",items:[["1 a 10",6],["10 a 20",8],["20 a 30",28],["30 a 40",32],["40 a 50",16],["50 a 60",7],["60 y más",3]]},{t:"Cómo recorren",items:[["Bicicleta · 27.300",78],["A pie · 5.250",15],["Patines · 2.100",6],["Otros · 350",1]]}],genero:[["Hombres",68],["Mujeres",32]]},
+      grupos:[{t:"Edad en años",items:[["1 a 10",6],["10 a 20",8],["20 a 30",28],["30 a 40",32],["40 a 50",16],["50 a 60",7],["60 y más",3]]},{t:"Cómo recorren",items:[["Bicicleta",78,"27.300"],["A pie",15,"5.250"],["Patines",6,"2.100"],["Otros",1,"350"]]}],genero:[["Hombres",68],["Mujeres",32]]},
     vina:{t:"Perfil de asistentes · Viña del Mar",tot:4000,kpis:[{ic:"users",n:"4.000",l:"asistentes únicos por domingo"},{ic:"bike",n:"66%",l:"recorre en bicicleta"},{ic:"heart",n:"55%",l:"tiene entre 20 y 40 años"}],
-      grupos:[{t:"Edad en años",items:[["1 a 10",8],["10 a 20",7],["20 a 30",29],["30 a 40",26],["40 a 50",18],["50 a 60",10],["60 y más",2]]},{t:"Cómo recorren",items:[["Bicicleta · 2.640",66],["A pie · 760",19],["Patines · 560",14],["Otros · 40",1]]}],genero:[["Hombres",59],["Mujeres",41]]}
+      grupos:[{t:"Edad en años",items:[["1 a 10",8],["10 a 20",7],["20 a 30",29],["30 a 40",26],["40 a 50",18],["50 a 60",10],["60 y más",2]]},{t:"Cómo recorren",items:[["Bicicleta",66,"2.640"],["A pie",19,"760"],["Patines",14,"560"],["Otros",1,"40"]]}],genero:[["Hombres",59],["Mujeres",41]]}
   },
   rrss:[
     {red:"Instagram",user:"@ciclorecreovia",n:85000,ic:"instagram"},
@@ -686,13 +686,15 @@ function HtmlR(){
     },
     donut(items,x,y,w,h,cols){const tot=items.reduce((s,z)=>s+z[1],0)||1;let acc=0;
       const grad=items.map((z,i)=>{const a0=acc/tot*360;acc+=z[1];return `#${cols[i%cols.length]} ${a0}deg ${acc/tot*360}deg`}).join(",");
-      const d=Math.min(h,w*0.42);
+      const d=Math.min(h,w*0.38);
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y+(h-d)/2)};width:${px(d)};height:${px(d)};border-radius:50%;background:conic-gradient(${grad});-webkit-mask:radial-gradient(circle,transparent 34%,#000 35%);mask:radial-gradient(circle,transparent 34%,#000 35%)"></div>`;
       const lx=x+d+0.25,lw=w-d-0.3,rh=Math.min(0.42,h/items.length);
       items.forEach((z,i)=>{const yy=y+(h-rh*items.length)/2+i*rh;
         html+=`<div style="position:absolute;left:${px(lx)};top:${px(yy+rh/2-0.07)};width:${px(.14)};height:${px(.14)};border-radius:3px;background:#${cols[i%cols.length]}"></div>`;
-        {const lwT=lw-0.85,fs=Math.max(7.5,Math.min(10.5,lwT*72/(z[0].length*0.56)));this.text(z[0],lx+0.22,yy,lwT+0.1,rh,{size:fs,bold:true,valign:"middle"});}
-        this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.55,yy,0.55,rh,{size:11,head:true,align:"right",valign:"middle"});});},
+        {const fs=11;this.text(z[0],lx+0.22,z[2]?yy+rh*0.08:yy,lw-0.85,z[2]?rh*0.5:rh,{size:fs,bold:true,valign:z[2]?"bottom":"middle",noEnf:1});
+         if(z[2])this.text(z[2]+" personas",lx+0.22,yy+rh*0.58,lw-0.85,rh*0.36,{size:9.5,color:T().mu,valign:"top",noEnf:1});
+         this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.6,yy,0.6,rh,{size:12,head:true,align:"right",valign:"middle",noEnf:1});}
+      });},
     table(rows,x,y,w,colW,o){
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
@@ -721,7 +723,7 @@ function PptxR(pptx){
       else s.addImage({data:await cropCover(img,w,h),x,y,w,h,rounding:!!(o&&o.round)});
     },
     donut(items,x,y,w,h,cols){const t=T();
-      s.addChart(pptx.ChartType.doughnut,[{name:"Distribución",labels:items.map(z=>z[0]),values:items.map(z=>z[1])}],
+      s.addChart(pptx.ChartType.doughnut,[{name:"Distribución",labels:items.map(z=>z[0]+(z[2]?" · "+z[2]:"")),values:items.map(z=>z[1])}],
         {x,y,w,h,holeSize:32,chartColors:cols.slice(0,items.length),showLegend:true,legendPos:"r",legendFontFace:FB,legendFontSize:9.5,legendColor:t.tx,
          showPercent:true,showValue:false,showLabel:false,showTitle:false,dataLabelColor:"FFFFFF",dataLabelFontSize:10,dataLabelFontFace:FB,dataLabelFontBold:true,
          dataBorder:{pt:1.5,color:t.p1}});},
@@ -763,8 +765,8 @@ async function bandaFina(R,items){const t=T(),h=0.82,y=H-h;R.rect(0,y,W,h,{fill:
 async function tarjetaDato(R,st,x,y,w,h,hi){const t=T();
   R.rect(x,y,w,h,{fill:hi?t.acc:t.p1,radius:0.08});
   await icono(R,st.ic||"sparkles",x+0.22,y+0.22,0.56,hi?COL.wh:t.acc,hi?t.acc:COL.wh);
-  R.text(st.n,x+0.92,y+0.12,w-1.05,0.76,{size:fitSize(st.n,32,[[7,27],[9,23]]),head:true,color:hi?COL.wh:t.tx,valign:"middle"});
-  R.text(st.l,x+0.22,y+0.92,w-0.4,h-1.0,{size:st.l.length>26?12:13.5,bold:true,color:hi?COL.wh:t.mu,valign:"top"});}
+  R.text(st.n,x+0.9,y+0.1,w-0.98,0.8,{size:fitSize(st.n,36,[[7,30],[9,26],[12,21]]),head:true,color:hi?COL.wh:t.tx,valign:"middle"});
+  if(st.l)R.text(st.l,x+0.22,y+0.92,w-0.35,h-0.98,{size:st.l.length>26?14.5:17,bold:true,color:hi?COL.wh:t.mu,valign:"top"});}
 async function tarjetaLogo(R,img,x,y,w,h){R.rect(x,y,w,h,{fill:COL.wh,radius:0.1,line:T().light?"D5DCE5":undefined});await R.image(img,x+0.15,y+0.12,w-0.3,h-0.24,{fit:"contain"})}
 
 /* ===================== ESTILO MODERNO (fiel a la referencia) ===================== */
@@ -1985,13 +1987,24 @@ async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
   R.text(d,x,y0+1.5,w,bot-y0-1.5,{size:fitSize(d,15,[[260,13.5],[420,12],[600,10.5]]),color:k.tx});
   await famFoot(R,n);R.end();}
 async function dibujarNoct1(R,sp,n,tot){const k=K();R.slide(k.bg);
-  const y0=famHead(R,NOCT_TIT,n,tot),ph=5.15-y0;
+  const y0=famHead(R,NOCT_TIT,n,tot),ph=5.6-y0;
   await R.image(foto("noct1",FOTOS.findIndex(f=>f.noc)+1),0,y0,W,ph);
   R.rect(0,y0+ph,W,0.07,{fill:KP(0)});
   const tx=txD("noct_txt",NOCT_TXT);
-  R.text(tx,0.6,y0+ph+0.17,W-1.2,6.95-(y0+ph+0.17),{size:fitSize(tx,18,[[150,16],[200,14]]),bold:true,color:k.tx,align:"center",valign:"middle"});
+  R.text(tx,0.6,y0+ph+0.12,W-1.2,7.3-(y0+ph+0.12),{size:fitSize(tx,18,[[150,16],[200,14]]),bold:true,color:k.tx,align:"center",valign:"middle"});
   R.end();}
-async function dibujarNoct2(R,sp,n,tot){const k=K();R.slide(k.bg);
+async function dibujarNoct2(R,sp,n,tot){const k=K();
+  if((sp.var||(S.var||{}).noct2||"A")==="B"){R.slide("000000");await R.image(foto("noct2",FOTOS.findIndex(f=>f.g==="noc")+1),0,0,W,H);
+    const tt=NOCT_TIT;R.rect(0.5,0.45,tt.length*0.2+0.7,0.7,{fill:"10142A",radius:0.08});
+    R.text(tt,0.5,0.45,tt.length*0.2+0.7,0.7,{size:22,head:true,color:COL.wh,align:"center",valign:"middle"});
+    const g=0.16,bw=(W-1.0-g*3)/4,bh=1.55,top=H-0.4-bh;
+    for(let i=0;i<4;i++){const b=NOCT_BOX[i],x=0.5+i*(bw+g),t=txD("noct_"+(i+1),b.t);
+      R.rect(x,top,bw,bh,{fill:KP(i),radius:0.1});
+      const d=0.72;R.rect(x+0.2,top+bh/2-d/2,d,d,{fill:"FFFFFF",ellipse:true});
+      await R.image(await iconPng(b.ic,KP(i)),x+0.2+d*0.2,top+bh/2-d*0.3,d*0.6,d*0.6,{fit:"contain"});
+      R.text(t,x+1.05,top+0.08,bw-1.15,bh-0.16,{size:fitSize(t,16,[[34,15],[46,13.5]]),head:true,color:COL.wh,valign:"middle"});}
+    R.end();return}
+  R.slide(k.bg);
   const y0=famHead(R,NOCT_TIT,n,tot),g=0.18,bw=(W-1.2-g*3)/4,top=y0+0.35,bh=6.75-top;
   for(let i=0;i<4;i++){const b=NOCT_BOX[i],x=0.6+i*(bw+g),t=txD("noct_"+(i+1),b.t);
     R.rect(x,top,bw,bh,{fill:KP(i),radius:k.fam==="caj"?undefined:0.08});
@@ -2116,7 +2129,7 @@ async function actC(R,sp,n,tot){
   else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),...totRs.map(t=>[t[0],Object.assign({},t[3],{align:"center"})])],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
   await famFoot(R,n);R.end();}
 
-const VARIANTES={pub:{A:"Bloque de color",B:"Foto completa"},perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
+const VARIANTES={noct2:{A:"Cajas de color",B:"Sobre foto completa"},pub:{A:"Bloque de color",B:"Foto completa"},perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
 
 /* ===================== RESALTE DE CIFRAS (capa común a todos los estilos) ===================== */
 const ENFS={A:"Actual",B:"Cifras grandes",C:"Grandes y en color",D:"Grandes con destacado"};
@@ -2133,7 +2146,7 @@ function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t
   const attC=acc==="E87115"?(t.acc2||"179741"):"E87115";const isW=c=>!!c&&(c===COL.wh||/^(FFFFFF|FFF)$/i.test(c));
   const W2=Object.assign({},R);
   const estW=(k,sz)=>[...k].reduce((a,c)=>a+(/[0-9]/.test(c)?0.67:/[.,:]/.test(c)?0.33:c===" "?0.3:/[mw]/i.test(c)?1.0:0.72),0)*sz/72;let LASTF=null;
-  W2.text=(tx,x,y,w,h,o)=>{o=Object.assign({},o||{});
+  W2.text=(tx,x,y,w,h,o)=>{if(o&&o.noEnf)return R.text(tx,x,y,w,h,o);o=Object.assign({},o||{});
     if(typeof tx==="string"){const key=tx.trim();
       if(d.F.has(key)){const att=d.F.get(key),base=o.size||14,want=base*(att?1.55:1.28),maxW=w*72/(Math.max(key.length,3)*0.66);
         o.size=Math.max(base,Math.min(want,maxW));o.head=true;const white=isW(o.color);LASTF={x,y,h,w,size:o.size,key,align:o.align||"left",valign:o.valign};
@@ -2523,7 +2536,7 @@ function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
 function pNoctPub(){return S.incluir.noctpub?`<p class="hint">Usa el mismo diseño elegido en "Personas cada domingo".</p><div class="lbl">Título</div>${edTxt("npub_tit","CicloRecreoVía Nocturna")}<div class="lbl">Cifra</div>${edTxt("npub_n","35.000")}<div class="lbl">Texto</div>${edTxt("npub_l","asistentes por jornada")}${edTxt("npub_c","CicloRecreoVía Nocturna")}`:""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
-function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
+function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?varUI("noct2",{k:"noct2"})+NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
 function enfUI(spec){return "";}
 function enfUIOld(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
   return `<div class="lbl" style="margin-top:0">Resalte de cifras <span style="text-transform:none;letter-spacing:0;font-weight:700">· se aplica a todas las diapositivas con cifras</span></div>
