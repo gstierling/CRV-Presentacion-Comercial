@@ -2036,7 +2036,7 @@ async function dibujarNoct1(R,sp,n,tot){const k=K();R.slide(k.bg);
   R.text(tx,0.6,y0+ph+0.12,W-1.2,7.3-(y0+ph+0.12),{size:fitSize(tx,18,[[150,16],[200,14]]),bold:true,color:k.tx,align:"center",valign:"middle"});
   R.end();}
 async function dibujarNoct2(R,sp,n,tot){const k=K();
-  if((sp.var||(S.var||{}).noct2||"A")==="B"){R.slide("000000");await R.image(foto("noct2",FOTOS.findIndex(f=>f.g==="noc")+1),0,0,W,H);
+  if(true){R.slide("000000");await R.image(foto("noct2",FOTOS.findIndex(f=>f.g==="noc")+1),0,0,W,H);
     const tt=NOCT_TIT;R.rect(0.5,0.45,tt.length*0.2+0.7,0.7,{fill:"10142A",radius:0.08});
     R.text(tt,0.5,0.45,tt.length*0.2+0.7,0.7,{size:22,head:true,color:COL.wh,align:"center",valign:"middle"});
     const g=0.16,bw=(W-1.0-g*3)/4,bh=1.55,top=H-0.4-bh;
@@ -2592,7 +2592,7 @@ function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que se pueden lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
 function pNoctPub(){return S.incluir.noctpub?EG([["Título",edTxt("npub_tit","CicloRecreoVía Nocturna")],["Cifra",edTxt("npub_n","35.000")],["Texto",edTxt("npub_l","asistentes por jornada")],["Texto 2",edTxt("npub_c","CicloRecreoVía Nocturna")]]):""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
-function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?varUI("noct2",{k:"noct2"})+EG(NOCT_BOX.map((b,i)=>["Caja "+(i+1),edTxt("noct_"+(i+1),b.t)])):offMsg)}
+function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?EG(NOCT_BOX.map((b,i)=>["Caja "+(i+1),edTxt("noct_"+(i+1),b.t)])):offMsg)}
 function enfUI(spec){return "";}
 function enfUIOld(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
   return `<div class="lbl" style="margin-top:0">Resalte de cifras <span style="text-transform:none;letter-spacing:0;font-weight:700">· se aplica a todas las diapositivas con cifras</span></div>
