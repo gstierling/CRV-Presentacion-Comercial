@@ -77,9 +77,15 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .pen:hover{border-color:var(--or)}
 .edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
 .edb{display:flex;gap:8px;margin-top:8px}
-.chip .prin{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px 3px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font-size:12px;font-weight:800;color:var(--mut);width:max-content}
-.chip .prin i{width:14px;height:14px;border-radius:4px;border:2px solid #b9c3cf;display:inline-block;box-sizing:border-box}
-.chip .prin.on{border-color:var(--or);color:var(--or)}.chip .prin.on i{background:var(--or);border-color:var(--or);box-shadow:inset 0 0 0 2px #fff}
+.edg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 14px;max-width:1100px}
+.edc{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:8px 10px}.edc .lbl{margin:0 0 4px}
+.edc .edt{margin:0 0 4px}.edc .edt p{font-size:13.5px;line-height:1.35}.edc .pen{width:32px;height:32px;font-size:14px}
+.stab{border-collapse:collapse;font-size:13.5px;min-width:100%}.stab th{background:#10233F;color:#fff;padding:7px 10px;text-align:left;font-weight:800;white-space:nowrap}
+.stab td{padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.stab tr.on td{background:#fdf0e6}.pen.sm{width:28px;height:28px;font-size:12px;vertical-align:middle}
+.grid.ob .chip{min-height:0;padding:8px 40px 8px 12px;gap:2px;border-radius:12px}.grid.ob .chip b{font-size:14.5px}.grid.ob .chip small{font-size:12px}
+.grid.ob .chip.on:after{top:7px;right:7px;width:20px;height:20px;font-size:12px}
+.chip .prin{position:absolute;right:7px;bottom:7px;width:22px;height:22px;border-radius:50%;border:2px solid #b9c3cf;background:#fff;color:#9aa6b2;font-size:12px;font-weight:900;display:grid;place-items:center;cursor:pointer}
+.chip .prin.on{border-color:var(--or);background:var(--or);color:#fff}
 mark.hi{background:none;color:var(--or);font-weight:900}
 .dlp{flex:1 1 auto;min-width:0;display:flex;gap:6px;align-items:center;position:relative}.dlp .dli{flex:1 1 auto}
 .edm2{position:absolute;right:46px;top:-9px;font-size:9.5px;font-weight:800;color:var(--or);text-transform:uppercase;background:var(--bg);padding:0 4px}
@@ -1939,7 +1945,7 @@ async function dibujarClaves(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="e
     R.text(dd,x+0.32,y+1.86,cw-0.6,ch-2.0,{size:fitSize(dd,12.5,[[70,11.5]]),color:hi?COL.wh:k.mu,valign:"top"});}
   await famFoot(R,n);R.end();}
 const PUBLICO=[{city:"Santiago",n:"35.000",foto:1},{city:"Viña del Mar",n:"4.000",foto:10}];
-async function dibujarPublico(R,sp,n,tot,C){C=C||{p:"pub",tit:"Personas cada domingo",n:"39.000",l1:"participantes por domingo",l2:"Santiago + Viña del Mar",foto:1,right:false};const k=K(),v=sp.var||(S.var||{}).pub||"A";
+async function dibujarPublico(R,sp,n,tot,C){C=C||{p:"pub",tit:"Personas cada domingo",n:"39.000",l1:"participantes por domingo",l2:"Santiago + Viña del Mar",foto:1,right:false};const k=K(),v="B";
   const num=txD(C.p+"_n",C.n),l1=txD(C.p+"_l",C.l1),l2=txD(C.p+"_c",C.l2),img=foto(C.p+"_1",C.foto),tit=txD(C.p+"_tit",C.tit);
   if(v==="B"){R.slide("0B1420");await R.image(img,0,0,W,H);
     R.rect(0,0,W,H,{fill:"0B1420",transp:62});for(let i=0;i<10;i++){const ww=5.2+i*0.45;R.rect(C.right?W-ww:0,0,ww,H,{fill:"0B1420",transp:93})}
@@ -2220,7 +2226,7 @@ async function dibujar(R,sp,n,tot){
     R.text=(tx,x,y,w,h,o)=>{if(tx===d0&&o){o=Object.assign({},o);const len=d0.replace(/\*/g,"").length,lines=Math.max(1,h*72/((o.size||12)*1.3*1.35));
       const fitW=Math.sqrt(w*h*72*72/(len*0.55*1.3));o.size=Math.min(19,Math.max(o.size||12,Math.min((o.size||12)*1.5,fitW*0.92)));o.bold=false;if(o.color&&T().mu&&o.color===T().mu)o.color=T().tx||o.color}return R0.text(tx,x,y,w,h,o)};}
   if(!R._enf&&enfMode()!=="A"&&["crv","circ","perf","numeros","rrss"].includes(sp.k)){R=enfWrap(R,sp,enfMode());R._enf=1}
-  const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
+  const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk==="act"?"C":"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
   if(sp.k==="res")return dibujarRes(R,sp,n,tot);
@@ -2528,15 +2534,14 @@ function pPortada(){return `
 function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`${enfUI({k:"crv"})}${edTxt("crv",CAT.crv.descripcion)}${datosLista(CAT.crv.stats)}`:offMsg)}
 function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`${enfUI({k:"circ",city})}${edTxt(k,c.d)}${datosLista(c.datos)}
   <div class="lbl">Mapa del circuito</div>${mapaSelUI(city)}`:offMsg)}
-function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?enfUI({k:"perf",city})+varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
-  <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
+function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?`${datosLista(pf.kpis)}`:offMsg)}
 /* Objetivos elegidos: los principales (máx. 2) van primero y marcados */
 function objSel(){const pr=(S.objPrin||[]).filter(id=>S.objetivos.includes(id));
   return [...pr,...S.objetivos.filter(id=>!pr.includes(id))].map(id=>{const o=byId(CAT.objetivos,id);if(!o)return null;
     return pr.includes(id)?Object.assign({},o,{t:"★ "+o.t,d:"*Objetivo principal.* "+o.d,prin:true}):pr.length?Object.assign({},o,{d:"*Objetivo secundario.* "+o.d}):o}).filter(Boolean)}
 function pObjetivos(){return togIncl("objetivos")+`
-  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Marca <b>Principal</b> en uno o dos de ellos: aparecerán primero y destacados en la presentación. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
-  <div class="grid">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small>${S.objetivos.includes(o.id)?`<span class="prin ${(S.objPrin||[]).includes(o.id)?"on":""}" onclick="event.stopPropagation();A.prin('${o.id}')"><i></i>Principal</span>`:""}</button>`).join("")}</div>`}
+  <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Toca la <b>P</b> en uno o dos de ellos para marcarlos como principales: aparecerán primero y destacados en la presentación. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
+  <div class="grid ob">${CAT.objetivos.map(o=>`<button class="chip ${S.objetivos.includes(o.id)?"on":""}" onclick="A.toggle('objetivos','${o.id}')"><b>${esc(o.t)}</b><small>${esc(o.d)}</small>${S.objetivos.includes(o.id)?`<span class="prin ${(S.objPrin||[]).includes(o.id)?"on":""}" title="Objetivo principal" onclick="event.stopPropagation();A.prin('${o.id}')">P</span>`:""}</button>`).join("")}</div>`}
 function varUI(kind,spec){const cur=(S.var||{})[kind]||"A",h=(S.hist||[]).length;
   setTimeout(()=>drawVar(kind,spec),0);
   return `<div class="lbl" style="margin-top:0">Diseño de esta diapositiva <span style="text-transform:none;letter-spacing:0;font-weight:700">· ${kind==="perf"?"se aplica a ambos perfiles":kind==="act"?"se aplica a todas las activaciones":"elige una"}</span></div>
@@ -2575,15 +2580,19 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
   const box=$("#fotosBox");if(!box||curId!==pn.id)return;
   const h=[...seen].map(([s,d])=>fotoGrid(s,d)).join("");FCACHE[pn.id]=h;if(box.innerHTML!==h)box.innerHTML=h;
   if(keepY!=null){window.scrollTo(0,keepY);keepY=null}}
-function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}
-  <div class="lbl">Valor por domingo</div><div class="dl"><div class="dlp"><div class="dli"><b>${money(sopPrecio(s))}</b> + IVA por domingo · las tarifas por período se calculan solas</div><button class="pen" title="Editar valor" onclick="A.sopP(${s.n})">✏️</button></div></div>`:offMsg)}
-function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("claves_tit",CLAVES_TIT)}`+CLAVES.map((c,i)=>`<div class="lbl">Clave ${i+1}</div>${edTxt("clave_t"+(i+1),c.t)}${edTxt("clave_d"+(i+1),c.d)}`).join(""):""}
-function pPublico(){return S.incluir.publico?varUI("pub",{k:"publico"})+`<div class="lbl">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Cifra</div>${edTxt("pub_n","39.000")}<div class="lbl">Texto</div>${edTxt("pub_l","participantes por domingo")}${edTxt("pub_c","Santiago + Viña del Mar")}`:""}
+function pSop(s){const k="sop_"+s.n,ps=periodosSel().length?periodosSel():[{t:"1 domingo",dom:1,desc:0}];return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}
+  <div class="lbl">Tabla de tarifas de soportes <span style="text-transform:none;letter-spacing:0;font-weight:700">· toca ✏️ para cambiar el valor por domingo; los períodos se calculan solos</span></div>
+  <div style="overflow-x:auto"><table class="stab"><tr><th>Soporte</th><th>Por domingo</th>${ps.slice(1).map(p=>`<th>${esc(p.t)}</th>`).join("")}</tr>
+  ${SOPORTES.map(z=>`<tr class="${z.n===s.n?"on":""}"><td><b>${z.n}. ${esc(z.t)}</b></td><td><b>${money(sopPrecio(z))}</b> <button class="pen sm" onclick="A.sopP(${z.n})">✏️</button></td>${ps.slice(1).map(p=>`<td>${money(precioPeriodo({_base:sopPrecio(z)},p))}</td>`).join("")}</tr>`).join("")}</table></div>
+  <p class="hint">Valores netos (+ IVA). Esta tabla es la misma para los 4 soportes.</p>`:offMsg)}
+const EG=cells=>`<div class="edg">${cells.map(([l,h])=>`<div class="edc"><div class="lbl">${l}</div>${h}</div>`).join("")}</div>`;
+function pClaves(){return S.incluir.claves?EG([["Título",edTxt("claves_tit",CLAVES_TIT)],...CLAVES.map((c,i)=>["Clave "+(i+1),edTxt("clave_t"+(i+1),c.t)+edTxt("clave_d"+(i+1),c.d)])]):""}
+function pPublico(){return S.incluir.publico?EG([["Título",edTxt("pub_tit","Personas cada domingo")],["Cifra",edTxt("pub_n","39.000")],["Texto",edTxt("pub_l","participantes por domingo")],["Texto 2",edTxt("pub_c","Santiago + Viña del Mar")]]):""}
 function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que se pueden lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
-function pNoctPub(){return S.incluir.noctpub?`<p class="hint">Usa el mismo diseño elegido en "Personas cada domingo".</p><div class="lbl">Título</div>${edTxt("npub_tit","CicloRecreoVía Nocturna")}<div class="lbl">Cifra</div>${edTxt("npub_n","35.000")}<div class="lbl">Texto</div>${edTxt("npub_l","asistentes por jornada")}${edTxt("npub_c","CicloRecreoVía Nocturna")}`:""}
+function pNoctPub(){return S.incluir.noctpub?EG([["Título",edTxt("npub_tit","CicloRecreoVía Nocturna")],["Cifra",edTxt("npub_n","35.000")],["Texto",edTxt("npub_l","asistentes por jornada")],["Texto 2",edTxt("npub_c","CicloRecreoVía Nocturna")]]):""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
-function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?varUI("noct2",{k:"noct2"})+NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
+function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?varUI("noct2",{k:"noct2"})+EG(NOCT_BOX.map((b,i)=>["Caja "+(i+1),edTxt("noct_"+(i+1),b.t)])):offMsg)}
 function enfUI(spec){return "";}
 function enfUIOld(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
   return `<div class="lbl" style="margin-top:0">Resalte de cifras <span style="text-transform:none;letter-spacing:0;font-weight:700">· se aplica a todas las diapositivas con cifras</span></div>
@@ -2598,7 +2607,7 @@ function pActNueva(){return `<p class="hint">Todavía no hay activaciones. Crea 
   <button class="addbtn" onclick="A.nuevaAct()">＋ Crear activación</button>`}
 function pAct(a){
   const t=byId(CAT.tipos,a.tipo);const dins=CAT.dinamicas;const ks=kpisAct(a);const idx=S.activaciones.indexOf(a);
-  return varUI("act",{k:"act",a,i:idx})+`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px">
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px">
     ${S.activaciones.length<4&&idx===S.activaciones.length-1?`<button class="hbtn" onclick="A.nuevaAct()">＋ Agregar otra activación</button>`:""}
     <button class="hbtn" style="color:var(--red)" onclick="A.borrarAct('${a.uid}')">🗑 Quitar esta activación</button></div>
   <div class="cols2"><div>
