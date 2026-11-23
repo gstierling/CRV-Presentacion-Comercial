@@ -77,6 +77,7 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .pen:hover{border-color:var(--or)}
 .edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
 .edb{display:flex;gap:8px;margin-top:8px}
+.vrow{display:flex;gap:6px;align-items:stretch;margin-bottom:6px}.vrow .opt{flex:1;margin:0}.vrow .pen{height:auto;min-height:44px}
 .edg{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 12px}
 .edc{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:6px 10px;min-width:0}.edc .lbl{margin:0 0 4px}
 .edc .edt{margin:0 0 4px}.edc .edt p{font-size:13.5px;line-height:1.35}.edc .pen{width:32px;height:32px;font-size:14px}
@@ -513,7 +514,7 @@ function nuevo(){return {
   comunicacion:["c1","c2","c3","c8"],comNota:"",condiciones:CAT.condiciones.map(c=>c.id),condExtra:"",
   enlaces:["l1","l2","l3"],libres:[],
   imgs:{},
-  incluir:{noctpub:true,divprop:true,objcat:true,crv:true,claves:true,publico:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true,noct1:true,noct2:true,sop_1:true,sop_2:true,sop_3:true,sop_4:true}
+  incluir:{dae:true,noctpub:true,divprop:true,objcat:true,crv:true,claves:true,publico:true,circ_stgo:true,circ_vina:true,perf_stgo:true,perf_vina:true,objetivos:true,numeros:true,tarifas:true,comunicacion:true,rrss:true,condiciones:true,enlaces:true,noct1:true,noct2:true,sop_1:true,sop_2:true,sop_3:true,sop_4:true}
 }}
 let S;try{S=JSON.parse(localStorage.getItem("crvPropuesta"))||nuevo()}catch(e){S=nuevo()}
 function normalizar(){const n=nuevo();if(!S.ver||S.ver<2){S.incluir=S.incluir||{};S.incluir.circ_vina=true;S.incluir.perf_vina=true;S.ver=2}S.incluir=Object.assign(n.incluir,S.incluir||{});S.imgs=S.imgs||{};S.tema=S.tema||"azul";S.fotos=S.fotos||{};S.textos=S.textos||{};
@@ -590,7 +591,9 @@ function kpisAct(a){
 function kpisTotales(){const m={};S.activaciones.forEach(a=>kpisAct(a).forEach(k=>{m[k.id]=(m[k.id]||0)+k.v}));
   return CAT.kpis.filter(k=>m[k.id]>0).map(k=>({id:k.id,t:k.t,v:m[k.id]}))}
 function periodosSel(){return CAT.periodos.filter(p=>S.periodos.includes(p.id))}
-function vendedor(){return byId(CAT.vendedores,S.vendedor)||CAT.vendedores[0]}
+function VENDS(){try{const v=JSON.parse(localStorage.getItem("crvVendedores")||"null");if(Array.isArray(v)&&v.length)return v}catch(e){}return CAT.vendedores.map(x=>Object.assign({},x))}
+function saveVends(v){try{localStorage.setItem("crvVendedores",JSON.stringify(v))}catch(e){}}
+function vendedor(){const L=VENDS();return byId(L,S.vendedor)||L[0]}
 function dinTexto(a){if(a.din==="otra") return a.dinTexto||"";const d=byId(CAT.dinamicas,a.din);return d?d.tx:""}
 function dinNombre(a){if(a.din==="otra") return "Dinámica a medida";const d=byId(CAT.dinamicas,a.din);return d?d.t:""}
 
@@ -620,6 +623,7 @@ function plan(){
   SOPORTES.forEach(s=>{if(I["sop_"+s.n])P.push({k:"sop",s,name:"Soporte "+s.n+": "+s.t})});
   if(I.numeros&&kpisTotales().length)P.push({k:"numeros",name:"Números proyectados"});
   if(I.tarifas&&S.activaciones.length&&periodosSel().length)P.push({k:"tarifas",name:"Tarifas"});
+  if(I.dae)P.push({k:"dae",name:"Derecho a estar"});
   lib("tar");
   if(I.comunicacion&&S.comunicacion.length)P.push({k:"comunicacion",name:"Plan comunicacional"});
   if(I.rrss)P.push({k:"rrss",name:"Nuestra comunidad digital"});
@@ -2021,6 +2025,21 @@ async function comB(R,sp,n,tot){const k=K(),P=S.prospecto||"Prospecto";R.slide(k
     R.text(z.t,x+d+0.22,y-0.02,cw-d-0.25,0.42,{size:15,head:true,color:k.tx,valign:"middle"});
     R.text(z.d,x+d+0.22,y+0.4,cw-d-0.25,rh-0.45,{size:12,color:k.mu,valign:"top"});}
   await famFoot(R,n);R.end();}
+const DAE={cols:["Menos de 16 m²","Entre 16 y 50 m²","Entre 50 y 100 m²","Entre 100 y 150 m²"],
+  rows:[["1 domingo",[580000,910000,1220000,1530000]],["2 domingos",[1110000,1760000,2360000,2960000]],["3 domingos",[1640000,2590000,3440000,4290000]],
+    ["1 mes",[2120000,3320000,4420000,5520000]],["3 meses",[6040000,9640000,12640000,14540000]],["6 meses",[10880000,17280000,22680000,26780000]],
+    ["12 meses",[20760000,33760000,44160000,50960000]],["1 CicloRecreoVía Nocturna",[1580000,2180000,2980000,3580000]]],
+  nota:"Incluye servicio de *delimitación y seguridad para MONTAJE/DESMONTAJE* en cada jornada contratada en función al metraje adquirido, responsabilidad del equipo técnico de CicloRecreoVía.",
+  nota2:"El horario de instalación del servicio podría variar entre las *7:30 y las 9:00 hrs* dependiendo del tipo de activación."};
+async function dibujarDAE(R,sp,n,tot){const k=K(),dk=!T().light?"0A121B":"10233F";R.slide(k.bg);if(k.fam==="est")eSnow(R);
+  const y0=famHead(R,"Derecho a estar",n,tot),x=0.6,w=W-1.2,first=3.1,cw=(w-first)/4,nR=DAE.rows.length+1,rh=Math.min(0.5,(5.75-y0)/nR);
+  const head=[{t:"Período",fill:dk,color:COL.wh,head:true,size:13}].concat(DAE.cols.map(c=>({t:c,fill:dk,color:COL.wh,head:true,align:"center",size:12})));
+  const body=DAE.rows.map((r,i)=>{const f=i%2?k.bg:k.card,noc=/Nocturna/.test(r[0]);return [{t:r[0],fill:noc?dk:f,color:noc?COL.wh:k.tx,bold:true,size:12.5}].concat(r[1].map(v=>({t:money(v)+" + IVA",fill:noc?dk:f,color:noc?COL.wh:k.tx,align:"center",bold:true,size:12})))});
+  R.table([head,...body],x,y0,w,[first,cw,cw,cw,cw],{rowH:rh,size:12,border:k.bg});
+  const ny=y0+nR*rh+0.15,nh=6.88-ny;R.rect(x,ny,w,nh,{fill:k.card,radius:0.08});R.rect(x,ny,0.1,nh,{fill:KP(0)});
+  R.text(txD("dae_nota",DAE.nota),x+0.3,ny+0.05,w-0.5,nh*0.58,{size:11.5,bold:true,color:k.tx,valign:"middle"});
+  R.text(txD("dae_nota2",DAE.nota2),x+0.3,ny+nh*0.58,w-0.5,nh*0.38,{size:10.5,color:k.mu,valign:"top"});
+  await famFoot(R,n);R.end();}
 const NOCT_TXT="*Tres o cuatro sábados al año*, de *18.00 a 24.00 hrs*, desarrollamos la *CicloRecreoVía Nocturna* en circuitos de *4 a 8 kilómetros*, con una *asistencia espectacular* en un ambiente de *luces, neón y música*.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
 const NOCT_TIT="CicloRecreoVía Nocturna";
@@ -2239,6 +2258,7 @@ async function dibujar(R,sp,n,tot){
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
   if(sp.k==="res")return dibujarRes(R,sp,n,tot);
+  if(sp.k==="dae")return dibujarDAE(R,sp,n,tot);
   if(sp.k==="comunicacion")return comB(R,sp,n,tot);
   if(sp.k==="claves")return dibujarClaves(R,sp,n,tot);
   if(sp.k==="divprop")return dibujarDivProp(R,sp,n,tot);
@@ -2477,6 +2497,7 @@ let SHDEF=0;function fotoSheet(slot,def,kind){SHDEF=def;let l=document.getElemen
     `<div class="ft nueva ${cur==="nueva"?"on":""}" onclick="A.pickFoto('${slot}','nueva','${kind}')" ${im&&im.data?`style="background-image:url('${objUrl(im.data)}')"`:""}><span>＋ ${mapa?"Nuevo":"Nueva"}</span></div></div>`+
     (cur==="nueva"?`<div style="margin-top:12px">${imgZone(slot,im,false,mapa?"Pega aquí el mapa (Ctrl+V) o elígelo":"Pega aquí la foto nueva (Ctrl+V) o elígela")}</div>`:"")+
     `<button class="b-big b-sec" style="margin-top:14px;width:100%" onclick="closeSheet2()">Listo</button></div></div>`}
+function confirmDel(id){const b=document.querySelector(`.vrow [onclick="A.delVend('${id}')"]`);if(b&&!b.dataset.ok){b.dataset.ok=1;b.textContent="¿Sí?";b.style.width="auto";b.style.padding="0 8px";return false}return true}
 function picker(title,opts,val,onPick){
   layer.innerHTML=`<div class="ov" onclick="if(event.target===this)closeLayer()"><div class="sheet"><h3>${esc(title)}</h3>${opts.map((o,i)=>`<button class="opt ${o.v===val?"on":""}" data-i="${i}">${esc(o.t)}${o.sub?`<small>${esc(o.sub)}</small>`:""}</button>`).join("")}<button class="b-big b-sec" onclick="closeLayer()">Cancelar</button></div></div>`;
   layer.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{closeLayer();onPick(opts[+b.dataset.i].v)});
@@ -2600,6 +2621,9 @@ function pPublico(){return S.incluir.publico?EG([["Título",edTxt("pub_tit","Per
 function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que se pueden lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
 function pNoctPub(){return S.incluir.noctpub?EG([["Título",edTxt("npub_tit","CicloRecreoVía Nocturna")],["Cifra",edTxt("npub_n","35.000")],["Texto",edTxt("npub_l","asistentes por jornada")],["Texto 2",edTxt("npub_c","CicloRecreoVía Nocturna")]]):""}
+function pDAE(){return S.incluir.dae?`<div class="lbl" style="margin-top:4px">Tarifario por metraje (valores netos + IVA)</div>
+  <div style="overflow-x:auto"><table class="stab"><tr><th>Período</th>${DAE.cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>${DAE.rows.map(r=>`<tr><td><b>${esc(r[0])}</b></td>${r[1].map(v=>`<td>${money(v)}</td>`).join("")}</tr>`).join("")}</table></div>
+  ${EG([["Nota 1",edTxt("dae_nota",DAE.nota)],["Nota 2",edTxt("dae_nota2",DAE.nota2)]])}`:""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?EG(NOCT_BOX.map((b,i)=>["Caja "+(i+1),edTxt("noct_"+(i+1),b.t)])):offMsg)}
 function enfUI(spec){return "";}
@@ -2679,7 +2703,7 @@ function pRevisar(){
   <div class="lbl">Diapositivas de la propuesta (toca para ver en grande)</div>
   <div class="thumbs" id="thumbs"></div>`}
 
-const XS={"Portada": "Port.", "Qué es": "CRV", "Circ. Stgo": "Stgo", "Circ. Viña": "Viña", "Perfil Stgo": "Perf. S", "Perfil Viña": "Perf. V", "Objetivos": "Obj.", "Act. 1": "A1", "Números": "Núm.", "Tarifas": "Tarif.", "Comunic.": "Com.", "RRSS": "RRSS", "Condic.": "Cond.", "Fotos": "Fotos", "Despedida": "Desp.", "Descargar": "Fin", "Libre": "Libre", "Claves": "Claves", "Propuesta": "Prop.", "Obj. posibles": "Obj.+", "Público": "Púb.", "Nocturna 1": "Noc. 1", "Nocturna 2": "Noc. 2", "Nocturna 3": "Noc. 3", "Soporte 1": "Sop. 1", "Soporte 2": "Sop. 2", "Soporte 3": "Sop. 3", "Soporte 4": "Sop. 4"};
+const XS={"Portada": "Port.", "Qué es": "CRV", "Circ. Stgo": "Stgo", "Circ. Viña": "Viña", "Perfil Stgo": "Perf. S", "Perfil Viña": "Perf. V", "Objetivos": "Obj.", "Act. 1": "A1", "Números": "Núm.", "Tarifas": "Tarif.", "Comunic.": "Com.", "RRSS": "RRSS", "Condic.": "Cond.", "Fotos": "Fotos", "Despedida": "Desp.", "Descargar": "Fin", "Libre": "Libre", "Claves": "Claves", "Derecho a estar": "DAE", "Propuesta": "Prop.", "Obj. posibles": "Obj.+", "Público": "Púb.", "Nocturna 1": "Noc. 1", "Nocturna 2": "Noc. 2", "Nocturna 3": "Noc. 3", "Soporte 1": "Sop. 1", "Soporte 2": "Sop. 2", "Soporte 3": "Sop. 3", "Soporte 4": "Sop. 4"};
 function PANELS(){
   const P=[],lib=pos=>S.libres.filter(l=>l.pos===pos).forEach(l=>P.push({id:"lib_"+l.uid,s:"Libre",t:"Diapositiva libre"+(l.titulo?": "+l.titulo:""),r:()=>pLibre(l),m:p=>p.k==="libre"&&p.l.uid===l.uid}));
   P.push({id:"portada",s:"Portada",t:"Portada",r:pPortada,m:p=>p.k==="portada"});
@@ -2703,6 +2727,7 @@ function PANELS(){
   SOPORTES.forEach(s=>P.push({id:"sop_"+s.n,s:"Soporte "+s.n,t:"Soporte "+s.n+": "+s.t,r:()=>pSop(s),m:p=>p.k==="sop"&&p.s.n===s.n}));
   P.push({id:"numeros",s:"Números",t:"Números proyectados",r:pNumeros,m:p=>p.k==="numeros"});
   P.push({id:"tarifas",s:"Tarifas",t:"Inversión (tarifas)",r:pTarifas,m:p=>p.k==="tarifas"});
+  P.push({id:"dae",s:"Derecho a estar",t:"Derecho a estar",r:pDAE,m:p=>p.k==="dae"});
   lib("tar");
   P.push({id:"comunicacion",s:"Comunic.",t:"Plan comunicacional",r:pComunicacion,m:p=>p.k==="comunicacion"});
   P.push({id:"rrss",s:"RRSS",t:"Nuestra comunidad digital",r:pRRSS,m:p=>p.k==="rrss"});
@@ -2727,7 +2752,7 @@ let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
    RENDER Y ACCIONES
    ===================================================================== */
 let DD=null;
-const INCL={noctpub:"noctpub",divprop:"divprop",objcat:"objcat",crv:"crv",claves:"claves",publico:"publico",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
+const INCL={dae:"dae",noctpub:"noctpub",divprop:"divprop",objcat:"objcat",crv:"crv",claves:"claves",publico:"publico",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
 function totalPeriodo(p){return S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0)}
 const famOf=v=>v.mod?"Moderno":v.caj?"Cajas":v.pot?"Potion":v.est?"Estaciones":v.vis?"Visual":v.inv?"Investor":"Formal";
 function famList(){const m=[];Object.entries(TEMAS).forEach(([k,v])=>{const n=famOf(v);let f=m.find(x=>x.n===n);if(!f){f={n,ks:[]};m.push(f)}f.ks.push(k)});return m}
@@ -2778,7 +2803,19 @@ const A={
     if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
     if(k==="objetivos"&&i>=0) S.activaciones.forEach(x=>x.objetivos=x.objetivos.filter(o=>o!==id));
     save();const y=window.scrollY;render();window.scrollTo(0,y)},
-  pickVendedor(){picker("Vendedor/a",CAT.vendedores.map(v=>({v:v.id,t:v.n,sub:v.c+" · "+v.m})),S.vendedor,v=>{S.vendedor=v;save();render()})},
+  pickVendedor(){const L=VENDS(),cur=vendedor().id;
+    layer.innerHTML=`<div class="ov" onclick="if(event.target===this)closeLayer()"><div class="sheet"><h3>Ejecutivo/a que firma</h3>
+      ${L.map(v=>`<div class="vrow ${v.id===cur?"on":""}"><button class="opt ${v.id===cur?"on":""}" onclick="S.vendedor='${v.id}';save();closeLayer();render()">${esc(v.n)}<small>${esc(v.c)} · ${esc(v.m)} · ${esc(v.t)}</small></button>
+        <button class="pen" title="Editar" onclick="A.editVend('${v.id}')">✏️</button>${L.length>1?`<button class="pen" title="Eliminar" onclick="A.delVend('${v.id}')">🗑</button>`:""}</div>`).join("")}
+      <button class="b-big b-sec" style="margin-top:10px;width:100%" onclick="A.editVend(null)">＋ Agregar ejecutivo/a</button></div></div>`},
+  editVend(id){const L=VENDS(),v=id?byId(L,id):{id:"v"+Date.now(),n:"",c:"",m:"",t:""};
+    const f=(k,l,ph,t)=>`<div class="lbl">${l}</div><input class="field" id="vf_${k}" type="${t||"text"}" ${t==="tel"?'inputmode="tel"':""} value="${esc(v[k]||"")}" placeholder="${ph}">`;
+    layer.innerHTML=`<div class="ov" onclick="if(event.target===this)A.pickVendedor()"><div class="sheet"><h3>${id?"Editar":"Nuevo"} ejecutivo/a</h3>
+      ${f("n","Nombre","Nombre y apellido")}${f("c","Cargo","Ej: Ejecutivo/a comercial")}${f("m","Correo","nombre@ciclorecreovia.cl","email")}${f("t","Celular","+56 9 1234 5678","tel")}
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="b-big b-sec" style="flex:1" onclick="A.pickVendedor()">Cancelar</button><button class="b-big b-pri" style="flex:1" onclick="A.saveVend('${v.id}')">Guardar</button></div></div></div>`},
+  saveVend(id){const L=VENDS(),g=k=>(document.getElementById("vf_"+k)||{}).value||"",v={id,n:g("n").trim()||"Sin nombre",c:g("c").trim(),m:g("m").trim(),t:g("t").trim()};
+    const i=L.findIndex(x=>x.id===id);if(i>=0)L[i]=v;else L.push(v);saveVends(L);S.vendedor=id;save();render();A.pickVendedor()},
+  delVend(id){if(!confirmDel(id))return;const L=VENDS().filter(x=>x.id!==id);saveVends(L);if(S.vendedor===id)S.vendedor=L[0].id;save();render();A.pickVendedor()},
   
   async pegar(key){
     try{const items=await navigator.clipboard.read();for(const it of items){const ty=it.types.find(t=>t.startsWith("image/"));if(ty){A.setImg(key,await procesarImagen(await it.getType(ty),IMG[key]&&IMG[key].isLogo));return}}
