@@ -77,6 +77,7 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .pen:hover{border-color:var(--or)}
 .edm{position:absolute;right:0;top:42px;font-size:10.5px;font-weight:800;color:var(--or);text-transform:uppercase}
 .edb{display:flex;gap:8px;margin-top:8px}
+mark.hi{background:none;color:var(--or);font-weight:900}
 .dlp{flex:1 1 auto;min-width:0;display:flex;gap:6px;align-items:center;position:relative}.dlp .dli{flex:1 1 auto}
 .edm2{position:absolute;right:46px;top:-9px;font-size:9.5px;font-weight:800;color:var(--or);text-transform:uppercase;background:var(--bg);padding:0 4px}
 .edb .sm{padding:8px 14px;font-size:14px;border-radius:10px;width:auto}
@@ -301,7 +302,7 @@ nav.bot button{flex:1;padding:16px 6px;border-radius:14px;border:none;font-size:
    ===================================================================== */
 const CAT = {
   crv:{
-    descripcion:"Cada domingo abrimos las calles para que miles de personas caminen, pedaleen, patinen y compartan en familia: el espacio recreativo más masivo de Chile.",
+    descripcion:"Cada domingo del año habilitamos *kilómetros de calles* para que *decenas de miles de personas* paseen, se recreen y tengan un *Fin de semana maravilloso*.",
     stats:[{n:"52",l:"domingos al año",ic:"calendar"},{n:"25 km",l:"de calles habilitadas todos los domingos",ic:"route"},{n:"2 ciudades",l:"Santiago · Viña del Mar",ic:"mappin"},{n:"20",l:"años de trayectoria",ic:"award"}]
   },
   objetivos:[
@@ -637,6 +638,10 @@ const FH="Arial Black",FB="Arial";
 const CSS_H="'Arial Black','Nunito',Arial,sans-serif",CSS_B="Arial,'Nunito',sans-serif";
 const moneyIva=n=>money(n)+" + IVA";
 const DONA=["E87115","2FB45A","3B9BE6","F2C94C","C084FC","F472B6"];
+/* *texto* = concepto clave resaltado (color de acento + negrita) */
+function hiRuns(t,o){if(typeof t!=="string"||!/\*[^*\n]+\*/.test(t))return t;o=o||{};const wh=/^(FFFFFF|FFF|E5E7EB)$/i.test(o.color||"");
+  const c=o.hi||(wh?"FFD56A":(T().acc||"E87115"));
+  return t.split(/(\*[^*\n]+\*)/).filter(x=>x!=="").map(x=>/^\*.+\*$/.test(x)?{text:x.slice(1,-1),o:{bold:true,color:c}}:{text:x,o:{}})}
 function runsOf(t){return typeof t==="string"?[{text:t,o:{}}]:t}
 
 const ICP={};
@@ -659,7 +664,7 @@ function HtmlR(){
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};box-sizing:border-box;background:${o.fill?"#"+o.fill:"transparent"};${o.transp?`opacity:${1-o.transp/100};`:""}border-radius:${rad};${o.line?`border:${((o.lw||1.5)*100/72).toFixed(1)}px solid #${o.line};`:""}"></div>`},
     tri(x,y,w,h,o){const cp={bl:"0 0,0 100%,100% 100%",tr:"0 0,100% 0,100% 100%",br:"100% 0,100% 100%,0 100%",tl:"0 0,100% 0,0 100%"}[o.corner||"bl"];
       html+=`<div style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};height:${px(h)};background:#${o.fill};clip-path:polygon(${cp})"></div>`},
-    text(t,x,y,w,h,o){
+    text(t,x,y,w,h,o){t=hiRuns(t,o);
       const r=runsOf(t).map(r=>{const ro=r.o||{};let s=esc(r.text).replace(/\n/g,"<br>");
         s=`<span style="${ro.color?`color:#${ro.color};`:""}${ro.size?`font-size:${pt(ro.size)};`:""}${ro.head?`font-family:${CSS_H};font-weight:900;`:ro.body?`font-family:${CSS_B};font-weight:${ro.bold?700:400};`:ro.bold?"font-weight:700;":""}${ro.link?"text-decoration:underline;":""}">${s}</span>`;
         return s+(ro.br?"<br>":"")}).join("");
@@ -693,7 +698,7 @@ function PptxR(pptx){
     rect(x,y,w,h,o){const shape=o.ellipse?"ellipse":(o.radius||o.pill)?"roundRect":"rect";
       s.addShape(shape,{x,y,w,h,fill:o.fill?{color:o.fill,transparency:o.transp||0}:{color:"FFFFFF",transparency:100},line:o.line?{color:o.line,width:o.lw||1.5}:{type:"none"},rectRadius:o.pill?Math.min(w,h)/2:(o.radius||undefined)})},
     tri(x,y,w,h,o){const c=o.corner||"bl";s.addShape("rtTriangle",{x,y,w,h,fill:{color:o.fill},line:{type:"none"},flipH:c==="br"||c==="tr",flipV:c==="tl"||c==="tr"})},
-    text(t,x,y,w,h,o){
+    text(t,x,y,w,h,o){t=hiRuns(t,o);
       const runs=runsOf(t).map(r=>{const ro=r.o||{},op={};
         if(ro.color)op.color=ro.color;if(ro.size)op.fontSize=ro.size;if(ro.br)op.breakLine=true;if(ro.link)op.hyperlink={url:ro.link};
         if(ro.head){op.fontFace=FH;op.bold=false}else if(ro.body){op.fontFace=FB;op.bold=!!ro.bold}else if(ro.bold!=null)op.bold=ro.bold;
@@ -2115,6 +2120,9 @@ function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t
     return R.text(tx,x,y,w,h,o)};
   return W2}
 async function dibujar(R,sp,n,tot){
+  if(sp.k==="crv"&&!R._crvd){const d0=txD("crv",CAT.crv.descripcion),R0=R;R=Object.assign({},R0,{_crvd:1,_enf:R0._enf});
+    R.text=(tx,x,y,w,h,o)=>{if(tx===d0&&o){o=Object.assign({},o);const len=d0.replace(/\*/g,"").length,lines=Math.max(1,h*72/((o.size||12)*1.3*1.35));
+      const fitW=Math.sqrt(w*h*72*72/(len*0.55*1.3));o.size=Math.min(19,Math.max(o.size||12,Math.min((o.size||12)*1.5,fitW*0.92)));if(o.color&&o.color!==COL.wh&&!/^(E5E7EB)$/i.test(o.color))o.color=T().tx||o.color}return R0.text(tx,x,y,w,h,o)};}
   if(!R._enf&&enfMode()!=="A"&&["crv","circ","perf","numeros","rrss"].includes(sp.k)){R=enfWrap(R,sp,enfMode());R._enf=1}
   const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
@@ -2395,12 +2403,13 @@ function fitDl(){requestAnimationFrame(()=>document.querySelectorAll(".dl").forE
   els.forEach(el=>{let f=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+1&&f>11){f-=0.5;el.style.fontSize=f+"px"}m=Math.min(m,f)});
 }))}
 window.addEventListener("resize",()=>{document.querySelectorAll(".dli").forEach(el=>el.style.fontSize="");fitDl()});
+function hiHtml(v){return esc(v).replace(/\*([^*\n]+)\*/g,'<mark class="hi">$1</mark>')}
 function txD(key,base){const v=(S.textos||{})[key];return v!=null&&v.trim()!==""?v:base}
 let EDK=null;
 function edTxt(key,base){const v=txD(key,base),mod=(S.textos||{})[key]!=null&&S.textos[key]!==base;
-  if(EDK===key)return `<div class="edt on"><textarea class="field" id="edta" style="min-height:96px" oninput="S.textos['${key}']=this.value;save()">${esc(v)}</textarea>
+  if(EDK===key)return `<div class="edt on"><small style="display:block;color:var(--mut);font-weight:700;margin-bottom:4px">Escribe *entre asteriscos* las palabras que quieras resaltar.</small><textarea class="field" id="edta" style="min-height:96px" oninput="S.textos['${key}']=this.value;save()">${esc(v)}</textarea>
     <div class="edb"><button class="b-pri sm" onclick="EDK=null;render()">✓ Listo</button>${mod?`<button class="b-sec sm" onclick="delete S.textos['${key}'];EDK=null;save();render()">↺ Volver al texto base</button>`:""}</div></div>`;
-  return `<div class="edt"><p>${esc(v)}</p><button class="pen" title="Editar texto" onclick="EDK='${key}';render();setTimeout(()=>{const t=document.getElementById('edta');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},30)">✏️</button>${mod?`<span class="edm">editado</span>`:""}</div>`}
+  return `<div class="edt"><p>${hiHtml(v)}</p><button class="pen" title="Editar texto" onclick="EDK='${key}';render();setTimeout(()=>{const t=document.getElementById('edta');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},30)">✏️</button>${mod?`<span class="edm">editado</span>`:""}</div>`}
 function mapaSelUI(city){const f=(S.mapaSel||{})[city]||1,im=S.imgs["mapa_"+city];
   return `<div class="fgrid">${MAPAS[city].map((m,i)=>`<div class="ft map ${f===i+1?"on":""}" title="${MAPA_N[i]}" onclick="A.pickFoto('mapa_${city}',${i+1},'mapa')" style="background-image:url('${objUrl(m.data)}')"><i>${i+1}</i></div>`).join("")}
     <div class="ft nueva ${f==="nueva"?"on":""}" onclick="A.pickFoto('mapa_${city}','nueva','mapa');closeSheet2()" ${im&&im.data?`style="background-image:url('${objUrl(im.data)}');background-size:contain"`:""}><span>＋ Nuevo</span></div></div>`+
