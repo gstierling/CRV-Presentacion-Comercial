@@ -537,11 +537,11 @@ function mesAnio(){const d=S.fecha?new Date(S.fecha+"T12:00:00"):new Date();retu
 const rrssFecha=()=>"("+txD("rrss_fecha",mesAnio()).replace(/^\(|\)$/g,"")+")";
 function rrssList(){const o=S.rrssN||{};return CAT.rrss.map((r,i)=>Object.assign({},r,{n:o[i]!=null?o[i]:r.n}))}
 function subDomingo(a){return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
-function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100))}
+function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100)/10000)*10000}
 /* Tarifas de una activación para todos los períodos elegidos (fuera de las fotos) */
 function tarStrip(R,a,x,y,w,h,o){o=o||{};let ps=periodosSel();if(!ps.length)ps=[{t:"1 domingo",dom:1,desc:0}];
   const n=ps.length,g=0.06,fill=i=>o.fills?o.fills[i%o.fills.length]:o.fill,tc=o.color||COL.wh;
-  const lab=p=>p.t.toUpperCase()+(p.desc?" · −"+p.desc+"%":""),amt=p=>moneyIva(precioPeriodo(a,p));
+  const lab=p=>p.t.toUpperCase()+"",amt=p=>moneyIva(precioPeriodo(a,p));
   const fitA=(txt,wd,mx,f)=>Math.max(7,Math.min(mx,wd*72/(txt.length*(f||0.74))));
   const two=w/n<1.35&&h/n<0.3&&h>=0.95&&w/Math.ceil(n/2)>=1.3;
   if(w/n>=1.35||two){const pc=two?Math.ceil(n/2):n,cw=(w-g*(pc-1))/pc,bh=two?(h-g)/2:h;
@@ -863,9 +863,9 @@ async function dibujarModerno(R,sp,n,tot){
       if(pl&&pl.dom>1)R.text("En "+pl.t+": "+fmt(k.v*pl.dom),x+0.1,y+d+(rows===1?1.85:1.38),cw-0.2,0.32,{size:rows===1?12:10,color:t.mu,align:"center"});}
     await mFoot(R);break;}
   case "tarifas":{
-    R.slide(t.bg);mHead(R,"Inversión",n,tot,"Valores por período · descuentos ya aplicados");
+    R.slide(t.bg);mHead(R,"Inversión",n,tot,"Valores por período");
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"Activación",fill:t.band,color:COL.wh,bold:true,size:11}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:PC(i),color:COL.wh,bold:true,align:"center",size:10.5})));
+    const head=[{t:"Activación",fill:t.band,color:COL.wh,bold:true,size:11}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:PC(i),color:COL.wh,bold:true,align:"center",size:10.5})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.band,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.band,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
@@ -1052,9 +1052,9 @@ async function dibujarVisual(R,sp,n,tot){
   case "tarifas":{
     R.slide(t.bg);vNum(R,n);
     vLabel(R,"Inversión",0.6,0.55,8);vTitle(R,"Valores por período",0.6,0.85,9,0.8);vPlus(R,12.4,1.25,0.45,t.acc);
-    R.text("Valores por activación según el período de presencia. Los descuentos por período ya están aplicados.",0.6,1.65,10,0.4,{size:12,color:t.mu});
+    R.text("Valores por activación según el período de presencia.",0.6,1.65,10,0.4,{size:12,color:t.mu});
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"ACTIVACIÓN",fill:t.tx,color:t.bg,bold:true,size:10.5}].concat(ps.map(p=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:t.tx,color:t.bg,bold:true,align:"center",size:10})));
+    const head=[{t:"ACTIVACIÓN",fill:t.tx,color:t.bg,bold:true,size:10.5}].concat(ps.map(p=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:t.tx,color:t.bg,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.panel,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.panel,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.8;
@@ -1241,9 +1241,9 @@ async function dibujarInvestor(R,sp,n,tot){
     await iFoot(R,n);break;}
   case "tarifas":{
     R.slide(t.bg);iHead(R,"Inversión",n,tot);
-    R.text("Valores por período · descuentos ya aplicados",0.6,1.15,W-1.2,0.3,{size:11,color:t.mu,align:"center"});
+    R.text("Valores por período",0.6,1.15,W-1.2,0.3,{size:11,color:t.mu,align:"center"});
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"ACTIVACIÓN",fill:t.navy,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:IC(i),color:COL.wh,bold:true,align:"center",size:10})));
+    const head=[{t:"ACTIVACIÓN",fill:t.navy,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:IC(i),color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.navy,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.navy,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
@@ -1451,9 +1451,9 @@ async function dibujarCajas(R,sp,n,tot){
     await cFoot(R,n);break;}
   case "tarifas":{
     R.slide(t.bg);cHead(R,"Inversión",n,tot);
-    R.text("Valores por período · descuentos ya aplicados",4.0,0.6,8.73,0.4,{size:11,color:t.mu,align:"right",valign:"middle"});
+    R.text("Valores por período",4.0,0.6,8.73,0.4,{size:11,color:t.mu,align:"right",valign:"middle"});
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"ACTIVACIÓN",fill:t.tx===COL.wh?"0A121B":"1D3247",color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:[CJ(0),CJ(1),CJ(2)][i%3],color:COL.wh,bold:true,align:"center",size:10})));
+    const head=[{t:"ACTIVACIÓN",fill:t.tx===COL.wh?"0A121B":"1D3247",color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:[CJ(0),CJ(1),CJ(2)][i%3],color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:CJ(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:CJ(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
@@ -1623,9 +1623,9 @@ async function dibujarPotion(R,sp,n,tot){
     break;}
   case "tarifas":{
     R.slide(t.bg);pHead(R,"Inversión",n,tot);
-    R.text("Valores por período · descuentos ya aplicados",0.6,1.2,W-1.2,0.3,{size:11,color:t.mu,align:"center"});
+    R.text("Valores por período",0.6,1.2,W-1.2,0.3,{size:11,color:t.mu,align:"center"});
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"ACTIVACIÓN",fill:PO(2),color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:PO(i%2),color:COL.wh,bold:true,align:"center",size:10})));
+    const head=[{t:"ACTIVACIÓN",fill:PO(2),color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:PO(i%2),color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:PO(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:PO(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
@@ -1836,7 +1836,7 @@ async function actC(R,sp,n,tot){
   const rowsData=els.map((z,i)=>[{t:z.e.t,fill:i%2?k.bg:k.card,color:k.tx,bold:true},{t:String(z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"center",bold:true},{t:money(z.e.p),fill:i%2?k.bg:k.card,color:k.mu,align:"right"},{t:moneyIva(z.e.p*z.q),fill:i%2?k.bg:k.card,color:k.tx,align:"right"}]);
   const head=["Elemento","Cant.","Valor unitario","Total"].map((h,i)=>({t:h.toUpperCase(),fill:KP(i),color:COL.wh,bold:true,align:i?(i===1?"center":"right"):"left",size:9.5}));
   const psC=periodosSel().length?periodosSel():[{t:"1 domingo",dom:1,desc:0}];
-  const totRs=psC.map(p=>[{t:"TOTAL "+p.t.toUpperCase()+(p.desc?" (−"+p.desc+"%)":""),fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(precioPeriodo(a,p)),fill:k.band,color:COL.wh,head:true,align:"right"}]);
+  const totRs=psC.map(p=>[{t:"TOTAL "+p.t.toUpperCase()+"",fill:k.band,color:COL.wh,bold:true},{t:"",fill:k.band},{t:"",fill:k.band},{t:moneyIva(precioPeriodo(a,p)),fill:k.band,color:COL.wh,head:true,align:"right"}]);
   const nR=els.length+1+totRs.length,rh=Math.min(0.38,(6.85-y0)/nR),fs=rh>=0.3?11:rh>=0.24?9.5:8;
   if(DET())R.table([head,...rowsData,...totRs],x,y0,w,[w-4.4,0.8,1.6,2.0],{rowH:rh,size:fs,border:k.bg});
   else R.table([head.slice(0,2),...rowsData.map(r=>r.slice(0,2)),...totRs.map(t=>[t[0],Object.assign({},t[3],{align:"center"})])],x,y0,w,[w-2.6,2.6],{rowH:rh,size:fs,border:k.bg});
@@ -1989,9 +1989,9 @@ async function dibujar(R,sp,n,tot){
   case "tarifas":{
     R.slide(t.bg);cabecera(R,n,tot);
     titulo(R,"Inversión",0.6,0.6,7);
-    R.text("Valores por activación según el período de presencia. Los descuentos por período ya están aplicados.",0.6,1.55,8.5,0.5,{size:12.5,color:t.mu});
+    R.text("Valores por activación según el período de presencia.",0.6,1.55,8.5,0.5,{size:12.5,color:t.mu});
     const ps=periodosSel(),acts=S.activaciones,many=ps.length>=5;
-    const head=[{t:"Activación",fill:t.bg,color:t.mu,bold:true,size:11}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+(p.desc?" · −"+p.desc+"%":""),fill:t.bg,color:t.mu,bold:true,align:"center",size:10.5})));
+    const head=[{t:"Activación",fill:t.bg,color:t.mu,bold:true,size:11}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:t.bg,color:t.mu,bold:true,align:"center",size:10.5})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.p2:t.p1}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.p2:t.p1}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
     const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
