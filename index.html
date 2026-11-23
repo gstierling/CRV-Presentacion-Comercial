@@ -140,10 +140,10 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.4}
 .chip small{color:var(--mut);font-size:13px;line-height:1.3}
 .chip.on{border-color:var(--or);background:#fdf0e6}
 .chip.on:after{content:"✓";position:absolute;top:8px;right:10px;background:var(--or);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px}
-.row{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:6px}
 .row.on{border-color:var(--or)}
 .row .tx{flex:1;min-width:0}
-.row .tx b{display:block;font-size:16px}
+.row .tx b{display:inline;font-size:15px;margin-right:8px}
 .row .tx small{color:var(--mut);font-size:13px}
 .chk{width:30px;height:30px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-weight:900;color:#fff;background:#fff}
 .row.on .chk{background:var(--or);border-color:var(--or)}
@@ -160,15 +160,15 @@ textarea.field{min-height:120px;resize:vertical;line-height:1.4}
 /* Steppers */
 .el{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
 .el.on{border-color:var(--te)}
-.el .tx{flex:1;min-width:0}.el .tx b{display:block;font-size:16px}.el .tx small{color:var(--mut);font-size:13px}
+.el .tx{flex:1;min-width:0}.el .tx b{display:inline;font-size:15px;margin-right:8px}.el .tx small{color:var(--mut);font-size:13px}
 .stp{display:flex;align-items:center;gap:6px}
 .stp button{width:44px;height:44px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);font-size:24px;font-weight:900}
 .stp .q{min-width:52px;height:44px;border-radius:12px;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;font-size:20px;font-weight:900}
 .el.on .q{border-color:var(--te);color:var(--te)}
 .total{display:flex;justify-content:space-between;align-items:center;background:#fdf0e6;border:2px solid var(--or);border-radius:14px;padding:14px 16px;font-weight:900;font-size:18px;margin-top:6px}
 .total span{color:var(--or);font-size:22px}
-.kpi{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
-.kpi .tx{flex:1}.kpi .tx b{display:block}.kpi .tx small{color:var(--mut);font-size:13px}
+.kpi{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:6px 12px;margin-bottom:6px}
+.kpi .tx{flex:1}.kpi .tx b{display:inline;margin-right:8px}.kpi .tx small{color:var(--mut);font-size:13px}
 .kpi .num{min-width:110px;height:48px;border-radius:12px;background:var(--bg);border:2px solid var(--te);color:var(--te);font-size:20px;font-weight:900;padding:0 10px}
 .kpi .num.man{border-color:var(--or);color:var(--or)}
 .mini{background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;padding:4px}
@@ -550,7 +550,16 @@ function rrssList(){const o=S.rrssN||{};return CAT.rrss.map((r,i)=>Object.assign
 function subDomingo(a){if(a&&a._base!=null)return a._base;return Object.entries(a.elementos||{}).reduce((s,[id,q])=>{const e=byId(CAT.elementos,id);return s+(e?e.p*q:0)},0)}
 /* Encabezado de la tabla resumen: minúsculas y más grande */
 function HEADF(h){const cap=x=>/^\d/.test(x)?x:x.charAt(0).toUpperCase()+x.slice(1);
-  return h.map(c=>{const L=String(c.t).split("\n"),f=cap(L[0].toLowerCase());return Object.assign({},c,{t:[f,...L.slice(1)].join("\n"),size:Math.min(16,Math.round((c.size||11)*1.35)),head:true})})}
+  return h.map((c,i)=>{const L=String(c.t).split("\n"),f=cap(L[0].toLowerCase());if(i===0&&h.length>6&&L.length===1)L.push("valores netos + IVA");return Object.assign({},c,{t:[f,...L.slice(1)].join("\n"),size:Math.min(16,Math.round((c.size||11)*1.35)),head:true})})}
+/* Ajusta el tamaño de letra de cada celda al ancho de su columna (sin cortar palabras) */
+function fitCells(rows,colW,o){const pad=0.38;const out=rows.map(r=>r.map((c,j)=>{const w=(colW[j]||1)-Math.min(pad,(colW[j]||1)*0.22),base=c.size||o.size||12;let t=String(c.t);
+  const f=(c.head?0.8:0.6)/72,need=t=>{const L=t.split("\n");return Math.max(L[0].length*base*f,...L.slice(1).map(x=>x.length*base*0.72*f))};
+  if(/ \+ IVA$/.test(t)&&need(t)>w&&base*w/need(t)<10.5)t=t.replace(/ \+ IVA$/,"");
+  const nd=need(t);return Object.assign({},c,{t,size:nd>w?Math.max(6.5,base*w/nd):base,_b:base})}));
+  /* tamaños parejos: encabezados entre sí y celdas del cuerpo entre sí */
+  const g={},key=(i,j,c)=>(i===0?"h":"b")+(j===0?"0":"x");
+  out.forEach((r,i)=>r.forEach((c,j)=>{const k=key(i,j,c),q=c.size/c._b;g[k]=Math.min(g[k]==null?1:g[k],q)}));
+  return out.map((r,i)=>r.map((c,j)=>Object.assign({},c,{size:c._b*g[key(i,j,c)]})))}
 function precioPeriodo(a,p){return Math.round(subDomingo(a)*p.dom*(1-p.desc/100)/10000)*10000}
 /* Tarifas de una activación para todos los períodos elegidos (fuera de las fotos) */
 function tarStrip(R,a,x,y,w,h,o){o=o||{};let ps=periodosSel();if(!ps.length)ps=[{t:"1 domingo",dom:1,desc:0}];
@@ -707,7 +716,7 @@ function HtmlR(){
          if(z[2])this.text(z[2]+" personas",lx+0.22,yy+rh*0.58,lw-0.85,rh*0.36,{size:9.5,color:T().mu,valign:"top",noEnf:1});
          this.text(Math.round(z[1]/tot*100)+"%",lx+lw-0.5,yy,0.5,rh,{size:11.5,head:true,align:"right",valign:"middle",noEnf:1});}
       });},
-    table(rows,x,y,w,colW,o){
+    table(rows,x,y,w,colW,o){rows=fitCells(rows,colW,o);
       html+=`<table style="position:absolute;left:${px(x)};top:${px(y)};width:${px(w)};border-collapse:collapse;font-family:${CSS_B};font-size:${pt(o.size||12)};table-layout:fixed">`+
       `<colgroup>${colW.map(c=>`<col style="width:${px(c)}">`).join("")}</colgroup>`+
       rows.map(r=>`<tr style="height:${px(o.rowH)}">`+r.map(c=>`<td style="border:2px solid #${o.border};padding:0 ${px(.14)};background:#${c.fill};color:#${c.color||T().tx};${c.head?`font-family:${CSS_H};font-weight:900;`:`font-weight:${c.bold?700:400};`}text-align:${c.align||"left"};font-size:${c.size?pt(c.size):"inherit"};vertical-align:middle;line-height:1.15">${String(c.t).includes("\n")?esc(c.t.split("\n")[0])+'<br><span style="font-size:.72em;font-weight:500;opacity:.85">'+esc(c.t.split("\n").slice(1).join(" "))+"</span>":esc(c.t)}</td>`).join("")+"</tr>").join("")+"</table>";
@@ -739,7 +748,7 @@ function PptxR(pptx){
         {x,y,w,h,holeSize:32,chartColors:cols.slice(0,items.length),showLegend:true,legendPos:"r",legendFontFace:FB,legendFontSize:9.5,legendColor:t.tx,
          showPercent:true,showValue:false,showLabel:false,showTitle:false,dataLabelColor:"FFFFFF",dataLabelFontSize:10,dataLabelFontFace:FB,dataLabelFontBold:true,
          dataBorder:{pt:1.5,color:t.p1}});},
-    table(rows,x,y,w,colW,o){
+    table(rows,x,y,w,colW,o){rows=fitCells(rows,colW,o);
       s.addTable(rows.map(r=>r.map(c=>({text:String(c.t).includes("\n")?[{text:c.t.split("\n")[0],options:{breakLine:true,bold:true}},{text:c.t.split("\n").slice(1).join(" "),options:{bold:false,fontSize:Math.round((c.size||o.size||12)*0.72)}}]:c.t,options:{fill:{color:c.fill},color:c.color||T().tx,bold:c.head?false:!!c.bold,align:c.align||"left",valign:"middle",fontSize:c.size||o.size||12,fontFace:c.head?FH:FB}}))),
         {x,y,w,colW,rowH:o.rowH,border:{type:"solid",pt:2,color:o.border},fontFace:FB,fontSize:o.size||12,margin:[0,0.14,0,0.14]});
     }
@@ -904,7 +913,7 @@ async function dibujarModerno(R,sp,n,tot){
     const head=[{t:"Activación",fill:t.band,color:COL.wh,bold:true,size:11}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:PC(i),color:COL.wh,bold:true,align:"center",size:10.5})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.band,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.band,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
     R.table([HEADF(head),...body],0.6,1.75,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await mFoot(R);break;}
   case "comunicacion":{
@@ -1093,7 +1102,7 @@ async function dibujarVisual(R,sp,n,tot){
     const head=[{t:"ACTIVACIÓN",fill:t.tx,color:t.bg,bold:true,size:10.5}].concat(ps.map(p=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:t.tx,color:t.bg,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.bg:t.panel,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.bg:t.panel,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.8;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.66:0.8;
     R.table([HEADF(head),...body],0.6,2.3,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await vLogo(R);break;}
   case "comunicacion":{
@@ -1282,7 +1291,7 @@ async function dibujarInvestor(R,sp,n,tot){
     const head=[{t:"ACTIVACIÓN",fill:t.navy,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:IC(i),color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:t.navy,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.navy,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
     R.table([HEADF(head),...body],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await iFoot(R,n);break;}
   case "comunicacion":{
@@ -1492,7 +1501,7 @@ async function dibujarCajas(R,sp,n,tot){
     const head=[{t:"ACTIVACIÓN",fill:t.tx===COL.wh?"0A121B":"1D3247",color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:[CJ(0),CJ(1),CJ(2)][i%3],color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:CJ(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:CJ(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
     R.table([HEADF(head),...body],0.6,1.6,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     R.tri(W-1.9,5.9,1.3,1.0,{fill:CJ(1),corner:"br"});
     await cFoot(R,n);break;}
@@ -1664,7 +1673,7 @@ async function dibujarPotion(R,sp,n,tot){
     const head=[{t:"ACTIVACIÓN",fill:PO(2),color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t.toUpperCase()+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:PO(i%2),color:COL.wh,bold:true,align:"center",size:10})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:t.card,color:t.tx}))));
     const totRow=[{t:"TOTAL",fill:PO(2),color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:PO(2),color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
     R.table([HEADF(head),...body],0.6,1.65,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     await pFoot(R,n);break;}
   case "comunicacion":{
@@ -1859,7 +1868,7 @@ async function dibujarEstaciones(R,sp,n,tot){
     else{const head=[{t:"Activación",fill:t.acc,color:COL.wh,bold:true,size:10.5}].concat(ps.map((p,i)=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única"),fill:ES(i),color:COL.wh,bold:true,align:"center",size:10})));
       const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:t.card,color:t.tx}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:c>=5?11.5:13,fill:t.card,color:t.tx}))));
       const totRow=[{t:"Total",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:c>=5?11:12.5})));
-      const first=3.0,cw=(W-1.2-first)/c;R.table([HEADF(head),...body],0.6,1.5,W-1.2,[first,...ps.map(()=>cw)],{rowH:acts.length>3?0.68:0.82,size:13,border:t.bg});}
+      const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/c;R.table([HEADF(head),...body],0.6,1.5,W-1.2,[first,...ps.map(()=>cw)],{rowH:acts.length>3?0.68:0.82,size:13,border:t.bg});}
     await eFoot(R,n);break;}
   case "comunicacion":{
     eSlide(R);eHead(R,"Plan comunicacional",n,tot);
@@ -2230,7 +2239,7 @@ async function dibujar(R,sp,n,tot){
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
   if(sp.k==="res")return dibujarRes(R,sp,n,tot);
-  if(sp.k==="comunicacion"&&(sp.var||(S.var||{}).com||"A")==="B")return comB(R,sp,n,tot);
+  if(sp.k==="comunicacion")return comB(R,sp,n,tot);
   if(sp.k==="claves")return dibujarClaves(R,sp,n,tot);
   if(sp.k==="divprop")return dibujarDivProp(R,sp,n,tot);
   if(sp.k==="objcat")return dibujarObjCat(R,sp,n,tot);
@@ -2357,7 +2366,7 @@ async function dibujar(R,sp,n,tot){
     const hb=t.light?"10233F":"0A121B";const head=[{t:"Activación",fill:hb,color:COL.wh,bold:true,size:12}].concat(ps.map(p=>({t:p.t+"\n"+(p.dom>1?p.dom+" domingos":"jornada única")+"",fill:hb,color:COL.wh,bold:true,align:"center",size:many?13:15})));
     const body=acts.map((a,i)=>[{t:(i+1)+". "+(a.nombre||""),bold:true,fill:i%2?t.p2:t.p1}].concat(ps.map(p=>({t:moneyIva(precioPeriodo(a,p)),align:"center",size:many?11.5:13,fill:i%2?t.p2:t.p1}))));
     const totRow=[{t:"TOTAL",fill:t.acc,color:COL.wh,head:true,size:14}].concat(ps.map(p=>({t:moneyIva(acts.reduce((s,a)=>s+precioPeriodo(a,p),0)),fill:t.acc,color:COL.wh,head:true,align:"center",size:many?11:12.5})));
-    const first=3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
+    const first=periodosSel().length>6?2.2:3.0,cw=(W-1.2-first)/ps.length;const rh=acts.length>3?0.68:0.82;
     R.table([HEADF(head),...body],0.6,2.35,W-1.2,[first,...ps.map(()=>cw)],{rowH:rh,size:13,border:t.bg});
     break;}
   case "comunicacion":{
@@ -2631,12 +2640,12 @@ function pAct(a){
   <div class="rows">${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}</div>`;
 }
 function pNumeros(){const ks=kpisTotales();return togIncl("numeros")+(S.incluir.numeros?`${ks.length?enfUI({k:"numeros"}):""}<p class="hint">Suma de los números por domingo de todas las activaciones. Se editan en cada activación.</p>
-  ${ks.length?`<div class="rows">${ks.map(k=>`<div class="row" style="cursor:default"><div class="tx"><b>${fmt(k.v)}</b><small>${esc(k.t)} por domingo</small></div></div>`).join("")}</div>`:`<div class="warn">Aún no hay números: agrega activaciones con objetivos y elementos.</div>`}`:offMsg)}
+  ${ks.length?datosLista(ks.map(k=>({n:fmt(k.v),l:k.t+" por domingo"}))):`<div class="warn">Aún no hay números: agrega activaciones con objetivos y elementos.</div>`}`:offMsg)}
 function pTarifas(){const ps=periodosSel();return togIncl("tarifas")+(S.incluir.tarifas?`
   <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
   <div class="pgrid">${CAT.periodos.map(p=>`<button class="pch ${S.periodos.includes(p.id)?"on":""}" title="${p.t} · ${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}" onclick="A.toggle('periodos','${p.id}')"><b><span class="lg">${p.t}</span><span class="sh">${p.t.replace(/ domingos?/," dom.").replace(/ mes(es)?/," m")}</span></b><small>${p.desc?"−"+p.desc+"%":"—"}</small></button>`).join("")}</div>
   ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`:offMsg)}
-function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?varUI("com",{k:"comunicacion"})+`
+function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?`
   <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
   <div class="rows">${CAT.comunicacion.map(c=>`<div class="row ${S.comunicacion.includes(c.id)?"on":""}" onclick="A.toggle('comunicacion','${c.id}')"><div class="chk"></div><div class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></div></div>`).join("")}</div>
   <div class="lbl">Nota adicional (opcional)</div>
