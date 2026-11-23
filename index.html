@@ -1838,7 +1838,34 @@ async function actC(R,sp,n,tot){
 
 const VARIANTES={perf:{A:"Actual",B:"Columnas e íconos",C:"Barras finas y foto"},act:{A:"Actual",B:"Mosaico de elementos",C:"Tabla ejecutiva"}};
 
+/* ===================== RESALTE DE CIFRAS (capa común a todos los estilos) ===================== */
+const ENFS={A:"Actual",B:"Cifras grandes",C:"Grandes y en color",D:"Grandes con destacado"};
+let ENF_OVR=null;const enfMode=()=>ENF_OVR||(S.var||{}).enf||"C";
+const ATT_RX=/personas|asistentes|usuarios|participantes/i;
+function enfData(sp){const F=new Map(),L=new Set();const add=(n,l)=>{if(n==null)return;F.set(String(n).trim(),ATT_RX.test(l||""));if(l){L.add(String(l).trim());L.add(String(l).trim().toUpperCase())}};
+  if(sp.k==="crv")CAT.crv.stats.forEach(z=>add(z.n,z.l));
+  else if(sp.k==="circ")CAT.circuitos[sp.city].datos.forEach(z=>add(z.n,z.l));
+  else if(sp.k==="perf")CAT.perfiles[sp.city].kpis.forEach(z=>add(z.n,z.l));
+  else if(sp.k==="numeros")kpisTotales().forEach(k=>add(fmt(k.v),k.t));
+  else if(sp.k==="rrss")rrssList().forEach(z=>add(fmt(z.n),z.u||"seguidores"));
+  else return null;return {F,L}}
+function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t.acc||(t.pal&&t.pal[0])||"E87115";
+  const attC=acc==="E87115"?(t.acc2||"179741"):"E87115";const isW=c=>!!c&&(c===COL.wh||/^(FFFFFF|FFF)$/i.test(c));
+  const W2=Object.assign({},R);
+  W2.text=(tx,x,y,w,h,o)=>{o=Object.assign({},o||{});
+    if(typeof tx==="string"){const key=tx.trim();
+      if(d.F.has(key)){const att=d.F.get(key),base=o.size||14,want=base*(att?1.55:1.28),maxW=w*72/(Math.max(key.length,3)*0.66);
+        o.size=Math.max(base,Math.min(want,maxW));o.head=true;const white=isW(o.color);
+        if(mode==="C"&&!white)o.color=att?attC:acc;
+        if(mode==="D"&&att){const tw=Math.min(w,key.length*o.size*0.64/72+0.35),th=o.size/72*1.3;
+          const px=o.align==="center"?x+(w-tw)/2:o.align==="right"?x+w-tw:x-0.12,py=o.valign==="middle"?y+(h-th)/2:o.valign==="bottom"?y+h-th:y-0.02;
+          if(white)R.rect(px,py,tw,th,{fill:"FFFFFF",transp:78,radius:0.08});else{R.rect(px,py,tw,th,{fill:attC,radius:0.08});o.color=COL.wh}
+          if(o.align!=="center"&&o.align!=="right")x+=0.05;}}
+      else if(d.L.has(key)){o.size=(o.size||12)*0.9;if(mode!=="B"&&(!o.color||o.color===t.tx))o.color=t.mu||o.color}}
+    return R.text(tx,x,y,w,h,o)};
+  return W2}
 async function dibujar(R,sp,n,tot){
+  if(!R._enf&&enfMode()!=="A"&&["crv","circ","perf","numeros","rrss"].includes(sp.k)){R=enfWrap(R,sp,enfMode());R._enf=1}
   const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
   if(sp.k==="noct1")return dibujarNoct1(R,sp,n,tot);
@@ -2131,10 +2158,10 @@ function pPortada(){return `
   </div><div>
   <div class="lbl" style="margin-top:0">Logo del prospecto</div>${imgZone("logo",S.logo,true,"Pega aquí el logo (Ctrl+V) o elígelo")}
   </div></div>`}
-function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`${edTxt("crv",CAT.crv.descripcion)}${datosLista(CAT.crv.stats)}`:offMsg)}
-function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`${edTxt(k,c.d)}${datosLista(c.datos)}
+function pCRV(){const I=S.incluir;return togIncl("crv")+(I.crv?`${enfUI({k:"crv"})}${edTxt("crv",CAT.crv.descripcion)}${datosLista(CAT.crv.stats)}`:offMsg)}
+function pCirc(city){const k="circ_"+city,c=CAT.circuitos[city];return togIncl(k)+(S.incluir[k]?`${enfUI({k:"circ",city})}${edTxt(k,c.d)}${datosLista(c.datos)}
   <div class="lbl">Mapa del circuito</div>${mapaSelUI(city)}`:offMsg)}
-function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
+function pPerf(city){const k="perf_"+city,pf=CAT.perfiles[city];return togIncl(k)+(S.incluir[k]?enfUI({k:"perf",city})+varUI("perf",{k:"perf",city})+`${datosLista(pf.kpis)}
   <p class="hint" style="margin-top:10px">${pf.grupos.map(g=>"<b>"+esc(g.t)+":</b> "+g.items.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")).join("<br>")}<br><b>Género:</b> ${pf.genero.map(z=>esc(z[0])+" "+z[1]+"%").join(" · ")}</p>`:offMsg)}
 function pObjetivos(){return togIncl("objetivos")+`
   <p class="hint">Toca los objetivos que persigue <b>${esc(S.prospecto||"el prospecto")}</b>. Cada objetivo define qué números se muestran en las activaciones${S.incluir.objetivos?"":" (aunque la diapositiva no se incluya)"}.</p>
@@ -2180,6 +2207,15 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
 function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
+function enfUI(spec){const cur=enfMode(),h=(S.hist||[]).length;setTimeout(()=>drawEnf(spec),0);
+  return `<div class="lbl" style="margin-top:0">Resalte de cifras <span style="text-transform:none;letter-spacing:0;font-weight:700">· se aplica a todas las diapositivas con cifras</span></div>
+  <div class="vars" id="vars_enf">${Object.entries(ENFS).map(([v,tt])=>`<div class="vopt ${cur===v?"on":""}" onclick="A.setVar('enf','${v}')"><div class="sw"></div><b>${v} · ${tt}</b></div>`).join("")}</div>
+  <button class="hbtn" style="margin:8px 0 6px" ${h?"":"disabled style='opacity:.4;margin:8px 0 6px'"} onclick="A.undoVar()">↶ Deshacer cambio</button>`}
+async function drawEnf(spec){const box=document.getElementById("vars_enf");if(!box)return;const list=plan(),tot=list.length;
+  const sp=list.find(p=>p.k===spec.k&&(!spec.city||p.city===spec.city))||Object.assign({},spec);const n=list.indexOf(sp)+1||1;
+  const opts=box.querySelectorAll(".vopt");const vs=Object.keys(ENFS);
+  for(let i=0;i<vs.length;i++){ENF_OVR=vs[i];try{const R2=HtmlR();await dibujar(R2,sp,n,tot);const sw=opts[i]&&opts[i].querySelector(".sw");if(sw)sw.innerHTML=R2.out[0]}finally{ENF_OVR=null}}
+  scaleSlides(box)}
 function pActNueva(){return `<p class="hint">Todavía no hay activaciones. Crea la primera para definir su tipo, dinámica, elementos, foto y números.</p>
   <button class="addbtn" onclick="A.nuevaAct()">＋ Crear activación</button>`}
 function pAct(a){
@@ -2207,7 +2243,7 @@ function pAct(a){
   <p class="hint">Se calculan solos según los elementos y objetivos. Toca un número para fijarlo a mano.</p>
   <div class="rows">${ks.length?ks.map(k=>`<div class="kpi"><div class="tx"><b>${esc(k.t)}</b><small>${k.man!=null?`Fijado a mano · automático: ${fmt(k.auto)} <button class="mini" onclick="A.kpiAuto('${a.uid}','${k.id}')">volver a automático</button>`:"Automático"}</small></div><button class="num ${k.man!=null?"man":""}" onclick="A.kpiKp('${a.uid}','${k.id}')">${fmt(k.v)}</button></div>`).join(""):`<div class="warn">Sin números: elige objetivos para esta activación y agrega elementos.</div>`}</div>`;
 }
-function pNumeros(){const ks=kpisTotales();return togIncl("numeros")+(S.incluir.numeros?`<p class="hint">Suma de los números por domingo de todas las activaciones. Se editan en cada activación.</p>
+function pNumeros(){const ks=kpisTotales();return togIncl("numeros")+(S.incluir.numeros?`${ks.length?enfUI({k:"numeros"}):""}<p class="hint">Suma de los números por domingo de todas las activaciones. Se editan en cada activación.</p>
   ${ks.length?`<div class="rows">${ks.map(k=>`<div class="row" style="cursor:default"><div class="tx"><b>${fmt(k.v)}</b><small>${esc(k.t)} por domingo</small></div></div>`).join("")}</div>`:`<div class="warn">Aún no hay números: agrega activaciones con objetivos y elementos.</div>`}`:offMsg)}
 function pTarifas(){const ps=periodosSel();return togIncl("tarifas")+(S.incluir.tarifas?`
   <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
@@ -2219,7 +2255,7 @@ function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?
   <div class="lbl">Nota adicional (opcional)</div>
   <textarea class="field" placeholder="Ej: Incluye 2 reels durante el período contratado" oninput="S.comNota=this.value;save()">${esc(S.comNota)}</textarea>`:offMsg)}
 function pRRSS(){if(!S.incluir.rrss)return togIncl("rrss")+offMsg;const L=rrssList(),o=S.rrssN||{};
-  return togIncl("rrss")+`<div class="lbl" style="margin-top:4px">Mes y año (bajo el título)</div>${edTxt("rrss_fecha",mesAnio())}
+  return togIncl("rrss")+enfUI({k:"rrss"})+`<div class="lbl" style="margin-top:4px">Mes y año (bajo el título)</div>${edTxt("rrss_fecha",mesAnio())}
   <div class="lbl">Cifras</div><div class="dl">${L.map((r,i)=>`<div class="dlp"><div class="dli" title="${esc(fmt(r.n)+" "+r.red+" · "+(r.u||"seguidores"))}"><b>${fmt(r.n)}</b> ${esc(r.red)}</div><button class="pen" title="Editar cifra" onclick="A.rrssN(${i})">✏️</button>${o[i]!=null&&o[i]!==CAT.rrss[i].n?`<span class="edm2">editado</span>`:""}</div>`).join("")}</div>
   ${Object.keys(o).length?`<button class="b-sec sm hbtn" style="margin-top:6px" onclick="S.rrssN={};save();render()">↺ Volver a las cifras base</button>`:""}`}
 function pCondiciones(){return togIncl("condiciones")+(S.incluir.condiciones?`
@@ -2331,7 +2367,7 @@ function render(){
     (i<P.length-1?`<button class="b-pri" onclick="A.ir(${i+1})">Siguiente →</button>`:`<button class="b-te" onclick="A.generar()">⬇ PPTX</button>`);
 }
 const A={
-  setVar(k,v){S.var=S.var||{};const prev=S.var[k]||"A";if(prev===v)return;S.hist=S.hist||[];S.hist.push({k,v:prev});S.var[k]=v;save();const y=window.scrollY;render();window.scrollTo(0,y)},
+  setVar(k,v){S.var=S.var||{};const prev=S.var[k]||(k==="enf"?"C":"A");if(prev===v)return;S.hist=S.hist||[];S.hist.push({k,v:prev});S.var[k]=v;save();const y=window.scrollY;render();window.scrollTo(0,y)},
   undoVar(){const h=(S.hist||[]).pop();if(!h)return;S.var=S.var||{};S.var[h.k]=h.v;save();const y=window.scrollY;render();window.scrollTo(0,y);toast("Diseño anterior restaurado")},
   dd(k){DD=DD===k?null:k;if(DD==='tema')FAMOPEN=famOf(TEMAS[S.tema||'azul']);renderTools()},
   ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
