@@ -30,6 +30,9 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .ddb:after{content:"▾";color:var(--or);font-size:16px}
 .ddb.on{border-color:var(--or);background:#fdf0e6}
 .ddm{position:absolute;top:calc(100% + 6px);left:0;min-width:300px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(17,24,39,.18);padding:6px;z-index:60;max-height:72vh;overflow:auto}
+.ddf{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;padding:10px 10px;border-radius:10px;cursor:pointer;font-weight:900;font-size:15px;color:var(--txt);text-align:left}
+.ddf:hover{background:var(--panel2)}.ddf .tri{color:var(--or);width:14px;font-size:14px}.ddf.act .tt{color:var(--or)}.ddf small{margin-left:auto;font-weight:700;color:var(--mut);font-size:12px}
+.ddi.sub{padding-left:34px}
 .ddh{font-size:11px;font-weight:900;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;padding:8px 10px 4px}
 .ddi{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;width:100%;border:none;background:none;color:var(--txt);text-align:left}
 .ddi:hover{background:var(--panel2)}.ddi.on{background:#fdf0e6}
@@ -86,6 +89,12 @@ header{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px 10px;b
 .ft.on{border-color:var(--or);box-shadow:inset 0 0 0 2px #fff}
 .ft i{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.62);color:#fff;font-style:normal;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px}
 .ft.on i{background:var(--or)}
+.pgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:1100px;margin-bottom:10px}
+.pch{border:2px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 4px;cursor:pointer;text-align:center;line-height:1.15;color:var(--txt);min-width:0}
+.pch b{display:block;font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden}.pch .sh{display:none}
+.pch small{display:block;font-size:11px;font-weight:700;color:var(--mut)}
+.pch.on{border-color:var(--or);background:#fdf0e6}.pch.on b{color:var(--or)}
+@media(max-width:700px){.pgrid{gap:4px}.pch{padding:5px 1px}.pch .lg{display:none}.pch .sh{display:inline}.pch b{font-size:12px}.pch small{font-size:10px}}
 .ft.noc{background:#1b1f3b;border:3px solid #1b1f3b;color:#fff;font-weight:800;font-size:9.5px;overflow:hidden;word-break:normal;letter-spacing:-.2px;text-align:center;line-height:1.2;padding:4px}
 .ft.noc.on{background:#3b2a6b;border-color:#e87115}
 .ft.nueva,.ft.sin{border:3px dashed #c5cfdb;font-weight:800;font-size:13px;color:#4b5563;background-color:#fff}
@@ -343,9 +352,18 @@ const CAT = {
   ],
   periodos:[
     {id:"p1",t:"1 domingo",dom:1,desc:0},
+    {id:"p2",t:"2 domingos",dom:2,desc:0},
     {id:"p4",t:"1 mes",dom:4,desc:5},
+    {id:"p9",t:"2 meses",dom:9,desc:5},
     {id:"p13",t:"3 meses",dom:13,desc:10},
+    {id:"p17",t:"4 meses",dom:17,desc:10},
+    {id:"p22",t:"5 meses",dom:22,desc:10},
     {id:"p26",t:"6 meses",dom:26,desc:15},
+    {id:"p30",t:"7 meses",dom:30,desc:15},
+    {id:"p35",t:"8 meses",dom:35,desc:15},
+    {id:"p39",t:"9 meses",dom:39,desc:15},
+    {id:"p43",t:"10 meses",dom:43,desc:15},
+    {id:"p48",t:"11 meses",dom:48,desc:15},
     {id:"p52",t:"12 meses",dom:52,desc:20}
   ],
   comunicacion:[
@@ -2193,7 +2211,7 @@ function pNumeros(){const ks=kpisTotales();return togIncl("numeros")+(S.incluir.
   ${ks.length?`<div class="rows">${ks.map(k=>`<div class="row" style="cursor:default"><div class="tx"><b>${fmt(k.v)}</b><small>${esc(k.t)} por domingo</small></div></div>`).join("")}</div>`:`<div class="warn">Aún no hay números: agrega activaciones con objetivos y elementos.</div>`}`:offMsg)}
 function pTarifas(){const ps=periodosSel();return togIncl("tarifas")+(S.incluir.tarifas?`
   <p class="hint">Elige qué períodos mostrar en la tabla de inversión. El valor se calcula con los elementos de cada activación × domingos − descuento.</p>
-  <div class="rows">${CAT.periodos.map(p=>`<div class="row ${S.periodos.includes(p.id)?"on":""}" onclick="A.toggle('periodos','${p.id}')"><div class="chk"></div><div class="tx"><b>${p.t}</b><small>${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}</small></div></div>`).join("")}</div>
+  <div class="pgrid">${CAT.periodos.map(p=>`<button class="pch ${S.periodos.includes(p.id)?"on":""}" title="${p.t} · ${p.dom} domingo${p.dom>1?"s":""}${p.desc?" · "+p.desc+"% de descuento":""}" onclick="A.toggle('periodos','${p.id}')"><b><span class="lg">${p.t}</span><span class="sh">${p.t.replace(/ domingos?/," dom.").replace(/ mes(es)?/," m")}</span></b><small>${p.desc?"−"+p.desc+"%":"—"}</small></button>`).join("")}</div>
   ${S.activaciones.length&&ps.length?`<div class="lbl">Resumen</div>${ps.map(p=>`<div class="total" style="margin-bottom:8px"><b>${p.t}</b><span>${money(S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0))} <small style="font-size:14px">+ IVA</small></span></div>`).join("")}`:`<div class="warn">Agrega activaciones para ver los valores.</div>`}`:offMsg)}
 function pComunicacion(){return togIncl("comunicacion")+(S.incluir.comunicacion?`
   <p class="hint">Acciones del plan comunicacional que se incluyen en la propuesta.</p>
@@ -2274,6 +2292,9 @@ let PVKEY=null;document.addEventListener("keydown",e=>{if(PVKEY)PVKEY(e)});
 let DD=null;
 const INCL={crv:"crv",circ_stgo:"circ_stgo",circ_vina:"circ_vina",perf_stgo:"perf_stgo",perf_vina:"perf_vina",objetivos:"objetivos",numeros:"numeros",tarifas:"tarifas",comunicacion:"comunicacion",rrss:"rrss",condiciones:"condiciones",enlaces:"enlaces",noct1:"noct1",noct2:"noct2",sop_1:"sop_1",sop_2:"sop_2",sop_3:"sop_3",sop_4:"sop_4"};
 function totalPeriodo(p){return S.activaciones.reduce((s,a)=>s+precioPeriodo(a,p),0)}
+const famOf=v=>v.mod?"Moderno":v.caj?"Cajas":v.pot?"Potion":v.vis?"Visual":v.inv?"Investor":"Formal";
+function famList(){const m=[];Object.entries(TEMAS).forEach(([k,v])=>{const n=famOf(v);let f=m.find(x=>x.n===n);if(!f){f={n,ks:[]};m.push(f)}f.ks.push(k)});return m}
+let FAMOPEN=null;
 function renderTools(){
   const el=$("#htools");if(!el)return;
   const tm=TEMAS[S.tema]||TEMAS.azul;
@@ -2284,7 +2305,9 @@ function renderTools(){
   const sw=v=>`<span style="display:inline-block;width:16px;height:16px;border-radius:5px;background:#${v.bg};border:3px solid #${v.acc}"></span>`;
   el.innerHTML=`
   <div class="dd"><button class="ddb ${DD==="tema"?"on":""}" onclick="event.stopPropagation();A.dd('tema')">${sw(tm)}<span><small>Estilo diapositiva</small>${esc(tm.t)}</span></button>
-    ${DD==="tema"?`<div class="ddm" onclick="event.stopPropagation()">${Object.entries(TEMAS).map(([k,v])=>(k==="azul"?`<div class="ddh">Formal</div>`:k==="mclaro"?`<div class="ddh">Moderno</div>`:k==="cclaro"?`<div class="ddh">Cajas</div>`:k==="pclaro"?`<div class="ddh">Potion</div>`:k==="vclaro"?`<div class="ddh">Visual</div>`:k==="iclaro"?`<div class="ddh">Investor</div>`:"")+`<button class="ddi ${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';DD=null;save();render()">${sw(v)}<span class="tt">${esc(v.t)}</span>${(S.tema||"azul")===k?"✓":""}</button>`).join("")}</div>`:""}</div>
+    ${DD==="tema"?`<div class="ddm" onclick="event.stopPropagation()">${famList().map(f=>{const op=FAMOPEN===f.n,act=f.ks.includes(S.tema||"azul");
+      return `<button class="ddf ${act?"act":""}" onclick="FAMOPEN=${op}?null:'${f.n}';renderTools()"><span class="tri">${op?"▾":"▸"}</span><span class="tt">${f.n}</span>${act&&!op?`<small>${esc(TEMAS[S.tema].t)}</small>`:""}</button>`+
+      (op?f.ks.map(k=>{const v=TEMAS[k];return `<button class="ddi sub ${(S.tema||"azul")===k?"on":""}" onclick="S.tema='${k}';DD=null;save();render()">${sw(v)}<span class="tt">${esc(v.t)}</span>${(S.tema||"azul")===k?"✓":""}</button>`}).join(""):"")}).join("")}</div>`:""}</div>
   <div class="dd"><button class="ddb ${DD==="diapos"?"on":""}" onclick="event.stopPropagation();A.dd('diapos')"><span><small>Diapositivas</small>${vis} visibles de ${P.length}</span></button>
     ${DD==="diapos"?`<div class="ddm wide" onclick="event.stopPropagation()">${P.map((p,k)=>{const key=INCL[p.id],v=key?!!S.incluir[key]:true;
       return `<div class="ddi one ${p.id===curId?"on":""}" onclick="DD=null;A.ir(${k})"><span class="n">${k+1}</span><span class="tt">${esc(p.t)}</span><button class="tog ${v?"g":"r"} ${key?"":"fix"}" title="${key?(v?"Visible: toca para ocultar":"Oculta: toca para mostrar"):"Siempre visible"}" onclick="event.stopPropagation();${key?`S.incluir.${key}=!S.incluir.${key};save();render()`:""}"></button></div>`}).join("")}</div>`:""}</div>
@@ -2310,7 +2333,7 @@ function render(){
 const A={
   setVar(k,v){S.var=S.var||{};const prev=S.var[k]||"A";if(prev===v)return;S.hist=S.hist||[];S.hist.push({k,v:prev});S.var[k]=v;save();const y=window.scrollY;render();window.scrollTo(0,y)},
   undoVar(){const h=(S.hist||[]).pop();if(!h)return;S.var=S.var||{};S.var[h.k]=h.v;save();const y=window.scrollY;render();window.scrollTo(0,y);toast("Diseño anterior restaurado")},
-  dd(k){DD=DD===k?null:k;renderTools()},
+  dd(k){DD=DD===k?null:k;if(DD==='tema')FAMOPEN=famOf(TEMAS[S.tema||'azul']);renderTools()},
   ir(i){const P=PANELS();if(i<0||i>=P.length)return;curId=P[i].id;render();window.scrollTo(0,0)},
   toggle(k,id){const a=S[k];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);
     if(k==="objetivos"&&i<0) S.activaciones.forEach(x=>{if(!x.objetivos.includes(id))x.objetivos.push(id)});
