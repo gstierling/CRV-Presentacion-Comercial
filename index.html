@@ -384,9 +384,9 @@ const CAT = {
     {id:"c8",t:"Reporte de resultados",d:"Informe con fotos y cifras al cierre",ic:"chart"}
   ],
   circuitos:{
-    stgo:{t:"CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de varias comunas de Santiago para caminar, pedalear, patinar y compartir, conectando parques, plazas y barrios.",
+    stgo:{t:"CicloRecreoVía Santiago",d:"Cada domingo abrimos calles de *varias comunas de Santiago* para caminar, pedalear, patinar y compartir, conectando *parques, plazas y barrios*.",
       datos:[{ic:"route",n:"26 km",l:"de calles abiertas"},{ic:"mappin",n:"8",l:"comunas"},{ic:"clock",n:"9 a 14 h",l:"todos los domingos"},{ic:"users",n:"35.000",l:"asistentes por domingo"}]},
-    vina:{t:"CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al borde costero, con un público familiar, deportivo y turístico.",
+    vina:{t:"CicloRecreoVía Viña del Mar",d:"En Viña del Mar el circuito recorre la ciudad junto al *borde costero*, con un público *familiar, deportivo y turístico*.",
       datos:[{ic:"route",n:"3 km",l:"de calles abiertas"},{ic:"mappin",n:"1",l:"comuna"},{ic:"clock",n:"9 a 13 h",l:"todos los domingos"},{ic:"users",n:"4.000",l:"asistentes por domingo"}]}
   },
   perfiles:{
@@ -1896,10 +1896,10 @@ async function dibujarEstaciones(R,sp,n,tot){
 
 /* ===================== SOPORTES Y CICLORECREOVÍA NOCTURNA (todos los estilos) ===================== */
 const SOPORTES=[
-  {n:1,t:"Arco",foto:13,d:"Arco inflable de gran formato con la marca, ubicado en un punto de alto flujo del circuito. Es el ícono de la activación: todos pasan por debajo y queda en las fotos de la jornada."},
-  {n:2,t:"Vallas",foto:15,d:"Vallas con lienzo impreso a lo largo del circuito, a la altura de la vista de quienes pedalean, caminan y patinan. Presencia continua de la marca durante toda la jornada."},
-  {n:3,t:"Barreras",foto:18,d:"Barreras de cierre de calle intervenidas con la marca en los accesos y cruces del circuito, los puntos donde las personas se detienen y esperan."},
-  {n:4,t:"Banderas",foto:16,d:"Banderas tipo vela que marcan el espacio de la activación y se ven a distancia, dando altura y color a la presencia de la marca."}];
+  {n:1,t:"Arco",foto:13,d:"*Arco inflable de gran formato* con la marca, ubicado en un punto de *alto flujo* del circuito. Es el ícono de la activación: todos pasan por debajo y queda en *las fotos de la jornada*."},
+  {n:2,t:"Vallas",foto:15,d:"Vallas con lienzo impreso *a lo largo del circuito*, a la altura de la vista de quienes pedalean, caminan y patinan. *Presencia continua* de la marca durante toda la jornada."},
+  {n:3,t:"Barreras",foto:18,d:"Barreras de cierre de calle intervenidas con la marca en los *accesos y cruces* del circuito, los puntos donde las personas *se detienen y esperan*."},
+  {n:4,t:"Banderas",foto:16,d:"Banderas tipo vela que marcan el espacio de la activación y *se ven a distancia*, dando *altura y color* a la presencia de la marca."}];
 const CLAVES=[
   {ic:"route",t:"Recuperamos la ciudad",d:"Iniciativa de recuperación de espacios públicos."},
   {ic:"bike",t:"Calles sin autos",d:"Habilitamos kilómetros de calles para el paseo y el esparcimiento."},
@@ -1949,7 +1949,7 @@ async function dibujarDivProp(R,sp,n,tot){const k=K(),P=S.prospecto||"Prospecto"
   R.text("PROPUESTA",0.7,2.35,5.0,0.5,{size:18,bold:true,cs:6,color:KP(0),valign:"middle"});
   R.text(P,0.68,2.85,5.2,1.5,{size:Math.min(60,5.2*72/(Math.max(P.length,4)*0.72)),head:true,color:k.tx,valign:"middle"});
   R.rect(0.72,4.5,1.1,0.07,{fill:KP(0)});
-  R.text(txD("divprop_sub","Objetivos, activaciones, alcance e *inversión* para "+P+" en CicloRecreoVía."),0.7,4.8,5.0,1.4,{size:17,color:k.mu,valign:"top"});
+  R.text(txD("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+P+" en CicloRecreoVía."),0.7,4.8,5.0,1.4,{size:17,color:k.mu,valign:"top"});
   R.text(String(n).padStart(2,"0"),0.7,6.85,1,0.35,{size:10,bold:true,color:k.mu});R.end();}
 async function dibujarObjCat(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="est")eSnow(R);
   const y0=famHead(R,txD("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía"),n,tot),ob=CAT.objetivos,cols=5,rows=Math.ceil(ob.length/cols),g=0.18;
@@ -1961,7 +1961,7 @@ async function dibujarObjCat(R,sp,n,tot){const k=K();R.slide(k.bg);if(k.fam==="e
     R.text(o.t,x+0.12,y+1.12,cw-0.24,0.55,{size:fitSize(o.t,14,[[16,13],[22,12]]),head:true,color:k.tx,align:"center",valign:"middle"});
     R.text(o.d,x+0.15,y+1.7,cw-0.3,ch-1.8,{size:10,color:k.mu,align:"center",valign:"top"});}
   await famFoot(R,n);R.end();}
-const NOCT_TXT="Una noche al año abrimos las calles de Santiago para recorrerlas en bicicleta, a pie y en patines bajo luces, neón y música.";
+const NOCT_TXT="*Una noche al año* abrimos las calles de Santiago para recorrerlas en bicicleta, a pie y en patines bajo *luces, neón y música*.";
 const NOCT_BOX=[{ic:"moon",t:"El evento nocturno más importante del país"},{ic:"users",t:"35.000 personas por jornada"},{ic:"train",t:"Convenio con Metro de Santiago"},{ic:"zap",t:"Una fiesta de luz, neón y color"}];
 const NOCT_TIT="CicloRecreoVía Nocturna";
 async function dibujarSoporte(R,sp,n,tot){const k=K(),s=sp.s;R.slide(k.bg);
@@ -2140,9 +2140,11 @@ function enfWrap(R,sp,mode){const d=enfData(sp);if(!d)return R;const t=T(),acc=t
     return R.text(tx,x,y,w,h,o)};
   return W2}
 async function dibujar(R,sp,n,tot){
-  if(sp.k==="crv"&&!R._crvd){const d0=txD("crv",CAT.crv.descripcion),R0=R;R=Object.assign({},R0,{_crvd:1,_enf:R0._enf});
+  const SUBT=sp.k==="crv"?txD("crv",CAT.crv.descripcion):sp.k==="circ"?txD("circ_"+sp.city,CAT.circuitos[sp.city].d):sp.k==="sop"?txD("sop_"+sp.s.n,sp.s.d):sp.k==="noct1"?txD("noct_txt",NOCT_TXT):
+    sp.k==="rrss"?"Una *audiencia activa* que sigue y comparte lo que pasa *cada domingo* en CicloRecreoVía.":sp.k==="divprop"?txD("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía."):sp.k==="libre"?(sp.l.texto||""):null;
+  if(SUBT&&!R._crvd){const d0=SUBT,R0=R;R=Object.assign({},R0,{_crvd:1,_enf:R0._enf});
     R.text=(tx,x,y,w,h,o)=>{if(tx===d0&&o){o=Object.assign({},o);const len=d0.replace(/\*/g,"").length,lines=Math.max(1,h*72/((o.size||12)*1.3*1.35));
-      const fitW=Math.sqrt(w*h*72*72/(len*0.55*1.3));o.size=Math.min(19,Math.max(o.size||12,Math.min((o.size||12)*1.5,fitW*0.92)));if(o.color&&o.color!==COL.wh&&!/^(E5E7EB)$/i.test(o.color))o.color=T().tx||o.color}return R0.text(tx,x,y,w,h,o)};}
+      const fitW=Math.sqrt(w*h*72*72/(len*0.55*1.3));o.size=Math.min(19,Math.max(o.size||12,Math.min((o.size||12)*1.5,fitW*0.92)));o.bold=false;if(o.color&&T().mu&&o.color===T().mu)o.color=T().tx||o.color}return R0.text(tx,x,y,w,h,o)};}
   if(!R._enf&&enfMode()!=="A"&&["crv","circ","perf","numeros","rrss"].includes(sp.k)){R=enfWrap(R,sp,enfMode());R._enf=1}
   const vk=sp.k==="perf"?"perf":sp.k==="act"?"act":null,vv=vk?(sp.var||(S.var||{})[vk]||"A"):"A";
   if(sp.k==="sop")return dibujarSoporte(R,sp,n,tot);
@@ -2291,7 +2293,7 @@ async function dibujar(R,sp,n,tot){
     R.slide(t.bg);cabecera(R,n,tot);
     titulo(R,"Nuestra comunidad digital",0.6,0.6,8);
     R.text(rrssFecha(),0.6,1.5,8,0.35,{size:13,bold:true,color:t.acc,valign:"middle"});
-    R.text("Una audiencia activa que sigue y comparte lo que pasa cada domingo en CicloRecreoVía.",0.6,1.85,8,0.45,{size:12.5,color:t.mu});
+    R.text("Una *audiencia activa* que sigue y comparte lo que pasa *cada domingo* en CicloRecreoVía.",0.6,1.85,8,0.45,{size:12.5,color:t.mu});
     const r=rrssList(),c=r.length,gap=0.22,cw=(W-1.2-gap*(c-1))/c;
     for(let i=0;i<c;i++){const x0=r[i];const x=0.6+i*(cw+gap);const hi=i===0;
       R.rect(x,2.45,cw,3.2,{fill:hi?t.acc:t.p1,radius:0.08});
@@ -2493,7 +2495,7 @@ async function fillFotos(pn){if(pn.final)return;const list=plan(),sps=list.filte
 function pSop(s){const k="sop_"+s.n;return togIncl(k)+(S.incluir[k]?`<div class="lbl" style="margin-top:4px">Texto</div>${edTxt(k,s.d)}`:offMsg)}
 function pClaves(){return S.incluir.claves?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("claves_tit",CLAVES_TIT)}`+CLAVES.map((c,i)=>`<div class="lbl">Clave ${i+1}</div>${edTxt("clave_t"+(i+1),c.t)}${edTxt("clave_d"+(i+1),c.d)}`).join(""):""}
 function pPublico(){return S.incluir.publico?varUI("pub",{k:"publico"})+`<div class="lbl">Título</div>${edTxt("pub_tit","Personas cada domingo")}<div class="lbl">Cifra</div>${edTxt("pub_n","39.000")}<div class="lbl">Texto</div>${edTxt("pub_l","participantes por domingo")}${edTxt("pub_c","Santiago + Viña del Mar")}`:""}
-function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, alcance e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
+function pDivProp(){return S.incluir.divprop?`<div class="lbl" style="margin-top:4px">Texto bajo el nombre</div>${edTxt("divprop_sub","Objetivos, activaciones, *alcance* e *inversión* para "+(S.prospecto||"Prospecto")+" en CicloRecreoVía.")}`:""}
 function pObjCat(){return S.incluir.objcat?`<div class="lbl" style="margin-top:4px">Título</div>${edTxt("objcat_tit","Objetivos que puedes lograr en CicloRecreoVía")}<p class="hint">Muestra los ${CAT.objetivos.length} objetivos del catálogo. La diapositiva siguiente muestra los elegidos para este prospecto.</p>`:""}
 function pNoct1(){return togIncl("noct1")+(S.incluir.noct1?`<div class="lbl" style="margin-top:4px">Texto bajo la foto (2 líneas)</div>${edTxt("noct_txt",NOCT_TXT)}`:offMsg)}
 function pNoct2(){return togIncl("noct2")+(S.incluir.noct2?NOCT_BOX.map((b,i)=>`<div class="lbl"${i?"":' style="margin-top:4px"'}>Caja ${i+1}</div>${edTxt("noct_"+(i+1),b.t)}`).join(""):offMsg)}
